@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 @AllArgsConstructor
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "place")
 public class Place {
 
@@ -30,7 +30,7 @@ public class Place {
     private String description; // 설명
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "category", nullable = false, columnDefinition = "PLACE")
+    @Column(name = "category", nullable = false)
     private Category category; // 카테고리
 
     @CreatedDate
