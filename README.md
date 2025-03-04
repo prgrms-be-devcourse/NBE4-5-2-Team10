@@ -88,3 +88,8 @@
 - 테스트가 완료되면, Pull Request를 생성하여 Review를 요청합니다. 이 때 타겟은 ```develop``` 브랜치입니다.
 - Review가 완료되고, 피드백이 모두 반영돠면 해당 ```feature```브랜치를 ```develop```브랜치로 **Merge**합니다.
 - ```develop```브랜치의 내용이 정상적으로 동작하면 팀원들과 상의 후 ```main```브랜치로 **Merge**합니다.
+
+## 컨벤션
+[Commit Convention](https://github.com/prgrms-be-devcourse/NBE4-5-2-Team10/wiki/Code-Convention)
+<br/>
+[Code Convention](https://github.com/prgrms-be-devcourse/NBE4-5-2-Team10/wiki/Git-Commit-Convention)
