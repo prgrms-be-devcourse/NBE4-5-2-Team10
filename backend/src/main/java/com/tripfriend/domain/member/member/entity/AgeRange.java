@@ -7,13 +7,13 @@ public enum AgeRange {
     THIRTIES("30대"),
     FORTIES_PLUS("40대 이상");
 
-    private final String displayName;
+    private final String ageRange;
 
-    AgeRange(String displayName) {
-        this.displayName = displayName;
+    AgeRange(String ageRange) {
+        this.ageRange = ageRange;
     }
 
-    public String getDisplayName() {
-        return displayName;
+    public String getAgeRange() {
+        return ageRange;
     }
 }
