@@ -1,10 +1,16 @@
 package com.tripfriend.domain.member.member.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
+@Builder
 public class Member {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -53,4 +59,16 @@ public class Member {
 
     @Column(name = "authority", nullable = false)
     private String authority;
+
+    @PrePersist
+    protected void onCreate() {
+
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }
