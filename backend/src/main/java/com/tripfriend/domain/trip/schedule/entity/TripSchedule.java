@@ -6,7 +6,9 @@ import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Entity
 @Getter
@@ -31,10 +33,10 @@ public class TripSchedule {
     private String description; // 일정 설명
 
     @Column(name = "startDate", nullable = false)
-    private String startDate; // 시작일
+    private LocalDate startDate; // 시작일
 
     @Column(name = "endDate", nullable = false)
-    private String endDate; // 종료일
+    private LocalDate endDate; // 종료일
 
     @CreatedDate
     @Setter(AccessLevel.PRIVATE)
