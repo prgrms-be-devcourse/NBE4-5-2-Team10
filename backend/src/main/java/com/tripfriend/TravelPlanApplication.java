@@ -1,4 +1,4 @@
-package com.example.travelPlan;
+package com.tripfriend;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
