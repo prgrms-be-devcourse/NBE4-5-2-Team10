@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PlaceCreateRequestDto {
+public class PlaceCreateReqDto {
 
     @NotBlank(message = "도시명을 입력해주세요.")
     private String cityName;
