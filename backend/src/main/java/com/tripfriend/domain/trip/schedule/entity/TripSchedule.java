@@ -21,15 +21,19 @@ public class TripSchedule {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "memberId")
+    @JoinColumn(name = "member_id")
     private Member member;
 
+    @Column(name = "title", nullable = false)
     private String title; // 제목
 
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description; // 일정 설명
 
+    @Column(name = "startDate", nullable = false)
     private String startDate; // 시작일
 
+    @Column(name = "endDate", nullable = false)
     private String endDate; // 종료일
 
     @CreatedDate

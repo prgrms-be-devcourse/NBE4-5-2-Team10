@@ -20,14 +20,18 @@ public class Place {
     @Column(name = "placeId")
     private Long id;
 
+    @Column(name = "city_name", nullable = false)
     private String cityName; // 도시명
 
+    @Column(name = "place_name", nullable = false)
     private String placeName; // 장소명
 
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description; // 설명
 
     @Enumerated(EnumType.STRING)
-    private String category; // 카테고리
+    @Column(name = "category", nullable = false, columnDefinition = "PLACE")
+    private Category category; // 카테고리
 
     @CreatedDate
     @Setter(AccessLevel.PRIVATE)
