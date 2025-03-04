@@ -1,4 +1,4 @@
-package com.example.travelPlan.domain.member.member.entity;
+package com.tripfriend.domain.member.member.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
