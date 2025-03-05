@@ -9,9 +9,10 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
+@Setter
 @Builder
 @AllArgsConstructor
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "place")
 public class Place {
 
@@ -30,7 +31,7 @@ public class Place {
     private String description; // 설명
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "category", nullable = false, columnDefinition = "PLACE")
+    @Column(name = "category", nullable = false)
     private Category category; // 카테고리
 
     @CreatedDate
@@ -40,4 +41,15 @@ public class Place {
     @LastModifiedDate
     @Setter(AccessLevel.PRIVATE)
     private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }
