@@ -18,6 +18,7 @@ public class PlaceCreateReqDto {
 
     @NotBlank(message = "장소명을 입력해주세요.")
     private String placeName;
+
     private String description;
 
     @NotNull(message = "카테고리를 선택해주세요")
