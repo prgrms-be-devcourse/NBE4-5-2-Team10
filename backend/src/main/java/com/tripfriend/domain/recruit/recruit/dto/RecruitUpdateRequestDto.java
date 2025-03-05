@@ -1,8 +1,5 @@
 package com.tripfriend.domain.recruit.recruit.dto;
 
-import com.tripfriend.domain.member.member.entity.Member;
-import com.tripfriend.domain.place.place.entity.Place;
-import com.tripfriend.domain.recruit.apply.entity.Apply;
 import com.tripfriend.domain.recruit.recruit.entity.Recruit;
 import com.tripfriend.domain.recruit.recruit.entity.TravelStyle;
 import lombok.AllArgsConstructor;
@@ -11,14 +8,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
-@Data // getter, setter, hashcode, tostring 추가
+@Data
 @Builder
-@NoArgsConstructor // serialization 시 필요
-@AllArgsConstructor // builder에 필요
-public class RecruitCreateRequestDto {
+@NoArgsConstructor
+@AllArgsConstructor
+public class RecruitUpdateRequestDto {
+    private Long recruitId;
 //    private Member member;
 //    private List<Apply> applies;
 //    private Place place;
@@ -35,6 +31,7 @@ public class RecruitCreateRequestDto {
 
     public Recruit toEntity(){
         return Recruit.builder()
+                .recruitId(this.recruitId)
 //                .member(member)
 //                .applies(applies)
 //                .place(place)
