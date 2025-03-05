@@ -33,4 +33,17 @@ public class NoticeController {
     public ResponseEntity<Notice> getNoticeById(@PathVariable Long id) {
         return ResponseEntity.ok(noticeService.getNoticeById(id));
     }
+
+    //공지사항 수정
+    @PutMapping("/{id}")
+    public ResponseEntity<Notice> updateNotice(@PathVariable Long id, @RequestBody Notice notice) {
+        return ResponseEntity.ok(noticeService.updateNoticeById(id, notice.getTitle(), notice.getContent()));
+    }
+
+    //공지사항 삭제
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteNotice(@PathVariable Long id) {
+        noticeService.deleteNotice(id);
+        return ResponseEntity.noContent().build();
+    }
 }
