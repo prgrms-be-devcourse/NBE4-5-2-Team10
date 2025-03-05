@@ -1,6 +1,7 @@
 package com.tripfriend.domain.trip.schedule.entity;
 
 import com.tripfriend.domain.member.member.entity.Member;
+import com.tripfriend.domain.trip.information.entity.TripInformation;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -29,7 +30,7 @@ public class TripSchedule {
 
     // 여행지 연결 테이블 리스트
     @OneToMany(mappedBy = "tripSchedule", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<TripSchedulePlace> tripSchedulePlaces = new ArrayList<>();
+    private List<TripInformation> tripInformations = new ArrayList<>();
 
     @Column(name = "title", nullable = false)
     private String title; // 제목
