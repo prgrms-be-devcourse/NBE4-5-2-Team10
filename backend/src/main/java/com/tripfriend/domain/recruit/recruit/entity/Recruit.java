@@ -1,6 +1,7 @@
 package com.tripfriend.domain.recruit.recruit.entity;
 
 import com.tripfriend.domain.member.member.entity.Member;
+import com.tripfriend.domain.place.place.entity.Place;
 import com.tripfriend.domain.recruit.apply.entity.Apply;
 import com.tripfriend.global.entity.BaseEntity;
 import jakarta.persistence.*;
@@ -23,16 +24,16 @@ public class Recruit extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long recruitId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = true) // 컬럼이름?, 회원 탈퇴 시 게시글 남아있게 함
-    private Member member;
-
-    @OneToMany(mappedBy = "recruit", cascade = CascadeType.ALL, orphanRemoval = true)
-    // 글 삭제 시 댓글도 삭제, 리스트에서 제거된 댓글 자동 삭제
-    private List<Apply> applies = new ArrayList<>();
-
 //    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "place_id", nullable = false) // 컬럼이름?? 장소 선택 필수?
+//    @JoinColumn(name = "member_id") // 컬럼이름?, 회원 탈퇴 시 게시글 남아있게 함
+//    private Member member;
+
+//    @OneToMany(mappedBy = "recruit", cascade = CascadeType.ALL, orphanRemoval = true)
+//    // 글 삭제 시 댓글도 삭제, 리스트에서 제거된 댓글 자동 삭제
+//    private List<Apply> applies = new ArrayList<>();
+//
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "placeId", nullable = false) // 컬럼이름?? 장소 선택 필수?
 //    private Place place;
 
     @Column(name = "title", nullable = false)
