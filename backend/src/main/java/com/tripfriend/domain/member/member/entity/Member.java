@@ -15,7 +15,7 @@ public class Member {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "member_id")
-    private Long id;
+    private long id;
 
     @Column(name = "username", nullable = false, length = 100, unique = true)
     private String username;
@@ -59,6 +59,9 @@ public class Member {
 
     @Column(name = "authority", nullable = false)
     private String authority;
+
+    @Column(name = "verified", nullable = false)
+    private boolean verified; // 이메일 인증 여부
 
     @PrePersist
     protected void onCreate() {
