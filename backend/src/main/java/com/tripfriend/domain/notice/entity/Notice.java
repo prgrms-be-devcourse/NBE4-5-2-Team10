@@ -1,4 +1,4 @@
-package com.tripfriend.domain.notice;
+package com.tripfriend.domain.notice.entity;
 
 
 import jakarta.persistence.*;
