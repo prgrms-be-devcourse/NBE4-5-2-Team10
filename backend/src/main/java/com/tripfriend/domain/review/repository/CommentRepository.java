@@ -9,11 +9,11 @@ import java.util.List;
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, Long> {
     // 특정 리뷰의 댓글 목록 조회 (작성일 오름차순)
-    List<Comment> findByReviewIdOrderByCreatedAtAsc(Long reviewId);
+    List<Comment> findByReviewReviewIdOrderByCreatedAtAsc(Long reviewId);
 
     // 특정 회원이 작성한 댓글 목록 조회
     List<Comment> findByMemberIdOrderByCreatedAtDesc(Long memberId);
 
     // 특정 리뷰의 댓글 수 조회
-    long countByReviewId(Long reviewId);
+    long countByReviewReviewId(Long reviewId);
 }

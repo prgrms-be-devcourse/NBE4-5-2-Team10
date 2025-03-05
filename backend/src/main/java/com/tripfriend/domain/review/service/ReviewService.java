@@ -45,7 +45,7 @@ public class ReviewService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 리뷰입니다."));
 
         // 댓글 수 조회
-        int commentCount = commentRepository.findByReviewIdOrderByCreatedAtAsc(reviewId).size();
+        int commentCount = commentRepository.findByReviewReviewIdOrderByCreatedAtAsc(reviewId).size();
 
         return new ReviewResponseDto(review, review.getMember().getNickname(), commentCount);
     }
@@ -56,7 +56,7 @@ public class ReviewService {
 
         return reviews.stream()
                 .map(review -> {
-                    int commentCount = commentRepository.findByReviewIdOrderByCreatedAtAsc(review.getReviewId()).size();
+                    int commentCount = commentRepository.findByReviewReviewIdOrderByCreatedAtAsc(review.getReviewId()).size();
                     return new ReviewResponseDto(review, review.getMember().getNickname(), commentCount);
                 })
                 .collect(Collectors.toList());
@@ -77,7 +77,7 @@ public class ReviewService {
         review.update(requestDto.getTitle(), requestDto.getContent(), requestDto.getRating());
 
         // 댓글 수 조회
-        int commentCount = commentRepository.findByReviewIdOrderByCreatedAtAsc(reviewId).size();
+        int commentCount = commentRepository.findByReviewReviewIdOrderByCreatedAtAsc(reviewId).size();
 
         return new ReviewResponseDto(review, member.getNickname(), commentCount);
     }

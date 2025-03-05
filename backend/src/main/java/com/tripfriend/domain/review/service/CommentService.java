@@ -50,7 +50,7 @@ public class CommentService {
             throw new IllegalArgumentException("존재하지 않는 리뷰입니다.");
         }
 
-        List<Comment> comments = commentRepository.findByReviewIdOrderByCreatedAtAsc(reviewId);
+        List<Comment> comments = commentRepository.findByReviewReviewIdOrderByCreatedAtAsc(reviewId);
 
         // 댓글 목록을 DTO 목록으로 변환하여 반환
         return comments.stream()
