@@ -16,24 +16,26 @@ import java.time.LocalDateTime;
 @Table(name = "Trip_Information")
 public class TripInformation {
 
-    @EmbeddedId
-    private TripInformationId id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "trip_Information_id")
+    private Long id; // 개별 Id 추가
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("tripId")
-    @JoinColumn(name = "tripId", nullable = false)
-    private TripSchedule tripSchedule; // 여행일정Id - FK
+    @JoinColumn(name = "trip_schedule_id", nullable = false)
+    private TripSchedule tripScheduleId; // 여행일정Id - FK
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("placeId")
-    @JoinColumn(name = "placeId", nullable = false)
-    private Place place; // 여행지Id - FK
+    @JoinColumn(name = "place_id", nullable = false)
+    private Place placeId; // 여행지Id - FK
 
     @Column(name = "visit_time",nullable = false)
     private LocalDateTime visitTime; // 방문시간
 
     @Column(name = "duration",nullable = false)
-    private Integer duration; // 방문기간
+    private Integer duration; // 방문기간(날짜 단위)
 
     @Column(name = "cost")
     private Long cost; // 여행 경비
@@ -44,7 +46,7 @@ public class TripInformation {
     @Column(name = "priority")
     private Integer priority; // 우선 순위
 
-    @Column(name = "is_visted")
+    @Column(name = "is_visited", nullable = false)
     @ColumnDefault("false")
-    private boolean isVisted; // 방문여부
+    private boolean isVisited; // 방문여부
 }
