@@ -1,11 +1,14 @@
 package com.tripfriend.domain.place.place.entity;
 
+import com.tripfriend.domain.trip.schedule.entity.TripSchedulePlace;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -20,6 +23,10 @@ public class Place {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "placeId")
     private Long id;
+
+    // 여행 스케줄 연결 테이블 리스트
+    @OneToMany(mappedBy = "place", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TripSchedulePlace> tripSchedulePlaces = new ArrayList<>();
 
     @Column(name = "city_name", nullable = false)
     private String cityName; // 도시명

@@ -8,6 +8,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -24,6 +26,10 @@ public class TripSchedule {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
+
+    // 여행지 연결 테이블 리스트
+    @OneToMany(mappedBy = "tripSchedule", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TripSchedulePlace> tripSchedulePlaces = new ArrayList<>();
 
     @Column(name = "title", nullable = false)
     private String title; // 제목
