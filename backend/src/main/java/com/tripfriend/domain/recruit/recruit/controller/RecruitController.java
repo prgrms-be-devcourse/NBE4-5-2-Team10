@@ -38,4 +38,10 @@ public class RecruitController {
         return recruitService.update(recruitUpdateRequestDto);
     }
 
+    @DeleteMapping("/{recruitId}")
+    public void deleteRecruit(@PathVariable("recruitId") Long recruitId){ // 이름 명시
+        recruitService.delete(recruitId);
+    }
+
+
 }

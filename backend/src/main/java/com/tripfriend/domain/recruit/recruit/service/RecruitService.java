@@ -44,4 +44,8 @@ public class RecruitService {
         recruit.update(recruitUpdateRequestDto);
         return new RecruitDetailResponseDto(recruit); // recruitRepository.save(recruit) 불필요!
     }
+
+    public void delete(Long recruitId) {
+        recruitRepository.deleteById(recruitId);
+    }
 }
