@@ -99,6 +99,7 @@ public class MailService {
         return false;
     }
 
+
     public boolean validationAuthCode(EmailVerificationRequestDto emailVerificationRequestDto) {
 
         String email = emailVerificationRequestDto.getEmail();

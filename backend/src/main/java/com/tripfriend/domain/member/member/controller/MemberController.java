@@ -1,6 +1,10 @@
 package com.tripfriend.domain.member.member.controller;
 
 import com.tripfriend.domain.member.member.dto.*;
+import com.tripfriend.domain.member.member.dto.JoinRequestDto;
+import com.tripfriend.domain.member.member.dto.LoginRequestDto;
+import com.tripfriend.domain.member.member.dto.MemberResponseDto;
+import com.tripfriend.domain.member.member.dto.MemberUpdateRequestDto;
 import com.tripfriend.domain.member.member.service.MailService;
 import com.tripfriend.domain.member.member.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
