@@ -70,6 +70,11 @@ public class TripScheduleService {
                 }).collect(Collectors.toList());
 
         tripInformationRepository.saveAll(tripInformations);
+
+        for(TripInformation tripInformation : tripInformations){
+            newSchedule.addTripInfromation(tripInformation);
+        }
+
         return new TripScheduleResDto(newSchedule);
     }
 }
