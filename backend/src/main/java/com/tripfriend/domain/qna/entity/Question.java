@@ -1,5 +1,6 @@
 package com.tripfriend.domain.qna.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.tripfriend.domain.member.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -23,6 +24,7 @@ public class Question {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Member member;
 
     @Column(nullable = false, length = 255)
