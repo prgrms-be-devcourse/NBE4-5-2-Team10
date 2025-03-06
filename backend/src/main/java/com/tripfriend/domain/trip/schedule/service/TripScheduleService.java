@@ -55,9 +55,35 @@ public class TripScheduleService {
     }
 
     // 전체 일정 조회
-    @Transactional
+    @Transactional(readOnly = true)
     public List<TripScheduleResDto> getAllSchedules() {
         List<TripSchedule> schedules = tripScheduleRepository.findAll();
+
+        if (schedules.isEmpty()){
+            throw new ServiceException("404-3", "여행 일정이 존재하지 않습니다.");
+        }
+
+        return schedules.stream()
+                .map(TripScheduleResDto::new)
+                .collect(Collectors.toList());
+    }
+
+    // 특정 회원의 여행 일정 조회
+    @Transactional(readOnly = true)
+    public List<TripScheduleResDto> getSchedulesByMemberId(Long memberId) {
+        // 회원 존재 여부 검증
+        if (!memberRepository.existsById(memberId)) {
+            throw new ServiceException("404-1", "해당 회원이 존재하지 않습니다.");
+        }
+
+        // 회원 ID로 여행 일정 조회
+        List<TripSchedule> schedules = tripScheduleRepository.findByMemberId(memberId);
+
+        // 여행 일정 존재 여부 검증
+        if(schedules.isEmpty()){
+            throw new ServiceException("404-3", "해당 회원의 여행 일정이 존재하지 않습니다.");
+        }
+
         return schedules.stream()
                 .map(TripScheduleResDto::new)
                 .collect(Collectors.toList());

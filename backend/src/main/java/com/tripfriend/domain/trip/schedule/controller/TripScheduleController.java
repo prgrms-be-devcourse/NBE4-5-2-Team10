@@ -40,4 +40,16 @@ public class TripScheduleController {
         );
 
     }
+
+    // 특정 회원의 여행 일정 조회
+    @GetMapping("/member/{memberId}")
+    public RsData<List<TripScheduleResDto>> getSchedulesByMember(@PathVariable Long memberId) {
+        List<TripScheduleResDto> schedules = scheduleService.getSchedulesByMemberId(memberId);
+        return new RsData<>(
+                "200-3",
+                "특정 회원의 일정을 성공적으로 조회했습니다.",
+                schedules
+        );
+    }
+
 }

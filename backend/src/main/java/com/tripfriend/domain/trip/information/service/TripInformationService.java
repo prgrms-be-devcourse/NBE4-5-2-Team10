@@ -5,7 +5,6 @@ import com.tripfriend.domain.place.place.repository.PlaceRepository;
 import com.tripfriend.domain.trip.information.dto.TripInformationReqDto;
 import com.tripfriend.domain.trip.information.entity.TripInformation;
 import com.tripfriend.domain.trip.information.repository.TripInformationRepository;
-import com.tripfriend.domain.trip.schedule.dto.TripScheduleReqDto;
 import com.tripfriend.domain.trip.schedule.entity.TripSchedule;
 import com.tripfriend.global.exception.ServiceException;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +21,7 @@ public class TripInformationService {
     private final TripInformationRepository tripInformationRepository;
     private final PlaceRepository placeRepository;
 
+    // 여행 정보 등록
     @Transactional
     public void addTripInformations(TripSchedule schedule, List<TripInformationReqDto> tripInfoReqs) {
 
