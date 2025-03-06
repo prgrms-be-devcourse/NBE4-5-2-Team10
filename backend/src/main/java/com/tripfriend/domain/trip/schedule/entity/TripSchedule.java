@@ -60,10 +60,19 @@ public class TripSchedule {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt; // 수정일
 
+    // 단일 TripInformation을 여행 일정에 추가
     public void addTripInfromation(TripInformation tripInformation){
         this.tripInformations.add(tripInformation);
         tripInformation.setTripSchedule(this); // 연관 관계 설정
     }
 
+    // 여행 일정에 여러 개의 TripInformation을 추가
+    public void addTripInformations(List<TripInformation> tripInformations) {
+        if(tripInformations != null){
+            for(TripInformation tripInformation : tripInformations){
+                addTripInfromation(tripInformation);
+            }
+        }
+    }
 }
 
