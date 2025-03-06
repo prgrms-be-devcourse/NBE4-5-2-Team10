@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/qna/answer")
 @RequiredArgsConstructor
@@ -13,10 +15,11 @@ public class AnswerController {
     private final AnswerService answerService;
 
     //답변 생성
-    public ResponseEntity<Void> createAnswer(
-            @RequestParam Long questionId,
-            @RequestParam Long memberId,
-            @RequestParam String content) {
+    @PostMapping
+    public ResponseEntity<Void> createAnswer(@RequestBody Map<String, Object> request) {
+        Long questionId = Long.valueOf(request.get("questionId").toString());
+        Long memberId = Long.valueOf(request.get("memberId").toString());
+        String content = request.get("content").toString();
         answerService.createAnswer(questionId, memberId, content);
         return ResponseEntity.ok().build();
 
