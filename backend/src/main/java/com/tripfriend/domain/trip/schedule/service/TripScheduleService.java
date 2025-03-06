@@ -59,7 +59,7 @@ public class TripScheduleService {
     public List<TripScheduleResDto> getAllSchedules() {
         List<TripSchedule> schedules = tripScheduleRepository.findAll();
 
-        if (schedules.isEmpty()){
+        if (schedules.isEmpty()) {
             throw new ServiceException("404-3", "여행 일정이 존재하지 않습니다.");
         }
 
@@ -80,12 +80,19 @@ public class TripScheduleService {
         List<TripSchedule> schedules = tripScheduleRepository.findByMemberId(memberId);
 
         // 여행 일정 존재 여부 검증
-        if(schedules.isEmpty()){
+        if (schedules.isEmpty()) {
             throw new ServiceException("404-3", "해당 회원의 여행 일정이 존재하지 않습니다.");
         }
 
         return schedules.stream()
                 .map(TripScheduleResDto::new)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void deleteSchedule(Long scheduleId) {
+        TripSchedule schedule = tripScheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new ServiceException("404-1", "해당 일정이 존재하지 않습니다."));
+        tripScheduleRepository.delete(schedule);
     }
 }

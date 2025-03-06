@@ -52,4 +52,14 @@ public class TripScheduleController {
         );
     }
 
+    // 일정 삭제
+    @DeleteMapping("/{scheduleId}")
+    public RsData<Void> deleteSchedule(@PathVariable Long scheduleId) {
+        scheduleService.deleteSchedule(scheduleId);
+        return new RsData<>(
+                "200-4",
+                "일정이 성공적으로 삭제되었습니다."
+        );
+    }
+
 }
