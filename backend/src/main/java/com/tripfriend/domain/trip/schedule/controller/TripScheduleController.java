@@ -6,10 +6,9 @@ import com.tripfriend.domain.trip.schedule.entity.TripSchedule;
 import com.tripfriend.domain.trip.schedule.service.TripScheduleService;
 import com.tripfriend.global.dto.RsData;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -21,7 +20,7 @@ public class TripScheduleController {
     // 일정 생성
     @PostMapping
     public RsData<TripScheduleResDto> createSchedule(@RequestBody TripScheduleReqDto reqBody) {
-        System.out.println("확인"+reqBody);
+        System.out.println("확인" + reqBody);
         TripScheduleResDto schedule = scheduleService.createSchedule(reqBody);
         return new RsData<>(
                 "200-1",
@@ -30,4 +29,15 @@ public class TripScheduleController {
         );
     }
 
+    // 전체 일정 조회
+    @GetMapping
+    public RsData<List<TripScheduleResDto>> getAllSchedules() {
+        List<TripScheduleResDto> schedules = scheduleService.getAllSchedules();
+        return new RsData<>(
+                "200-2",
+                "전체 일정을 성공적으로 조회했습니다.",
+                schedules
+        );
+
+    }
 }

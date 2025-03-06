@@ -49,8 +49,8 @@ public class TripScheduleService {
         // TripInformation 테이블에 여행지 정보 저장(N:M 관계)
         List<TripInformation> tripInformations = req.getTripInformations()
                 .stream()
-                .map(infoReq ->{
-                    if (infoReq.getPlaceId()==null){
+                .map(infoReq -> {
+                    if (infoReq.getPlaceId() == null) {
                         throw new ServiceException("400-2", "장소 ID가 누락 되었습니다.");
                     }
                     Place place = placeRepository.findById(infoReq.getPlaceId()).orElseThrow(
@@ -71,10 +71,19 @@ public class TripScheduleService {
 
         tripInformationRepository.saveAll(tripInformations);
 
-        for(TripInformation tripInformation : tripInformations){
+        for (TripInformation tripInformation : tripInformations) {
             newSchedule.addTripInfromation(tripInformation);
         }
 
         return new TripScheduleResDto(newSchedule);
+    }
+
+    // 전체 일정 조회
+    @Transactional
+    public List<TripScheduleResDto> getAllSchedules() {
+        List<TripSchedule> schedules = tripScheduleRepository.findAll();
+        return schedules.stream()
+                .map(TripScheduleResDto::new)
+                .collect(Collectors.toList());
     }
 }
