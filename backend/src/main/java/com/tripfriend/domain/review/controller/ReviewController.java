@@ -67,4 +67,17 @@ public class ReviewController {
         reviewService.deleteReview(reviewId, member);
         return ResponseEntity.noContent().build();
     }
+
+    // 리뷰 목록 조회 (정렬 및 검색)
+    @GetMapping
+    public ResponseEntity<List<ReviewResponseDto>> getReviews(
+            @RequestParam(defaultValue = "newest") String sort,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Long placeId,
+            @RequestParam(required = false) Long memberId) {
+
+        List<ReviewResponseDto> reviews = reviewService.getReviews(sort, keyword, placeId, memberId);
+        return ResponseEntity.ok(reviews);
+    }
+
 }
