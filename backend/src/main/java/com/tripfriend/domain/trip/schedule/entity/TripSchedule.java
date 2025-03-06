@@ -20,11 +20,12 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
+@Table(name = "trip_schedule")
 public class TripSchedule {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "tripScheduleId")
+    @Column(name = "trip_schedule_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -32,8 +33,9 @@ public class TripSchedule {
     private Member member;
 
     // 여행지 연결 테이블 리스트
-    @OneToMany(mappedBy = "tripSchedule", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "trip_schedule", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
+    @Builder.Default
     private List<TripInformation> tripInformations = new ArrayList<>();
 
     @Column(name = "title", nullable = false)
@@ -42,18 +44,20 @@ public class TripSchedule {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description; // 일정 설명
 
-    @Column(name = "startDate", nullable = false)
+    @Column(name = "start_date", nullable = false)
     private LocalDate startDate; // 시작일
 
-    @Column(name = "endDate", nullable = false)
+    @Column(name = "end_date", nullable = false)
     private LocalDate endDate; // 종료일
 
     @CreatedDate
     @Setter(AccessLevel.PRIVATE)
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt; // 생성일
 
     @LastModifiedDate
     @Setter(AccessLevel.PRIVATE)
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt; // 수정일
 
     public void addTripInfromation(TripInformation tripInformation){

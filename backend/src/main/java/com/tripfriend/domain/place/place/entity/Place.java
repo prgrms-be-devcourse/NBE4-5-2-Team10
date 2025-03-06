@@ -25,7 +25,7 @@ public class Place {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "placeId")
+    @Column(name = "place_id")
     private Long id;
 
     // 여행 스케줄 연결 테이블 리스트
@@ -47,10 +47,11 @@ public class Place {
     private Category category; // 카테고리
 
     @CreatedDate
-    @Column(updatable = false)
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt; // 생성일
 
     @LastModifiedDate
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt; // 수정일
 
     public void addTripInformation(TripInformation tripInformation) {

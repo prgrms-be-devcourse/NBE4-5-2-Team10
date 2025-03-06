@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "Trip_Information")
+@Table(name = "trip_information")
 public class TripInformation {
 
     @Id
