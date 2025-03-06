@@ -33,7 +33,7 @@ public class TripSchedule {
     private Member member;
 
     // 여행지 연결 테이블 리스트
-    @OneToMany(mappedBy = "trip_schedule", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "tripSchedule", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     @Builder.Default
     private List<TripInformation> tripInformations = new ArrayList<>();
