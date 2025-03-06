@@ -12,7 +12,7 @@ public class ReviewResponseDto {
     private Long reviewId;
     private String title;
     private String content;
-    private int rating;
+    private double rating;
     private Long memberId;
     private String memberName;
     private Long placeId;
