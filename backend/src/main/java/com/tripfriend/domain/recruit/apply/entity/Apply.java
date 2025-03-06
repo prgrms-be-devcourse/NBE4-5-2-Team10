@@ -24,7 +24,7 @@ public class Apply extends BaseEntity {
 //    @JoinColumn(name = "member_id", nullable = false)
 //    private Member member;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @ManyToOne(fetch = FetchType.LAZY) // , cascade = CascadeType.REMOVE
     @JoinColumn(name = "recruit_id", nullable = false)
     private Recruit recruit;
 

@@ -24,4 +24,9 @@ public class ApplyController {
         return applyService.create(recruitId, requestDto);
     }
 
+    @DeleteMapping("/{applyId}")
+    void deleteApply(@PathVariable("applyId") Long applyId) {
+        applyService.delete(applyId);
+    }
+
 }

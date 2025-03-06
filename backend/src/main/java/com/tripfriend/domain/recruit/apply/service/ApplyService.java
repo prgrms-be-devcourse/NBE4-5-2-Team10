@@ -32,4 +32,8 @@ public class ApplyService {
         System.out.println(requestDto);
         return new ApplyResponseDto(applyRepository.save(requestDto.toEntity()));
     }
+
+    public void delete(Long applyId) {
+        applyRepository.deleteById(applyId);
+    }
 }

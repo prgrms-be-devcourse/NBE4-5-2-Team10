@@ -29,7 +29,7 @@ public class Recruit extends BaseEntity {
 //    @JoinColumn(name = "member_id") // 컬럼이름?, 회원 탈퇴 시 게시글 남아있게 함
 //    private Member member;
 
-    @OneToMany(mappedBy = "recruit", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "recruit", cascade = CascadeType.REMOVE) // , orphanRemoval = true
     @OrderBy("applyId asc")
     // 글 삭제 시 댓글도 삭제, 리스트에서 제거된 댓글 자동 삭제
     private List<Apply> applies;
