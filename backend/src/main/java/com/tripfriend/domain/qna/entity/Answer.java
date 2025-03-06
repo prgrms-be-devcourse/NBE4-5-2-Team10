@@ -48,8 +48,4 @@ public class Answer {
         this.updatedAt = LocalDateTime.now();
     }
 
-//    public void update(String content) {
-//        this.content = content;
-//    }
-
 }
