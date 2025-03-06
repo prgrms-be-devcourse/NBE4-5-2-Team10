@@ -1,12 +1,15 @@
 package com.tripfriend.domain.member.member.controller;
 
+import com.tripfriend.domain.member.member.dto.*;
 import com.tripfriend.domain.member.member.dto.JoinRequestDto;
 import com.tripfriend.domain.member.member.dto.LoginRequestDto;
 import com.tripfriend.domain.member.member.dto.MemberResponseDto;
 import com.tripfriend.domain.member.member.dto.MemberUpdateRequestDto;
+import com.tripfriend.domain.member.member.service.MailService;
 import com.tripfriend.domain.member.member.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,10 +23,11 @@ import org.springframework.web.bind.annotation.*;
 public class MemberController {
 
     private final MemberService memberService;
+    private final MailService mailService;
 
     @Operation(summary = "회원가입")
     @PostMapping("/join")
-    public ResponseEntity<MemberResponseDto> join(@Valid @RequestBody JoinRequestDto joinRequestDto) {
+    public ResponseEntity<MemberResponseDto> join(@Valid @RequestBody JoinRequestDto joinRequestDto) throws MessagingException {
 
         MemberResponseDto savedMember = memberService.join(joinRequestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedMember);
@@ -51,5 +55,23 @@ public class MemberController {
 
         memberService.deleteMember(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "이메일 인증 코드 전송")
+    @GetMapping("/auth/verify-email")
+    public ResponseEntity<String> requestAuthCode(String email) throws MessagingException {
+
+        boolean isSend = mailService.sendAuthCode(email);
+        return isSend ? ResponseEntity.status(HttpStatus.OK).body("인증 코드가 전송되었습니다.") :
+                ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("인증 코드 전송이 실패하였습니다.");
+    }
+
+    @Operation(summary = "이메일 인증")
+    @PostMapping("/auth/email")
+    public ResponseEntity<String> validateAuthCode(@RequestBody @Valid EmailVerificationRequestDto emailVerificationRequestDto) {
+
+        boolean isSuccess = mailService.validationAuthCode(emailVerificationRequestDto);
+        return isSuccess ? ResponseEntity.status(HttpStatus.OK).body("이메일 인증에 성공하였습니다.") :
+                ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이메일 인증에 실패하였습니다.");
     }
 }
