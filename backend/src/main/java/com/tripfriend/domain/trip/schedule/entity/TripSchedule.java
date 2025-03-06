@@ -1,11 +1,13 @@
 package com.tripfriend.domain.trip.schedule.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tripfriend.domain.member.member.entity.Member;
 import com.tripfriend.domain.trip.information.entity.TripInformation;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -16,7 +18,8 @@ import java.util.List;
 @Getter
 @Builder
 @AllArgsConstructor
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EntityListeners(AuditingEntityListener.class)
 public class TripSchedule {
 
     @Id
@@ -30,6 +33,7 @@ public class TripSchedule {
 
     // 여행지 연결 테이블 리스트
     @OneToMany(mappedBy = "tripSchedule", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<TripInformation> tripInformations = new ArrayList<>();
 
     @Column(name = "title", nullable = false)
@@ -51,4 +55,11 @@ public class TripSchedule {
     @LastModifiedDate
     @Setter(AccessLevel.PRIVATE)
     private LocalDateTime updatedAt; // 수정일
+
+    public void addTripInfromation(TripInformation tripInformation){
+        this.tripInformations.add(tripInformation);
+        tripInformation.setTripSchedule(this); // 연관 관계 설정
+    }
+
 }
+

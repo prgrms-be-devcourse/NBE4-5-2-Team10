@@ -5,6 +5,7 @@ import com.tripfriend.domain.trip.schedule.entity.TripSchedule;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
@@ -22,14 +23,12 @@ public class TripInformation {
     private Long id; // 개별 Id 추가
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("tripId")
     @JoinColumn(name = "trip_schedule_id", nullable = false)
-    private TripSchedule tripScheduleId; // 여행일정Id - FK
+    private TripSchedule tripSchedule; // 여행일정Id - FK
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("placeId")
     @JoinColumn(name = "place_id", nullable = false)
-    private Place placeId; // 여행지Id - FK
+    private Place place; // 여행지Id - FK
 
     @Column(name = "visit_time",nullable = false)
     private LocalDateTime visitTime; // 방문시간
@@ -37,8 +36,11 @@ public class TripInformation {
     @Column(name = "duration",nullable = false)
     private Integer duration; // 방문기간(날짜 단위)
 
+    @Column(name = "transportation", nullable = false)
+    private Transportation transportation; // 교통 수단
+
     @Column(name = "cost")
-    private Long cost; // 여행 경비
+    private int cost; // 여행 경비
 
     @Column(name = "notes",columnDefinition = "TEXT")
     private String notes; // 메모
@@ -49,4 +51,12 @@ public class TripInformation {
     @Column(name = "is_visited", nullable = false)
     @ColumnDefault("false")
     private boolean isVisited; // 방문여부
+
+    public void setTripSchedule(TripSchedule tripSchedule){
+        this.tripSchedule = tripSchedule;
+    }
+
+    public void setPlace(Place place) {
+        this.place = place;
+    }
 }

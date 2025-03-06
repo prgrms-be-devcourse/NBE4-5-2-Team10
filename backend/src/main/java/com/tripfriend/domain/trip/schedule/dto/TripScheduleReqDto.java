@@ -1,19 +1,21 @@
 package com.tripfriend.domain.trip.schedule.dto;
 
+import com.tripfriend.domain.trip.information.dto.TripInformationReqDto;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
-@Builder
-public class TripScheduleDto {
-    private Long id;
+@NoArgsConstructor
+public class TripScheduleReqDto {
     private Long memberId;
     private String title;
     private String description;
     private LocalDate startDate;
     private LocalDate endDate;
-    private List<Long> placeIds; // 여러개의 여행지 ID
+    private List<TripInformationReqDto> tripInformations;
 }
