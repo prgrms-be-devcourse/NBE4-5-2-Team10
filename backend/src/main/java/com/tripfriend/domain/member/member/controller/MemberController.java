@@ -1,9 +1,6 @@
 package com.tripfriend.domain.member.member.controller;
 
-import com.tripfriend.domain.member.member.dto.JoinRequestDto;
-import com.tripfriend.domain.member.member.dto.LoginRequestDto;
-import com.tripfriend.domain.member.member.dto.MemberResponseDto;
-import com.tripfriend.domain.member.member.dto.MemberUpdateRequestDto;
+import com.tripfriend.domain.member.member.dto.*;
 import com.tripfriend.domain.member.member.service.MailService;
 import com.tripfriend.domain.member.member.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -56,17 +53,20 @@ public class MemberController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/email/auth/{email}")
-    public ResponseEntity<String> requestAuthCode(@PathVariable String email) throws MessagingException {
+    @Operation(summary = "이메일 인증 코드 전송")
+    @GetMapping("/auth/verify-email")
+    public ResponseEntity<String> requestAuthCode(String email) throws MessagingException {
+
         boolean isSend = mailService.sendAuthCode(email);
         return isSend ? ResponseEntity.status(HttpStatus.OK).body("인증 코드가 전송되었습니다.") :
                 ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("인증 코드 전송이 실패하였습니다.");
     }
 
-    @PostMapping("/email/auth")
-    public ResponseEntity<String> validateAuthcode(@RequestParam(name = "email")String email,
-                                                   @RequestParam(name = "auth")String authCode) {
-        boolean isSuccess = mailService.validationAuthCode(email, authCode);
+    @Operation(summary = "이메일 인증")
+    @PostMapping("/auth/email")
+    public ResponseEntity<String> validateAuthCode(@RequestBody @Valid EmailVerificationRequestDto emailVerificationRequestDto) {
+
+        boolean isSuccess = mailService.validationAuthCode(emailVerificationRequestDto);
         return isSuccess ? ResponseEntity.status(HttpStatus.OK).body("이메일 인증에 성공하였습니다.") :
                 ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이메일 인증에 실패하였습니다.");
     }

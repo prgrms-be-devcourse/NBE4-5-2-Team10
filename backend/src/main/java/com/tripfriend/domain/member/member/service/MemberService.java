@@ -30,7 +30,7 @@ public class MemberService {
         if (memberRepository.existsByUsername(joinRequestDto.getUsername())) {
             throw new RuntimeException("이미 사용 중인 아이디입니다.");
         }
-        if (memberRepository.existsByEmail(email)) {
+        if (memberRepository.existsByEmail(joinRequestDto.getEmail())) {
             throw new RuntimeException("이미 사용 중인 이메일입니다.");
         }
         if (memberRepository.existsByNickname(joinRequestDto.getNickname())) {
@@ -57,8 +57,7 @@ public class MemberService {
         Member member = memberRepository.findByUsername(loginRequestDto.getUsername())
                 .orElseThrow(() -> new RuntimeException("존재하지 않는 회원입니다."));
 
-        // 비밀번호 검증
-        if (!member.getPassword().equals(loginRequestDto.getPassword())) {
+        if (!passwordEncoder.matches(loginRequestDto.getPassword(), member.getPassword())) {
             throw new RuntimeException("비밀번호가 일치하지 않습니다.");
         }
 

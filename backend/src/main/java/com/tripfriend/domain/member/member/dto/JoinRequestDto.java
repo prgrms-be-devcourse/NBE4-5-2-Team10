@@ -43,8 +43,6 @@ public class JoinRequestDto {
 
     private String aboutMe;
 
-    private boolean verified; // 이메일 인증 여부
-
     public Member toEntity() {
         return Member.builder()
                 .username(username)
@@ -58,7 +56,6 @@ public class JoinRequestDto {
                 .aboutMe(aboutMe)
                 .rating(0.0)
                 .authority("USER")
-                .verified(false)
                 .build();
     }
 }

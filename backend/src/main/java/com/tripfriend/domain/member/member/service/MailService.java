@@ -1,5 +1,6 @@
 package com.tripfriend.domain.member.member.service;
 
+import com.tripfriend.domain.member.member.dto.EmailVerificationRequestDto;
 import com.tripfriend.domain.member.member.entity.EmailAuth;
 import com.tripfriend.domain.member.member.entity.Member;
 import com.tripfriend.domain.member.member.repository.EmailAuthRepository;
@@ -98,7 +99,11 @@ public class MailService {
         return false;
     }
 
-    public boolean validationAuthCode(String email, String authCode) {
+    public boolean validationAuthCode(EmailVerificationRequestDto emailVerificationRequestDto) {
+
+        String email = emailVerificationRequestDto.getEmail();
+        String authCode = emailVerificationRequestDto.getAuthCode();
+
         // 이메일로 인증 정보를 조회
         EmailAuth emailAuth = emailAuthRepository.findByEmail(email).orElse(null);
 
