@@ -1,4 +1,4 @@
-package com.tripfriend.global;
+package com.tripfriend.global.Init;
 
 import com.tripfriend.domain.member.member.entity.AgeRange;
 import com.tripfriend.domain.member.member.entity.Gender;
@@ -15,7 +15,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor
