@@ -26,7 +26,7 @@ public class Review {
     private String content;
 
     @Column(nullable = false)
-    private int rating;
+    private double rating;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
@@ -41,7 +41,7 @@ public class Review {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    public Review(String title, String content, int rating, Member member, Long placeId) {
+    public Review(String title, String content, double rating, Member member, Long placeId) {
         this.title = title;
         this.content = content;
         this.rating = rating;
@@ -51,7 +51,7 @@ public class Review {
         this.updatedAt = this.createdAt;
     }
 
-    public void update(String title, String content, int rating) {
+    public void update(String title, String content, double rating) {
         this.title = title;
         this.content = content;
         this.rating = rating;
