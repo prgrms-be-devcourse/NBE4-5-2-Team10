@@ -29,7 +29,7 @@ public class ApplyService {
     @Transactional
     public ApplyResponseDto create(Long recruitId, ApplyCreatRequestDto requestDto) {
         requestDto.setRecruit(recruitRepository.findById(recruitId).orElseThrow(() -> new EntityNotFoundException("recruit not found with id" + recruitId)));
-        System.out.println(requestDto);
+        // System.out.println(requestDto);
         return new ApplyResponseDto(applyRepository.save(requestDto.toEntity()));
     }
 
