@@ -1,23 +1,22 @@
-package com.tripfriend.global.Init;
+package com.tripfriend.global.init;
 
-import com.tripfriend.domain.member.member.entity.AgeRange;
-import com.tripfriend.domain.member.member.entity.Gender;
-import com.tripfriend.domain.member.member.entity.Member;
-import com.tripfriend.domain.member.member.entity.TravelStyle;
+import com.tripfriend.domain.member.member.entity.*;
 import com.tripfriend.domain.member.member.repository.MemberRepository;
 import com.tripfriend.domain.recruit.apply.entity.Apply;
 import com.tripfriend.domain.recruit.apply.repository.ApplyRepository;
 import com.tripfriend.domain.recruit.recruit.entity.Recruit;
 import com.tripfriend.domain.recruit.recruit.repository.RecruitRepository;
-import jakarta.persistence.*;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 
 @Component
 @RequiredArgsConstructor
+@Transactional
 public class BaseInitData implements CommandLineRunner {
 
     private final MemberRepository memberRepository;
@@ -26,11 +25,14 @@ public class BaseInitData implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        initMembers(); // 회원 등록
+        initRecruits(); // 동행글 등록
+        initApplies(); // 동행댓글 등록
+    }
 
-        // 이미 데이터가 존재하는지 확인
+    // 회원 등록
+    private void initMembers() {
         if (memberRepository.count() == 0) {
-
-            // 회원 추가
             Member user = Member.builder()
                     .username("user")
                     .email("user@example.com")
@@ -46,7 +48,6 @@ public class BaseInitData implements CommandLineRunner {
                     .build();
             memberRepository.save(user);
 
-            // 관리자 추가
             Member admin = Member.builder()
                     .username("admin")
                     .email("admin@example.com")
@@ -63,14 +64,14 @@ public class BaseInitData implements CommandLineRunner {
             memberRepository.save(admin);
 
             System.out.println("회원 테스트 데이터가 등록되었습니다.");
-        } else {
-            System.out.println("이미 회원 테스트 데이터가 있습니다.");
+        }else {
+            System.out.println("이미 회원 데이터가 존재합니다.");
         }
+    }
 
-        // 이미 데이터가 존재하는지 확인
+    // 동행글 등록
+    private void initRecruits() {
         if (recruitRepository.count() == 0) {
-
-            // 동행모집(게시글) 추가
             Recruit recruit1 = Recruit.builder()
                     .title("동행 구해요")
                     .content("재밌게 노실 분들 모여주세요")
@@ -100,14 +101,14 @@ public class BaseInitData implements CommandLineRunner {
             recruitRepository.save(recruit2);
 
             System.out.println("동행모집(게시글) 테스트 데이터가 등록되었습니다.");
-        } else {
-            System.out.println("이미 동행모집(게시글) 테스트 데이터가 있습니다.");
+        }else {
+            System.out.println("이미 동행모집(게시글) 데이터가 존재합니다.");
         }
+    }
 
-        // 이미 데이터가 존재하는지 확인
+    // 동행 요청 등록
+    private void initApplies() {
         if (applyRepository.count() == 0) {
-
-            // 동행요청(댓글) 추가
             Apply apply1 = Apply.builder()
                     .content("저 즐겁게 놀 자신 있습니다! 1번 글의 1번 댓글")
                     .recruit(recruitRepository.findById(1L).orElseThrow(EntityNotFoundException::new))
@@ -133,8 +134,12 @@ public class BaseInitData implements CommandLineRunner {
             applyRepository.save(apply4);
 
             System.out.println("동행요청(댓글) 테스트 데이터가 등록되었습니다.");
-        } else {
-            System.out.println("이미 동행요청(댓글) 테스트 데이터가 있습니다.");
+        }else {
+            System.out.println("이미 동행 요청(댓글) 데이터가 존재합니다.");
         }
+    }
+
+    private void initPlace(){
+
     }
 }
