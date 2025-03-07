@@ -33,7 +33,7 @@ public class RecruitService {
 
     @Transactional
     public RecruitDetailResponseDto create(RecruitCreateRequestDto recruitCreateRequestDto) {
-        Member member = getMemberWithId(1L);
+        Member member = memberRepository.findById(recruitCreateRequestDto.getMemberId()).orElseThrow(() -> new EntityNotFoundException("member not foud with id : " + recruitCreateRequestDto.getMemberId()));
         Place place = placeRepository.findById(recruitCreateRequestDto.getPlaceId()).orElseThrow(() -> new EntityNotFoundException("place not foud with id : " + recruitCreateRequestDto.getPlaceId()));
 
         return new RecruitDetailResponseDto(recruitRepository.save(recruitCreateRequestDto.toEntity(member, place)));
@@ -56,9 +56,5 @@ public class RecruitService {
 
     public void delete(Long recruitId) {
         recruitRepository.deleteById(recruitId);
-    }
-
-    private Member getMemberWithId(Long memberId){
-        return memberRepository.findById(memberId).orElseThrow(() -> new EntityNotFoundException("member not foud with id : " + memberId));
     }
 }

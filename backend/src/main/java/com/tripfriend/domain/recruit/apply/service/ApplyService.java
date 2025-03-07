@@ -32,16 +32,12 @@ public class ApplyService {
 
     @Transactional
     public ApplyResponseDto create(Long recruitId, ApplyCreateRequestDto requestDto) {
-        Member member = getMemberWithId(2L);
+        Member member = memberRepository.findById(requestDto.getMemberId()).orElseThrow(() -> new EntityNotFoundException("member not foud with id : " + requestDto.getMemberId()));
         Recruit recruit = recruitRepository.findById(recruitId).orElseThrow(() -> new EntityNotFoundException("recruit not found with id" + recruitId));
         return new ApplyResponseDto(applyRepository.save(requestDto.toEntity(member, recruit)));
     }
 
     public void delete(Long applyId) {
         applyRepository.deleteById(applyId);
-    }
-
-    private Member getMemberWithId(Long memberId){
-        return memberRepository.findById(memberId).orElseThrow(() -> new EntityNotFoundException("member not foud with id : " + memberId));
     }
 }
