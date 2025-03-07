@@ -1,6 +1,9 @@
 package com.tripfriend.domain.recruit.apply.service;
 
-import com.tripfriend.domain.recruit.apply.dto.ApplyCreatRequestDto;
+import com.tripfriend.domain.member.member.entity.Member;
+import com.tripfriend.domain.member.member.repository.MemberRepository;
+import com.tripfriend.domain.recruit.apply.dto.ApplyCreateRequestDto;
+import com.tripfriend.domain.recruit.apply.dto.ApplyCreateRequestDto;
 import com.tripfriend.domain.recruit.apply.dto.ApplyResponseDto;
 import com.tripfriend.domain.recruit.apply.repository.ApplyRepository;
 import com.tripfriend.domain.recruit.recruit.entity.Recruit;
@@ -17,6 +20,7 @@ import java.util.List;
 public class ApplyService {
     private final ApplyRepository applyRepository;
     private final RecruitRepository recruitRepository;
+    private final MemberRepository memberRepository;
 
     @Transactional
     public List<ApplyResponseDto> findByRecruitId(Long recruitId) {
@@ -27,13 +31,17 @@ public class ApplyService {
     }
 
     @Transactional
-    public ApplyResponseDto create(Long recruitId, ApplyCreatRequestDto requestDto) {
-        requestDto.setRecruit(recruitRepository.findById(recruitId).orElseThrow(() -> new EntityNotFoundException("recruit not found with id" + recruitId)));
-        // System.out.println(requestDto);
-        return new ApplyResponseDto(applyRepository.save(requestDto.toEntity()));
+    public ApplyResponseDto create(Long recruitId, ApplyCreateRequestDto requestDto) {
+        Member member = getMemberWithId(2L);
+        Recruit recruit = recruitRepository.findById(recruitId).orElseThrow(() -> new EntityNotFoundException("recruit not found with id" + recruitId));
+        return new ApplyResponseDto(applyRepository.save(requestDto.toEntity(member, recruit)));
     }
 
     public void delete(Long applyId) {
         applyRepository.deleteById(applyId);
+    }
+
+    private Member getMemberWithId(Long memberId){
+        return memberRepository.findById(memberId).orElseThrow(() -> new EntityNotFoundException("member not foud with id : " + memberId));
     }
 }

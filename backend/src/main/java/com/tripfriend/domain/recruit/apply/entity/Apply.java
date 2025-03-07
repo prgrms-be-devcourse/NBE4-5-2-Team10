@@ -20,9 +20,9 @@ public class Apply extends BaseEntity {
     @Column(name = "apply_id")
     private Long applyId;
 
-//    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-//    @JoinColumn(name = "member_id", nullable = false)
-//    private Member member;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY) // , cascade = CascadeType.REMOVE
     @JoinColumn(name = "recruit_id", nullable = false)

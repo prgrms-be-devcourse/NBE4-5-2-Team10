@@ -1,5 +1,9 @@
 package com.tripfriend.domain.recruit.recruit.service;
 
+import com.tripfriend.domain.member.member.entity.Member;
+import com.tripfriend.domain.member.member.repository.MemberRepository;
+import com.tripfriend.domain.place.place.entity.Place;
+import com.tripfriend.domain.place.place.repository.PlaceRepository;
 import com.tripfriend.domain.recruit.recruit.dto.RecruitCreateRequestDto;
 import com.tripfriend.domain.recruit.recruit.dto.RecruitDetailResponseDto;
 import com.tripfriend.domain.recruit.recruit.dto.RecruitListResponseDto;
@@ -18,6 +22,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class RecruitService {
     private final RecruitRepository recruitRepository;
+    private final MemberRepository memberRepository;
+    private final PlaceRepository placeRepository;
 
     @Transactional
     public RecruitDetailResponseDto findById(Long id) {
@@ -27,7 +33,10 @@ public class RecruitService {
 
     @Transactional
     public RecruitDetailResponseDto create(RecruitCreateRequestDto recruitCreateRequestDto) {
-        return new RecruitDetailResponseDto(recruitRepository.save(recruitCreateRequestDto.toEntity()));
+        Member member = getMemberWithId(1L);
+        Place place = placeRepository.findById(recruitCreateRequestDto.getPlaceId()).orElseThrow(() -> new EntityNotFoundException("place not foud with id : " + recruitCreateRequestDto.getPlaceId()));
+
+        return new RecruitDetailResponseDto(recruitRepository.save(recruitCreateRequestDto.toEntity(member, place)));
     }
 
     @Transactional
@@ -38,14 +47,18 @@ public class RecruitService {
     }
 
     @Transactional
-    public RecruitDetailResponseDto update(RecruitUpdateRequestDto recruitUpdateRequestDto) {
-        Long recruitId = recruitUpdateRequestDto.getRecruitId();
+    public RecruitDetailResponseDto update(Long recruitId, RecruitCreateRequestDto requestDto) {
         Recruit recruit = recruitRepository.findById(recruitId).orElseThrow(() -> new EntityNotFoundException("recruit not foud with id : " + recruitId));
-        recruit.update(recruitUpdateRequestDto);
+        Place place = placeRepository.findById(requestDto.getPlaceId()).orElseThrow(() -> new EntityNotFoundException("place not foud with id : " + requestDto.getPlaceId()));
+        recruit.update(requestDto, place);
         return new RecruitDetailResponseDto(recruit); // recruitRepository.save(recruit) 불필요!
     }
 
     public void delete(Long recruitId) {
         recruitRepository.deleteById(recruitId);
+    }
+
+    private Member getMemberWithId(Long memberId){
+        return memberRepository.findById(memberId).orElseThrow(() -> new EntityNotFoundException("member not foud with id : " + memberId));
     }
 }

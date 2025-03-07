@@ -1,6 +1,6 @@
 package com.tripfriend.domain.recruit.apply.controller;
 
-import com.tripfriend.domain.recruit.apply.dto.ApplyCreatRequestDto;
+import com.tripfriend.domain.recruit.apply.dto.ApplyCreateRequestDto;
 import com.tripfriend.domain.recruit.apply.dto.ApplyResponseDto;
 import com.tripfriend.domain.recruit.apply.service.ApplyService;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ public class ApplyController {
     }
 
     @PostMapping
-    ApplyResponseDto createApply(@PathVariable("recruitId") Long recruitId, @RequestBody ApplyCreatRequestDto requestDto) {
+    ApplyResponseDto createApply(@PathVariable("recruitId") Long recruitId, @RequestBody ApplyCreateRequestDto requestDto) {
         return applyService.create(recruitId, requestDto);
     }
 

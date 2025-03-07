@@ -19,9 +19,9 @@ import java.util.List;
 @NoArgsConstructor // serialization 시 필요
 @AllArgsConstructor // builder에 필요
 public class RecruitCreateRequestDto {
-//    private Member member;
+//    private Long memberId;
 //    private List<Apply> applies;
-//    private Place place;
+    private Long placeId;
     private String title;
     private String content;
     private boolean isClosed;
@@ -33,11 +33,11 @@ public class RecruitCreateRequestDto {
     private Integer budget = 0;
     private Integer groupSize = 2;
 
-    public Recruit toEntity(){
+    public Recruit toEntity(Member member, Place place){
         return Recruit.builder()
-//                .member(member)
+                .member(member)
 //                .applies(applies)
-//                .place(place)
+                .place(place)
                 .title(title)
                 .content(content)
                 .isClosed(isClosed)
