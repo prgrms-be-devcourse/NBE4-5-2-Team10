@@ -1,6 +1,7 @@
 package com.tripfriend.domain.member.member.controller;
 
 import com.tripfriend.domain.member.member.dto.*;
+import com.tripfriend.domain.member.member.entity.Member;
 import com.tripfriend.domain.member.member.service.AuthService;
 import com.tripfriend.domain.member.member.service.MailService;
 import com.tripfriend.domain.member.member.service.MemberService;
@@ -85,5 +86,17 @@ public class MemberController {
         boolean isSuccess = mailService.validationAuthCode(emailVerificationRequestDto);
         return isSuccess ? ResponseEntity.status(HttpStatus.OK).body("이메일 인증에 성공하였습니다.") :
                 ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이메일 인증에 실패하였습니다.");
+    }
+
+    @Operation(summary = "마이페이지")
+    @GetMapping("/mypage")
+    public ResponseEntity<MemberResponseDto> getMyPage(@RequestHeader(value = "Authorization", required = false) String token) {
+
+        // 토큰에서 현재 로그인한 회원 정보 추출
+        Member loggedInMember = authService.getLoggedInMember(token);
+
+        // 사용자 페이지 정보 가져오기
+        MemberResponseDto response = memberService.getMyPage(loggedInMember.getId(), loggedInMember.getUsername());
+        return ResponseEntity.ok(response);
     }
 }

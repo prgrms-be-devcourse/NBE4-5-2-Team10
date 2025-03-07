@@ -2,6 +2,7 @@ package com.tripfriend.domain.member.member.service;
 
 import com.tripfriend.domain.member.member.dto.AuthResponseDto;
 import com.tripfriend.domain.member.member.dto.LoginRequestDto;
+import com.tripfriend.domain.member.member.dto.TokenInfoDto;
 import com.tripfriend.domain.member.member.entity.Member;
 import com.tripfriend.domain.member.member.repository.MemberRepository;
 import com.tripfriend.global.util.JwtUtil;
@@ -25,7 +26,7 @@ public class AuthService {
 
         // 회원 인증 처리
         Member member = memberRepository.findByUsername(loginRequestDto.getUsername())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                .orElseThrow(() -> new UsernameNotFoundException("존재하지 않는 회원입니다."));
 
         if (!passwordEncoder.matches(loginRequestDto.getPassword(), member.getPassword())) {
             throw new RuntimeException("비밀번호를 확인하세요.");
@@ -72,6 +73,32 @@ public class AuthService {
         addCookie(response, "refreshToken", newRefreshToken, 60 * 60 * 24 * 7); // 7일
 
         return newAccessToken;
+    }
+
+    // 로그인된 사용자의 정보를 반환하는 메서드
+    public Member getLoggedInMember(String token) {
+
+        // 토큰에서 "Bearer "를 제거
+        String extractedToken = token.replace("Bearer ", "");
+
+        // 토큰에서 사용자 정보 추출
+        TokenInfoDto tokenInfo = extractTokenInfo(extractedToken);
+        return memberRepository.findByUsername(tokenInfo.getUsername())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    }
+
+    // 토큰에서 사용자 정보를 추출하는 메서드
+    public TokenInfoDto extractTokenInfo(String token) {
+
+        if (jwtUtil.isTokenExpired(token)) {
+            throw new RuntimeException("만료된 토큰입니다.");
+        }
+
+        String username = jwtUtil.extractUsername(token);
+        String authority = jwtUtil.extractAuthority(token);
+        boolean isVerified = jwtUtil.extractVerified(token);
+
+        return new TokenInfoDto(username, authority, isVerified);
     }
 
     // 쿠키 생성 메서드 (만료 시간 설정)

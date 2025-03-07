@@ -7,9 +7,13 @@ import com.tripfriend.domain.member.member.entity.Member;
 import com.tripfriend.domain.member.member.repository.MemberRepository;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -94,6 +98,7 @@ public class MemberService {
             member.setAboutMe(memberUpdateRequestDto.getAboutMe());
         }
 
+        member.setUpdatedAt(LocalDateTime.now());
         Member updatedMember = memberRepository.save(member);
 
         return MemberResponseDto.fromEntity(updatedMember);
@@ -107,5 +112,18 @@ public class MemberService {
         }
 
         memberRepository.deleteById(id);
+    }
+
+    public MemberResponseDto getMyPage(Long id, String username) {
+
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with ID: " + id));
+
+        // 보안 강화: 본인의 정보만 조회할 수 있도록 체크
+        if (!member.getUsername().equals(username)) {
+            throw new AccessDeniedException("You are not authorized to view this profile.");
+        }
+
+        return MemberResponseDto.fromEntity(member);
     }
 }
