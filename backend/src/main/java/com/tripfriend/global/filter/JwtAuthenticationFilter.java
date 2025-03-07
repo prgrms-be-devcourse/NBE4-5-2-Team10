@@ -1,5 +1,6 @@
 package com.tripfriend.global.filter;
 
+import com.tripfriend.global.security.CustomUserDetailsService;
 import com.tripfriend.global.util.JwtUtil;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -8,25 +9,22 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.security.authentication.AuthenticationManager;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
 
+@RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-    private final AuthenticationManager authenticationManager;
-
-    public JwtAuthenticationFilter(JwtUtil jwtUtil, AuthenticationManager authenticationManager) {
-        this.jwtUtil = jwtUtil;
-        this.authenticationManager = authenticationManager;
-    }
+    private final CustomUserDetailsService userDetailsService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -42,11 +40,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 Boolean isVerified = claims.get("verified", Boolean.class);  // verified 필드 추출
 
                 if (username != null && Boolean.TRUE.equals(isVerified)) {
+                    // ✅ UserDetails 객체 생성 (DB에서 사용자 정보 조회)
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
                     List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + authority));
 
+                    // ✅ UserDetails 기반으로 Authentication 객체 생성
                     UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(username, null, authorities);
+                            new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
 
+                    // ✅ SecurityContextHolder에 인증 정보 설정
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 } else {
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "이메일 인증이 완료되지 않았습니다.");
