@@ -3,6 +3,7 @@ package com.tripfriend.domain.trip.schedule.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tripfriend.domain.member.member.entity.Member;
 import com.tripfriend.domain.trip.information.entity.TripInformation;
+import com.tripfriend.domain.trip.schedule.dto.TripScheduleUpdateReqDto;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -60,10 +61,28 @@ public class TripSchedule {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt; // 수정일
 
+    // 단일 TripInformation을 여행 일정에 추가
     public void addTripInfromation(TripInformation tripInformation){
         this.tripInformations.add(tripInformation);
         tripInformation.setTripSchedule(this); // 연관 관계 설정
     }
 
+    // 여행 일정에 여러 개의 TripInformation을 추가
+    public void addTripInformations(List<TripInformation> tripInformations) {
+        if(tripInformations != null){
+            for(TripInformation tripInformation : tripInformations){
+                addTripInfromation(tripInformation);
+            }
+        }
+    }
+
+    // 여행 일정 정보 수정 메서드
+    public void updateSchedule(TripScheduleUpdateReqDto scheduleUpdate) {
+        this.title = scheduleUpdate.getTitle();
+        this.description = scheduleUpdate.getDescription();
+        this.startDate = scheduleUpdate.getStartDate();
+        this.endDate = scheduleUpdate.getEndDate();
+        this.updatedAt = LocalDateTime.now(); // 수정 시간 업데이트
+    }
 }
 
