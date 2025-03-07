@@ -9,6 +9,7 @@ import com.tripfriend.domain.trip.information.repository.TripInformationReposito
 import com.tripfriend.domain.trip.information.service.TripInformationService;
 import com.tripfriend.domain.trip.schedule.dto.TripScheduleReqDto;
 import com.tripfriend.domain.trip.schedule.dto.TripScheduleResDto;
+import com.tripfriend.domain.trip.schedule.dto.TripScheduleUpdateReqDto;
 import com.tripfriend.domain.trip.schedule.entity.TripSchedule;
 import com.tripfriend.domain.trip.schedule.repository.TripScheduleRepository;
 import com.tripfriend.global.exception.ServiceException;
@@ -89,10 +90,30 @@ public class TripScheduleService {
                 .collect(Collectors.toList());
     }
 
+    // 여행 일정 삭제
     @Transactional
     public void deleteSchedule(Long scheduleId) {
         TripSchedule schedule = tripScheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new ServiceException("404-1", "해당 일정이 존재하지 않습니다."));
         tripScheduleRepository.delete(schedule);
+    }
+
+    /**
+     * 특정 여행 일정을 수정하는 메서드
+     *
+     * @param scheduleId 수정할 여행 일정의 ID
+     * @param req        일정 수정 요청 DTO
+     * @return 수정된 TripSchedule 객체
+     */
+    @Transactional
+    public TripSchedule updateSchedule(Long scheduleId, TripScheduleUpdateReqDto req) {
+        // 여행 일정이 존재하는지 확인
+        TripSchedule schedule = tripScheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new ServiceException("404-1", "해당 일정이 존재하지 않습니다."));
+
+        // 일정 정보 업데이트
+        schedule.update(req.getTitle(), req.getDescription(), req.getStartDate(), req.getEndDate());
+
+        return schedule;
     }
 }

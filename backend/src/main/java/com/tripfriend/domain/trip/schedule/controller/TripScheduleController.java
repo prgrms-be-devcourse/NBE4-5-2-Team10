@@ -2,10 +2,13 @@ package com.tripfriend.domain.trip.schedule.controller;
 
 import com.tripfriend.domain.trip.schedule.dto.TripScheduleReqDto;
 import com.tripfriend.domain.trip.schedule.dto.TripScheduleResDto;
+import com.tripfriend.domain.trip.schedule.dto.TripScheduleUpdateReqDto;
 import com.tripfriend.domain.trip.schedule.entity.TripSchedule;
 import com.tripfriend.domain.trip.schedule.service.TripScheduleService;
 import com.tripfriend.global.dto.RsData;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -52,13 +55,28 @@ public class TripScheduleController {
         );
     }
 
-    // 일정 삭제
+    // 여행 일정 삭제
     @DeleteMapping("/{scheduleId}")
     public RsData<Void> deleteSchedule(@PathVariable Long scheduleId) {
         scheduleService.deleteSchedule(scheduleId);
         return new RsData<>(
                 "200-4",
                 "일정이 성공적으로 삭제되었습니다."
+        );
+    }
+
+
+    // 특정 여행 일정을 수정
+    @PutMapping("/{scheduleId}")
+    public RsData<TripSchedule> updateSchedule(
+            @PathVariable Long scheduleId,
+            @RequestBody @Valid TripScheduleUpdateReqDto req) {
+
+        TripSchedule updatedSchedule = scheduleService.updateSchedule(scheduleId, req);
+        return new RsData<>(
+                "200-5",
+                "일정이 성공적으로 수정되었습니다.",
+                updatedSchedule
         );
     }
 

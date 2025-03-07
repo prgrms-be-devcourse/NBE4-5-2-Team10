@@ -3,6 +3,7 @@ package com.tripfriend.domain.trip.information.service;
 import com.tripfriend.domain.place.place.entity.Place;
 import com.tripfriend.domain.place.place.repository.PlaceRepository;
 import com.tripfriend.domain.trip.information.dto.TripInformationReqDto;
+import com.tripfriend.domain.trip.information.dto.TripInformationUpdateReqDto;
 import com.tripfriend.domain.trip.information.entity.TripInformation;
 import com.tripfriend.domain.trip.information.repository.TripInformationRepository;
 import com.tripfriend.domain.trip.schedule.entity.TripSchedule;
@@ -61,5 +62,35 @@ public class TripInformationService {
 
         // 여행 일정에 TripInformation 추가
         schedule.addTripInformations(tripInformations);
+    }
+
+    /**
+     * 특정 여행 정보를 수정하는 메서드
+     *
+     * @param tripInfoId 수정할 여행 정보 ID
+     * @param req        여행 정보 수정 요청 DTO
+     * @return 수정된 TripInformation 객체
+     */
+    @Transactional
+    public TripInformation updateTripInformation(Long tripInfoId, TripInformationUpdateReqDto req) {
+        // 여행 정보가 존재하는지 확인
+        TripInformation tripInformation = tripInformationRepository.findById(tripInfoId)
+                .orElseThrow(() -> new ServiceException("404-2", "해당 여행 정보가 존재하지 않습니다."));
+
+        // 요청된 장소가 존재하는지 확인
+        Place place = placeRepository.findById(req.getPlaceId())
+                .orElseThrow(() -> new ServiceException("404-3", "해당 장소가 존재하지 않습니다."));
+
+        // 여행 정보 업데이트
+        tripInformation.update(
+                req.getVisitTime(),
+                req.getDuration(),
+                req.getTransportation(),
+                req.getCost(),
+                req.getNotes(),
+                place
+        );
+
+        return tripInformation;
     }
 }

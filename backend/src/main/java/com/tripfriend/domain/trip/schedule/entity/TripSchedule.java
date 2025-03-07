@@ -74,5 +74,14 @@ public class TripSchedule {
             }
         }
     }
+
+    // 여행 일정 정보 수정 메서드
+    public void update(String title, String description, LocalDate startDate, LocalDate endDate) {
+        this.title = title;
+        this.description = description;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.updatedAt = LocalDateTime.now(); // 수정 시간 업데이트
+    }
 }
 
