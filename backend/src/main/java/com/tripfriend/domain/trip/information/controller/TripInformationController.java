@@ -1,5 +1,6 @@
 package com.tripfriend.domain.trip.information.controller;
 
+import com.tripfriend.domain.trip.information.dto.TripInformationResDto;
 import com.tripfriend.domain.trip.information.dto.TripInformationUpdateReqDto;
 import com.tripfriend.domain.trip.information.entity.TripInformation;
 import com.tripfriend.domain.trip.information.service.TripInformationService;
@@ -19,15 +20,16 @@ public class TripInformationController {
 
     // 특정 여행 정보를 수정
     @PutMapping("/{tripInfoId}")
-    public RsData<TripInformation> updateTripInformation(
+    public RsData<TripInformationResDto> updateTripInformation(
             @PathVariable Long tripInfoId,
             @RequestBody @Valid TripInformationUpdateReqDto request) {
 
         TripInformation updatedTripInfo = tripInformationService.updateTripInformation(tripInfoId, request);
+        TripInformationResDto resDto = new TripInformationResDto(updatedTripInfo);// 반환 DTO
         return new RsData<>(
                 "200-1",
                 "여행 정보가 성공적으로 수정되었습니다.",
-                updatedTripInfo
+                resDto
         );
     }
 

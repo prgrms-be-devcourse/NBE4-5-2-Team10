@@ -69,6 +69,14 @@ public class TripScheduleService {
                 .collect(Collectors.toList());
     }
 
+    // 회원 이름 조회
+    @Transactional(readOnly = true)
+    public String getMemberName(Long memberId) {
+        return memberRepository.findById(memberId)
+                .map(Member::getUsername)
+                .orElseThrow(() -> new ServiceException("404-1", "해당 회원이 존재하지 않습니다."));
+    }
+
     // 특정 회원의 여행 일정 조회
     @Transactional(readOnly = true)
     public List<TripScheduleResDto> getSchedulesByMemberId(Long memberId) {
