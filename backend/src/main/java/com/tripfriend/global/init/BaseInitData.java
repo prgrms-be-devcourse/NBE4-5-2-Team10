@@ -1,10 +1,18 @@
 package com.tripfriend.global.init;
 
+import com.tripfriend.domain.blacklist.entity.Blacklist;
+import com.tripfriend.domain.blacklist.repository.BlacklistRepository;
 import com.tripfriend.domain.member.member.entity.*;
 import com.tripfriend.domain.member.member.repository.MemberRepository;
+import com.tripfriend.domain.notice.entity.Notice;
+import com.tripfriend.domain.notice.repository.NoticeRepository;
 import com.tripfriend.domain.place.place.entity.Category;
 import com.tripfriend.domain.place.place.entity.Place;
 import com.tripfriend.domain.place.place.repository.PlaceRepository;
+import com.tripfriend.domain.qna.entity.Answer;
+import com.tripfriend.domain.qna.entity.Question;
+import com.tripfriend.domain.qna.repository.AnswerRepository;
+import com.tripfriend.domain.qna.repository.QuestionRepository;
 import com.tripfriend.domain.recruit.apply.entity.Apply;
 import com.tripfriend.domain.recruit.apply.repository.ApplyRepository;
 import com.tripfriend.domain.recruit.recruit.entity.Recruit;
@@ -43,6 +51,11 @@ public class BaseInitData implements CommandLineRunner {
     private final TripScheduleRepository tripScheduleRepository;
     private final ReviewRepository reviewRepository;
     private final CommentRepository commentRepository;
+    private final NoticeRepository noticeRepository;
+    private final BlacklistRepository blacklistRepository;
+    private final QuestionRepository questionRepository;
+    private final AnswerRepository answerRepository;
+
 
     @Override
     public void run(String... args) throws Exception {
@@ -53,6 +66,10 @@ public class BaseInitData implements CommandLineRunner {
         initApplies(); // 동행댓글 등록
         initReviews(); // 리뷰 등록
         initComments(); // 리뷰댓글 등록
+        initNotices(); // 공지 데이터 추가
+        initBlacklists(); // 블랙리스트 추가
+        initQuestionsAndAnswers(); // 질문 및 답변 추가
+
     }
 
     // 회원 등록
@@ -696,6 +713,50 @@ public class BaseInitData implements CommandLineRunner {
             System.out.println("댓글 테스트 데이터 28개가 등록되었습니다.");
         } else {
             System.out.println("이미 댓글 데이터가 존재합니다.");
+        }
+    }
+
+    private void initNotices() {
+        if (noticeRepository.count() == 0) {
+            Member admin = memberRepository.findByUsername("admin").orElseThrow();
+
+            noticeRepository.save(new Notice("공지사항 1", "첫 번째 공지입니다.", admin, LocalDateTime.now()));
+            noticeRepository.save(new Notice("공지사항 2", "두 번째 공지입니다.", admin, LocalDateTime.now()));
+
+            System.out.println("공지사항 데이터가 등록되었습니다.");
+        } else {
+            System.out.println("이미 공지 데이터가 존재합니다.");
+        }
+    }
+
+    private void initBlacklists() {
+        if (blacklistRepository.count() == 0) {
+            Member user = memberRepository.findByUsername("user").orElseThrow();
+
+            blacklistRepository.save(new Blacklist(user, "비정상 행위로 인해 차단됨", LocalDateTime.now()));
+
+            System.out.println("블랙리스트 데이터가 등록되었습니다.");
+        } else {
+            System.out.println("이미 블랙리스트 데이터가 존재합니다.");
+        }
+
+
+    }
+
+    private void initQuestionsAndAnswers() {
+        if (questionRepository.count() == 0) {
+            Member user = memberRepository.findByUsername("user").orElseThrow();
+            Member admin = memberRepository.findByUsername("admin").orElseThrow();
+
+            Question question1 = questionRepository.save(new Question(user, "TripFirend란?", "TripFirend에 대해 알고 싶어요.", LocalDateTime.now()));
+            Question question2 = questionRepository.save(new Question(user, "바다 여행지 추천해 주세요", "동해 바다로 가고 싶어요 ", LocalDateTime.now()));
+
+            answerRepository.save(new Answer(question1, admin, "좋은 여행 플랫폼입니다 ㅎㅎ.", LocalDateTime.now()));
+            answerRepository.save(new Answer(question2, admin, "영덕으로 가시죠.", LocalDateTime.now()));
+
+            System.out.println("질문 & 답변 데이터가 등록되었습니다.");
+        } else {
+            System.out.println("이미 질문 & 답변 데이터가 존재합니다.");
         }
     }
 }

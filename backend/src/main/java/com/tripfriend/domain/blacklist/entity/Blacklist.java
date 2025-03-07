@@ -7,12 +7,23 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class Blacklist {
+
+    private LocalDateTime createdAt;
+
+    public Blacklist(Member member, String reason, LocalDateTime createdAt) {
+        this.member = member;
+        this.reason = reason;
+        this.createdAt = createdAt;
+    }
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
