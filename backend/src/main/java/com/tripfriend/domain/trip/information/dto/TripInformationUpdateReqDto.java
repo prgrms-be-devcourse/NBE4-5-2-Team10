@@ -14,16 +14,21 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TripInformationUpdateReqDto {
+
     @NotNull
+    private Long tripInformationId; // 여행 정보 ID
+
     private Long placeId; // 장소 ID
 
-    @NotNull
     private LocalDateTime visitTime;
 
-    @NotNull
     private Integer duration;
 
     private Transportation transportation;
+
     private int cost;
+
     private String notes;
+
+    private Boolean isVisited;
 }

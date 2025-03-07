@@ -77,19 +77,8 @@ public class TripInformationService {
         TripInformation tripInformation = tripInformationRepository.findById(tripInfoId)
                 .orElseThrow(() -> new ServiceException("404-2", "해당 여행 정보가 존재하지 않습니다."));
 
-        // 요청된 장소가 존재하는지 확인
-        Place place = placeRepository.findById(req.getPlaceId())
-                .orElseThrow(() -> new ServiceException("404-3", "해당 장소가 존재하지 않습니다."));
-
-        // 여행 정보 업데이트
-        tripInformation.update(
-                req.getVisitTime(),
-                req.getDuration(),
-                req.getTransportation(),
-                req.getCost(),
-                req.getNotes(),
-                place
-        );
+        // 여행 정보 업데이트, DTO로 전달
+        tripInformation.updateTripInformation(req);
 
         return tripInformation;
     }

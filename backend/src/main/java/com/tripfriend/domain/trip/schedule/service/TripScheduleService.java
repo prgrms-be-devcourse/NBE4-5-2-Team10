@@ -4,15 +4,15 @@ import com.tripfriend.domain.member.member.entity.Member;
 import com.tripfriend.domain.member.member.repository.MemberRepository;
 import com.tripfriend.domain.place.place.entity.Place;
 import com.tripfriend.domain.place.place.repository.PlaceRepository;
+import com.tripfriend.domain.trip.information.dto.TripInformationUpdateReqDto;
 import com.tripfriend.domain.trip.information.entity.TripInformation;
 import com.tripfriend.domain.trip.information.repository.TripInformationRepository;
 import com.tripfriend.domain.trip.information.service.TripInformationService;
-import com.tripfriend.domain.trip.schedule.dto.TripScheduleReqDto;
-import com.tripfriend.domain.trip.schedule.dto.TripScheduleResDto;
-import com.tripfriend.domain.trip.schedule.dto.TripScheduleUpdateReqDto;
+import com.tripfriend.domain.trip.schedule.dto.*;
 import com.tripfriend.domain.trip.schedule.entity.TripSchedule;
 import com.tripfriend.domain.trip.schedule.repository.TripScheduleRepository;
 import com.tripfriend.global.exception.ServiceException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +27,8 @@ public class TripScheduleService {
     private final TripScheduleRepository tripScheduleRepository;
     private final MemberRepository memberRepository;
     private final TripInformationService tripInformationService;
+    private final TripInformationRepository tripInformationRepository;
+    private final PlaceRepository placeRepository;
 
     // 여행 일정 생성
     @Transactional
@@ -120,8 +122,34 @@ public class TripScheduleService {
                 .orElseThrow(() -> new ServiceException("404-1", "해당 일정이 존재하지 않습니다."));
 
         // 일정 정보 업데이트
-        schedule.update(req.getTitle(), req.getDescription(), req.getStartDate(), req.getEndDate());
+        schedule.updateSchedule(req);
 
         return schedule;
     }
+
+    // 여행 일정 및 여행 정보 통합 수정 메서드
+    @Transactional
+    public TripUpdateResDto updateTrip(@Valid TripUpdateReqDto reqDto) {
+        // 여행 일정 수정
+        TripSchedule tripSchedule = tripScheduleRepository.findById(reqDto.getTripScheduleId())
+                .orElseThrow(() -> new ServiceException("404-1", "해당 일정이 존재하지 않습니다."));
+
+        tripSchedule.updateSchedule(reqDto.getScheduleUpdate());
+
+        // 여행 정보 수정
+        List<TripInformation> updatedTripInformations = reqDto.getTripInformationUpdates().stream()
+                .map(infoUpdate -> {
+                    TripInformation tripInfo = tripInformationRepository.findById(infoUpdate.getTripInformationId())
+                            .orElseThrow(() -> new ServiceException("404-2", "해당 여행 정보가 존재하지 않습니다."));
+
+                    tripInfo.updateTripInformation(infoUpdate);
+                    return tripInfo;
+                })
+                .toList();
+
+        return new TripUpdateResDto(tripSchedule, updatedTripInformations);
+    }
 }
+
+
+

@@ -2,9 +2,7 @@ package com.tripfriend.domain.trip.schedule.controller;
 
 import com.tripfriend.domain.member.member.entity.Member;
 import com.tripfriend.domain.member.member.repository.MemberRepository;
-import com.tripfriend.domain.trip.schedule.dto.TripScheduleReqDto;
-import com.tripfriend.domain.trip.schedule.dto.TripScheduleResDto;
-import com.tripfriend.domain.trip.schedule.dto.TripScheduleUpdateReqDto;
+import com.tripfriend.domain.trip.schedule.dto.*;
 import com.tripfriend.domain.trip.schedule.entity.TripSchedule;
 import com.tripfriend.domain.trip.schedule.service.TripScheduleService;
 import com.tripfriend.global.dto.RsData;
@@ -85,6 +83,16 @@ public class TripScheduleController {
                 "200-5",
                 "일정이 성공적으로 수정되었습니다.",
                 resDto
+        );
+    }
+
+    @PutMapping("/update")
+    public RsData<TripUpdateResDto> updateTrip(@RequestBody @Valid TripUpdateReqDto reqDto) {
+        TripUpdateResDto resTrip = scheduleService.updateTrip(reqDto);
+        return new RsData<>(
+                "200-1",
+                "여행 일정 및 여행 정보가 성공적으로 수정되었습니다.",
+                resTrip
         );
     }
 

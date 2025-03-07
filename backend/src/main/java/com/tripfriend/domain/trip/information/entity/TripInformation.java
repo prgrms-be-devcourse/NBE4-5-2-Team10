@@ -1,6 +1,7 @@
 package com.tripfriend.domain.trip.information.entity;
 
 import com.tripfriend.domain.place.place.entity.Place;
+import com.tripfriend.domain.trip.information.dto.TripInformationUpdateReqDto;
 import com.tripfriend.domain.trip.schedule.entity.TripSchedule;
 import jakarta.persistence.*;
 import lombok.*;
@@ -64,12 +65,12 @@ public class TripInformation {
 
 
     // 여행 정보 수정 메서드
-    public void update(LocalDateTime visitTime, Integer duration, Transportation transportation, int cost, String notes, Place place) {
-        this.visitTime = visitTime;
-        this.duration = duration;
-        this.transportation = transportation;
-        this.cost = cost;
-        this.notes = notes;
-        this.place = place;
+    public void updateTripInformation(TripInformationUpdateReqDto updateDto){
+        this.visitTime = updateDto.getVisitTime();
+        this.duration = updateDto.getDuration();
+        this.transportation = updateDto.getTransportation();
+        this.cost = updateDto.getCost();
+        this.notes = updateDto.getNotes();
+        this.isVisited = updateDto.getIsVisited();
     }
 }

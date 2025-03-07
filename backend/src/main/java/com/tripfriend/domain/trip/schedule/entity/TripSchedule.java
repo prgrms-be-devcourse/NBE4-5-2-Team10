@@ -3,6 +3,7 @@ package com.tripfriend.domain.trip.schedule.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tripfriend.domain.member.member.entity.Member;
 import com.tripfriend.domain.trip.information.entity.TripInformation;
+import com.tripfriend.domain.trip.schedule.dto.TripScheduleUpdateReqDto;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -76,11 +77,11 @@ public class TripSchedule {
     }
 
     // 여행 일정 정보 수정 메서드
-    public void update(String title, String description, LocalDate startDate, LocalDate endDate) {
-        this.title = title;
-        this.description = description;
-        this.startDate = startDate;
-        this.endDate = endDate;
+    public void updateSchedule(TripScheduleUpdateReqDto scheduleUpdate) {
+        this.title = scheduleUpdate.getTitle();
+        this.description = scheduleUpdate.getDescription();
+        this.startDate = scheduleUpdate.getStartDate();
+        this.endDate = scheduleUpdate.getEndDate();
         this.updatedAt = LocalDateTime.now(); // 수정 시간 업데이트
     }
 }
