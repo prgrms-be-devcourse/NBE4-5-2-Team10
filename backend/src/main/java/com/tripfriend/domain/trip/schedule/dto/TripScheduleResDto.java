@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 @Getter
 public class TripScheduleResDto {
     private Long id;
-    private Long memberId;
+    private String memberName;
     private String title;
     private String description;
     private LocalDate startDate;
@@ -24,7 +24,7 @@ public class TripScheduleResDto {
     // TripSchedule 엔티티를 DTO로 변환하는 생성자
     public TripScheduleResDto(TripSchedule tripSchedule) {
         this.id = tripSchedule.getId();
-        this.memberId = tripSchedule.getMember().getId();
+        this.memberName = tripSchedule.getMember().getUsername();
         this.title = tripSchedule.getTitle();
         this.description = tripSchedule.getDescription();
         this.startDate = tripSchedule.getStartDate();
