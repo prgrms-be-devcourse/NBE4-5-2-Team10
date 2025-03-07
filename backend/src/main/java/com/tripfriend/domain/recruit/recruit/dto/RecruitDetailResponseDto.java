@@ -11,6 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -38,6 +39,8 @@ public class RecruitDetailResponseDto {
     private boolean sameAge;
     private Integer budget = 0;
     private Integer groupSize = 2;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     public RecruitDetailResponseDto (Recruit recruit){
         this.recruitId = recruit.getRecruitId();
@@ -60,5 +63,7 @@ public class RecruitDetailResponseDto {
         this.sameAge = recruit.isSameAge();
         this.budget = recruit.getBudget();
         this.groupSize = recruit.getGroupSize();
+        this.createdAt = recruit.getCreatedAt();
+        this.updatedAt = recruit.getUpdatedAt();
     }
 }

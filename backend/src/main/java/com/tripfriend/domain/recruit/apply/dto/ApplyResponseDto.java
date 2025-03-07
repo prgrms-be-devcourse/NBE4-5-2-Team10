@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -20,6 +22,8 @@ public class ApplyResponseDto {
     private String memberNickname;
 //    private Recruit recruit;
     private String content;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     public ApplyResponseDto(Apply apply) {
         this.applyId = apply.getApplyId();
@@ -29,5 +33,7 @@ public class ApplyResponseDto {
         this.memberNickname = apply.getMember().getNickname();
 //        this.recruit = apply.getRecruit();
         this.content = apply.getContent();
+        this.createdAt = apply.getCreatedAt();
+        this.updatedAt = apply.getUpdatedAt();
     }
 }
