@@ -1,7 +1,6 @@
 package com.tripfriend.domain.member.member.service;
 
 import com.tripfriend.domain.member.member.dto.JoinRequestDto;
-import com.tripfriend.domain.member.member.dto.LoginRequestDto;
 import com.tripfriend.domain.member.member.dto.MemberResponseDto;
 import com.tripfriend.domain.member.member.dto.MemberUpdateRequestDto;
 import com.tripfriend.domain.member.member.entity.Member;
@@ -49,19 +48,6 @@ public class MemberService {
         Member savedMember = memberRepository.save(member);
 
         return MemberResponseDto.fromEntity(savedMember);
-    }
-
-    public MemberResponseDto login(LoginRequestDto loginRequestDto) {
-
-        // 회원 조회
-        Member member = memberRepository.findByUsername(loginRequestDto.getUsername())
-                .orElseThrow(() -> new RuntimeException("존재하지 않는 회원입니다."));
-
-        if (!passwordEncoder.matches(loginRequestDto.getPassword(), member.getPassword())) {
-            throw new RuntimeException("비밀번호가 일치하지 않습니다.");
-        }
-
-        return MemberResponseDto.fromEntity(member);
     }
 
     @Transactional

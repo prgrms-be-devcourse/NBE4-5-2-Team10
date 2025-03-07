@@ -1,15 +1,13 @@
 package com.tripfriend.domain.member.member.controller;
 
 import com.tripfriend.domain.member.member.dto.*;
-import com.tripfriend.domain.member.member.dto.JoinRequestDto;
-import com.tripfriend.domain.member.member.dto.LoginRequestDto;
-import com.tripfriend.domain.member.member.dto.MemberResponseDto;
-import com.tripfriend.domain.member.member.dto.MemberUpdateRequestDto;
+import com.tripfriend.domain.member.member.service.AuthService;
 import com.tripfriend.domain.member.member.service.MailService;
 import com.tripfriend.domain.member.member.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 public class MemberController {
 
     private final MemberService memberService;
+    private final AuthService authService;
     private final MailService mailService;
 
     @Operation(summary = "회원가입")
@@ -35,10 +34,23 @@ public class MemberController {
 
     @Operation(summary = "로그인")
     @PostMapping("/login")
-    public ResponseEntity<MemberResponseDto> login(@Valid @RequestBody LoginRequestDto loginRequestDto) {
+    public ResponseEntity<?> login(@RequestBody LoginRequestDto loginRequestDto, HttpServletResponse response) {
+        AuthResponseDto authResponse = authService.login(loginRequestDto, response);
+        return ResponseEntity.ok(authResponse);
+    }
 
-        MemberResponseDto loginMember = memberService.login(loginRequestDto);
-        return ResponseEntity.ok(loginMember);
+    @Operation(summary = "로그아웃")
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        authService.logout(response);
+        return ResponseEntity.ok("Logout successful");
+    }
+
+    @Operation(summary = "액세스 토큰 재발급")
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refresh(@CookieValue(name = "refreshToken") String refreshToken, HttpServletResponse response) {
+        String newAccessToken = authService.refreshToken(refreshToken, response);
+        return ResponseEntity.ok(new AuthResponseDto(newAccessToken));
     }
 
     @Operation(summary = "회원정보 수정")
