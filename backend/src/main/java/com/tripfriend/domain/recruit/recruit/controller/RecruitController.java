@@ -33,15 +33,17 @@ public class RecruitController {
         return recruitService.create(recruitCreateRequestDto);
     }
 
-    @PutMapping// 일단 put으로 통일
-    public RecruitDetailResponseDto updateRecruit(@RequestBody RecruitUpdateRequestDto recruitUpdateRequestDto) {
-        return recruitService.update(recruitUpdateRequestDto);
+    @PutMapping("/{recruitId}")// 일단 put으로 통일
+    public RecruitDetailResponseDto updateRecruit(@PathVariable("recruitId") Long recruitId, @RequestBody RecruitCreateRequestDto requestDto) {
+        return recruitService.update(recruitId, requestDto);
     }
 
     @DeleteMapping("/{recruitId}")
     public void deleteRecruit(@PathVariable("recruitId") Long recruitId){ // 이름 명시
         recruitService.delete(recruitId);
     }
+
+
 
 
 }

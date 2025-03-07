@@ -1,5 +1,7 @@
 package com.tripfriend.domain.recruit.recruit.dto;
 
+import com.tripfriend.domain.member.member.entity.Member;
+import com.tripfriend.domain.place.place.entity.Place;
 import com.tripfriend.domain.recruit.recruit.entity.Recruit;
 import com.tripfriend.domain.recruit.recruit.entity.TravelStyle;
 import lombok.AllArgsConstructor;
@@ -16,8 +18,12 @@ import java.time.LocalDate;
 public class RecruitListResponseDto {
     private Long recruitId;
 //    private Member member;
+    private String memberProfileImage;
+    private String memberNickname;
 //    private List<Apply> applies;
 //    private Place place;
+    private String placeCityName;
+    private String placePlaceName;
     private String title;
 //    private String content;
     private boolean isClosed;
@@ -32,8 +38,12 @@ public class RecruitListResponseDto {
     public RecruitListResponseDto(Recruit recruit){
         this.recruitId = recruit.getRecruitId();
 //        this.member = recruit.getMember();
+        this.memberNickname = recruit.getMember().getNickname();
+        this.memberProfileImage = recruit.getMember().getProfileImage();
 //        this.applies = recruit.getApplies();
 //        this.place = recruit.getPlace();
+        this.placeCityName = recruit.getPlace().getCityName();
+        this.placePlaceName = recruit.getPlace().getPlaceName();
         this.title = recruit.getTitle();
 //        this.content = recruit.getContent();
         this.isClosed = recruit.isClosed();

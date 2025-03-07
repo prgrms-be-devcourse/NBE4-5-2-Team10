@@ -19,9 +19,15 @@ import java.util.List;
 @AllArgsConstructor
 public class RecruitDetailResponseDto {
     private Long recruitId;
-//    private Member member;
-//    private List<Apply> applies;
+    //    private Member member;
+    private Long memberId;
+    private String memberProfileImage;
+    private String memberNickname;
+    //    private List<Apply> applies;
 //    private Place place;
+    private Long placeId;
+    private String placeCityName;
+    private String placePlaceName;
     private String title;
     private String content;
     private boolean isClosed;
@@ -36,8 +42,14 @@ public class RecruitDetailResponseDto {
     public RecruitDetailResponseDto (Recruit recruit){
         this.recruitId = recruit.getRecruitId();
 //        this.member = recruit.getMember();
+        this.memberId = recruit.getMember().getId();
+        this.memberNickname = recruit.getMember().getNickname();
+        this.memberProfileImage = recruit.getMember().getProfileImage();
 //        this.applies = recruit.getApplies();
 //        this.place = recruit.getPlace();
+        this.placeId = recruit.getPlace().getId();
+        this.placeCityName = recruit.getPlace().getCityName();
+        this.placePlaceName = recruit.getPlace().getPlaceName();
         this.title = recruit.getTitle();
         this.content = recruit.getContent();
         this.isClosed = recruit.isClosed();

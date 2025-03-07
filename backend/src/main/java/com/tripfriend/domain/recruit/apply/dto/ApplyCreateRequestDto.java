@@ -14,14 +14,13 @@ import org.springframework.format.annotation.DateTimeFormat;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ApplyCreatRequestDto {
-//    private Member member;
-    private Recruit recruit;
+public class ApplyCreateRequestDto {
+    private Long memberId;
     private String content;
 
-    public Apply toEntity(){
+    public Apply toEntity(Member member, Recruit recruit) {
         return Apply.builder()
-//                .member(member)
+                .member(member)
                 .recruit(recruit)
                 .content(content)
                 .build();
