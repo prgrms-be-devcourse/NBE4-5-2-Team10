@@ -94,75 +94,126 @@ public class BaseInitData implements CommandLineRunner {
         }
     }
 
-    // 동행글 등록
+    // 동행 모집글 등록
     private void initRecruits() {
         if (recruitRepository.count() == 0) {
-            Recruit recruit1 = Recruit.builder()
-                    .title("동행 구해요")
-                    .content("재밌게 노실 분들 모여주세요")
-                    .isClosed(false)
-                    .startDate(LocalDate.now())
-                    .endDate(LocalDate.now().plusDays(7))
-                    .travelStyle(com.tripfriend.domain.recruit.recruit.entity.TravelStyle.ADVENTURE)
-                    .sameAge(false)
-                    .sameGender(false)
-                    .budget(20000)
-                    .groupSize(5)
-                    .build();
-            recruitRepository.save(recruit1);
+            List<Member> members = memberRepository.findAll();
+            List<Place> places = placeRepository.findAll();
 
-            Recruit recruit2 = Recruit.builder()
-                    .title("동행 구해요")
-                    .content("힐링스파 하러 가실 분??")
-                    .isClosed(false)
-                    .startDate(LocalDate.now())
-                    .endDate(LocalDate.now().plusDays(2))
-                    .travelStyle(com.tripfriend.domain.recruit.recruit.entity.TravelStyle.RELAXATION)
-                    .sameAge(false)
-                    .sameGender(false)
-                    .budget(50000)
-                    .groupSize(3)
-                    .build();
-            recruitRepository.save(recruit2);
+            if (members.isEmpty() || places.isEmpty()) {
+                throw new IllegalStateException("회원 또는 장소 데이터가 없습니다.");
+            }
 
-            System.out.println("동행모집(게시글) 테스트 데이터가 등록되었습니다.");
-        }else {
-            System.out.println("이미 동행모집(게시글) 데이터가 존재합니다.");
+            List<Recruit> recruits = List.of(
+                    Recruit.builder()
+                            .member(members.get(0))
+                            .place(places.get(0))
+                            .title("서울에서 동행 구합니다!")
+                            .content("서울 여행을 함께할 분을 모집합니다. 일정은 유동적이에요.")
+                            .isClosed(false)
+                            .startDate(LocalDate.now().plusDays(3))
+                            .endDate(LocalDate.now().plusDays(7))
+                            .travelStyle(com.tripfriend.domain.recruit.recruit.entity.TravelStyle.ADVENTURE)
+                            .sameGender(false)
+                            .sameAge(false)
+                            .budget(30000)
+                            .groupSize(4)
+                            .build(),
+                    Recruit.builder()
+                            .member(members.get(1))
+                            .place(places.get(3))
+                            .title("부산 광안리 동행 모집")
+                            .content("광안리에서 야경도 보고, 해운대도 가고 싶어요!")
+                            .isClosed(false)
+                            .startDate(LocalDate.now().plusDays(1))
+                            .endDate(LocalDate.now().plusDays(5))
+                            .travelStyle(com.tripfriend.domain.recruit.recruit.entity.TravelStyle.RELAXATION)
+                            .sameGender(true)
+                            .sameAge(true)
+                            .budget(50000)
+                            .groupSize(3)
+                            .build(),
+                    Recruit.builder()
+                            .member(members.get(0))
+                            .place(places.get(6))
+                            .title("제주도 탐방 같이 가실 분!")
+                            .content("우도랑 성산일출봉을 꼭 가고 싶습니다.")
+                            .isClosed(false)
+                            .startDate(LocalDate.now().plusDays(10))
+                            .endDate(LocalDate.now().plusDays(15))
+                            .travelStyle(com.tripfriend.domain.recruit.recruit.entity.TravelStyle.ADVENTURE)
+                            .sameGender(false)
+                            .sameAge(true)
+                            .budget(80000)
+                            .groupSize(5)
+                            .build(),
+                    Recruit.builder()
+                            .member(members.get(1))
+                            .place(places.get(9))
+                            .title("속초 맛집 투어 동행 모집")
+                            .content("속초에서 중앙시장과 맛집 탐방을 하려고 합니다.")
+                            .isClosed(false)
+                            .startDate(LocalDate.now().plusDays(5))
+                            .endDate(LocalDate.now().plusDays(8))
+                            .travelStyle(com.tripfriend.domain.recruit.recruit.entity.TravelStyle.GOURMET)
+                            .sameGender(true)
+                            .sameAge(false)
+                            .budget(40000)
+                            .groupSize(2)
+                            .build(),
+                    Recruit.builder()
+                            .member(members.get(0))
+                            .place(places.get(12))
+                            .title("강원도 자연 여행 동행 찾습니다")
+                            .content("설악산 등반과 힐링 여행을 함께할 분을 찾고 있습니다.")
+                            .isClosed(false)
+                            .startDate(LocalDate.now().plusDays(7))
+                            .endDate(LocalDate.now().plusDays(12))
+                            .travelStyle(com.tripfriend.domain.recruit.recruit.entity.TravelStyle.RELAXATION)
+                            .sameGender(false)
+                            .sameAge(false)
+                            .budget(20000)
+                            .groupSize(3)
+                            .build()
+            );
+
+            recruitRepository.saveAll(recruits);
+            System.out.println("동행 모집(게시글) 5개가 등록되었습니다.");
+        } else {
+            System.out.println("이미 동행 모집(게시글) 데이터가 존재합니다.");
         }
     }
 
-    // 동행 요청 등록
+    // 동행 요청 댓글 등록
     private void initApplies() {
         if (applyRepository.count() == 0) {
-            Apply apply1 = Apply.builder()
-                    .content("저 즐겁게 놀 자신 있습니다! 1번 글의 1번 댓글")
-                    .recruit(recruitRepository.findById(1L).orElseThrow(EntityNotFoundException::new))
-                    .build();
-            applyRepository.save(apply1);
+            List<Member> members = memberRepository.findAll();
+            List<Recruit> recruits = recruitRepository.findAll();
 
-            Apply apply2 = Apply.builder()
-                    .content("저 즐겁게 놀 자신 있습니다! 1번 글의 2번 댓글")
-                    .recruit(recruitRepository.findById(1L).orElseThrow(EntityNotFoundException::new))
-                    .build();
-            applyRepository.save(apply2);
+            if (members.isEmpty() || recruits.isEmpty()) {
+                throw new IllegalStateException("회원 또는 동행 모집글 데이터가 없습니다.");
+            }
 
-            Apply apply3 = Apply.builder()
-                    .content("저 즐겁게 놀 자신 있습니다! 2번 글의 3번 댓글")
-                    .recruit(recruitRepository.findById(2L).orElseThrow(EntityNotFoundException::new))
-                    .build();
-            applyRepository.save(apply3);
+            List<Apply> applies = List.of(
+                    Apply.builder().content("재밌게 여행할 자신 있어요!").member(members.get(0)).recruit(recruits.get(0)).build(),
+                    Apply.builder().content("저랑 같이 일정 짜보실래요?").member(members.get(1)).recruit(recruits.get(0)).build(),
+                    Apply.builder().content("해운대 근처에서 머물 계획이에요!").member(members.get(0)).recruit(recruits.get(1)).build(),
+                    Apply.builder().content("광안리 야경 보러 가요!").member(members.get(1)).recruit(recruits.get(1)).build(),
+                    Apply.builder().content("제주도 일출 보러 갈 분!").member(members.get(0)).recruit(recruits.get(2)).build(),
+                    Apply.builder().content("우도 여행 함께하고 싶어요.").member(members.get(1)).recruit(recruits.get(2)).build(),
+                    Apply.builder().content("속초에서 맛집 같이 가고 싶어요.").member(members.get(0)).recruit(recruits.get(3)).build(),
+                    Apply.builder().content("중앙시장 가면 꼭 들려야 할 곳 있어요!").member(members.get(1)).recruit(recruits.get(3)).build(),
+                    Apply.builder().content("설악산 등반 함께해요!").member(members.get(0)).recruit(recruits.get(4)).build(),
+                    Apply.builder().content("등산 초보인데 같이 가도 될까요?").member(members.get(1)).recruit(recruits.get(4)).build()
+            );
 
-            Apply apply4 = Apply.builder()
-                    .content("저 즐겁게 놀 자신 있습니다! 2번 글의 4번 댓글")
-                    .recruit(recruitRepository.findById(2L).orElseThrow(EntityNotFoundException::new))
-                    .build();
-            applyRepository.save(apply4);
-
-            System.out.println("동행요청(댓글) 테스트 데이터가 등록되었습니다.");
-        }else {
+            applyRepository.saveAll(applies);
+            System.out.println("동행 요청(댓글) 10개가 등록되었습니다.");
+        } else {
             System.out.println("이미 동행 요청(댓글) 데이터가 존재합니다.");
         }
     }
+
 
     // 여행지 등록
     private void initPlace() {
