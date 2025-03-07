@@ -16,6 +16,15 @@ import java.time.LocalDateTime;
 @Builder
 public class Answer {
 
+    public Answer(Question question, Member member, String content, LocalDateTime createdAt) {
+        this.question = question;
+        this.member = member;
+        this.content = content;
+        this.createdAt = createdAt;
+    }
+
+
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
