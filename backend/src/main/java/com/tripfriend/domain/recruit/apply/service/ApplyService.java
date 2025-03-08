@@ -8,6 +8,7 @@ import com.tripfriend.domain.recruit.apply.dto.ApplyResponseDto;
 import com.tripfriend.domain.recruit.apply.repository.ApplyRepository;
 import com.tripfriend.domain.recruit.recruit.entity.Recruit;
 import com.tripfriend.domain.recruit.recruit.repository.RecruitRepository;
+import com.tripfriend.global.exception.ServiceException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,7 +25,7 @@ public class ApplyService {
 
     @Transactional
     public List<ApplyResponseDto> findByRecruitId(Long recruitId) {
-        Recruit recruit = recruitRepository.findById(recruitId).orElseThrow(() -> new EntityNotFoundException("recruit not found with id" + recruitId));
+        Recruit recruit = recruitRepository.findById(recruitId).orElseThrow(() -> new ServiceException("404-3", "해당 모집글이 존재하지 않습니다."));
         return recruit.getApplies().stream()
                 .map(ApplyResponseDto::new)
                 .toList();
@@ -32,8 +33,8 @@ public class ApplyService {
 
     @Transactional
     public ApplyResponseDto create(Long recruitId, ApplyCreateRequestDto requestDto) {
-        Member member = memberRepository.findById(requestDto.getMemberId()).orElseThrow(() -> new EntityNotFoundException("member not foud with id : " + requestDto.getMemberId()));
-        Recruit recruit = recruitRepository.findById(recruitId).orElseThrow(() -> new EntityNotFoundException("recruit not found with id" + recruitId));
+        Member member = memberRepository.findById(requestDto.getMemberId()).orElseThrow(() -> new ServiceException("404-1", "해당 회원이 존재하지 않습니다."));
+        Recruit recruit = recruitRepository.findById(recruitId).orElseThrow(() -> new ServiceException("404-3", "해당 모집글이 존재하지 않습니다."));
         return new ApplyResponseDto(applyRepository.save(requestDto.toEntity(member, recruit)));
     }
 

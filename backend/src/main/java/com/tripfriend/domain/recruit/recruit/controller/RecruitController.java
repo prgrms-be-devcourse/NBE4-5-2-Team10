@@ -18,27 +18,27 @@ public class RecruitController {
 
     @GetMapping("/{recruitId}") // 이름 맞춰주기
     public RsData<RecruitDetailResponseDto> getRecruit(@PathVariable("recruitId") Long recruitId) {
-        return new RsData<>("200", "동행 모집 글이 성공적으로 조회되었습니다.", recruitService.findById(recruitId));
+        return new RsData<>("200-3", "동행 모집 글이 성공적으로 조회되었습니다.", recruitService.findById(recruitId));
     }
 
     @GetMapping
     public RsData<List<RecruitListResponseDto>> getRecruits(){
-        return new RsData<>("200", "동행 모집 글 목록이 성공적으로 조회되었습니다.", recruitService.findAll());
+        return new RsData<>("200-3", "동행 모집 글 목록이 성공적으로 조회되었습니다.", recruitService.findAll());
     }
 
     @PostMapping
     public RsData<RecruitDetailResponseDto> createRecruit (@RequestBody RecruitRequestDto requestDto) {
-        return new RsData<>("201", "동행 모집 글이 성공적으로 등록되었습니다.", recruitService.create(requestDto));
+        return new RsData<>("201-3", "동행 모집 글이 성공적으로 등록되었습니다.", recruitService.create(requestDto));
     }
 
     @PutMapping("/{recruitId}")// 일단 put으로 통일
     public RsData<RecruitDetailResponseDto> updateRecruit(@PathVariable("recruitId") Long recruitId, @RequestBody RecruitRequestDto requestDto) {
-        return new RsData<>("200", "동행 모집 글이 성공적으로 수정되었습니다.", recruitService.update(recruitId, requestDto));
+        return new RsData<>("200-3", "동행 모집 글이 성공적으로 수정되었습니다.", recruitService.update(recruitId, requestDto));
     }
 
     @DeleteMapping("/{recruitId}")
     public RsData<Void> deleteRecruit(@PathVariable("recruitId") Long recruitId){ // 이름 명시
         recruitService.delete(recruitId);
-        return new RsData<>("200", "동행 모집 글이 성공적으로 삭제되었습니다.");
+        return new RsData<>("200-3", "동행 모집 글이 성공적으로 삭제되었습니다.");
     }
 }

@@ -17,18 +17,18 @@ public class ApplyController {
 
     @GetMapping
     RsData<List<ApplyResponseDto>> getApplies(@PathVariable("recruitId") Long recruitId) {
-        return new RsData<>("200", "동행 요청 댓글 목록이 성공적으로 조회되었습니다.", applyService.findByRecruitId(recruitId)); // 인자 주기
+        return new RsData<>("200-4", "동행 요청 댓글 목록이 성공적으로 조회되었습니다.", applyService.findByRecruitId(recruitId)); // 인자 주기
     }
 
     @PostMapping
     RsData<ApplyResponseDto> createApply(@PathVariable("recruitId") Long recruitId, @RequestBody ApplyCreateRequestDto requestDto) {
-        return new RsData<>("201", "동행 요청 댓글이 성공적으로 등록되었습니다.", applyService.create(recruitId, requestDto));
+        return new RsData<>("201-4", "동행 요청 댓글이 성공적으로 등록되었습니다.", applyService.create(recruitId, requestDto));
     }
 
     @DeleteMapping("/{applyId}")
     RsData<Void> deleteApply(@PathVariable("applyId") Long applyId) {
         applyService.delete(applyId);
-        return new RsData<>("200", "동행 요청 댓글이 성공적으로 삭제되었습니다.");
+        return new RsData<>("200-4", "동행 요청 댓글이 성공적으로 삭제되었습니다.");
     }
 
 }

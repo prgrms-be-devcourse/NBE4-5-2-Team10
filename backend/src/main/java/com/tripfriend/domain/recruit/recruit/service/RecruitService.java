@@ -9,6 +9,7 @@ import com.tripfriend.domain.recruit.recruit.dto.RecruitDetailResponseDto;
 import com.tripfriend.domain.recruit.recruit.dto.RecruitListResponseDto;
 import com.tripfriend.domain.recruit.recruit.entity.Recruit;
 import com.tripfriend.domain.recruit.recruit.repository.RecruitRepository;
+import com.tripfriend.global.exception.ServiceException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,14 +26,14 @@ public class RecruitService {
 
     @Transactional
     public RecruitDetailResponseDto findById(Long id) {
-        Recruit recruit = recruitRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("recruit not foud with id : " + id));
+        Recruit recruit = recruitRepository.findById(id).orElseThrow(() -> new ServiceException("404-3", "해당 모집글이 존재하지 않습니다."));
         return new RecruitDetailResponseDto(recruit);
     }
 
     @Transactional
     public RecruitDetailResponseDto create(RecruitRequestDto requestDto) {
-        Member member = memberRepository.findById(requestDto.getMemberId()).orElseThrow(() -> new EntityNotFoundException("member not foud with id : " + requestDto.getMemberId()));
-        Place place = placeRepository.findById(requestDto.getPlaceId()).orElseThrow(() -> new EntityNotFoundException("place not foud with id : " + requestDto.getPlaceId()));
+        Member member = memberRepository.findById(requestDto.getMemberId()).orElseThrow(() -> new ServiceException("404-1", "해당 회원이 존재하지 않습니다."));
+        Place place = placeRepository.findById(requestDto.getPlaceId()).orElseThrow(() -> new ServiceException("404-2", "해당 장소가 존재하지 않습니다."));
 
         return new RecruitDetailResponseDto(recruitRepository.save(requestDto.toEntity(member, place)));
     }
@@ -46,8 +47,8 @@ public class RecruitService {
 
     @Transactional
     public RecruitDetailResponseDto update(Long recruitId, RecruitRequestDto requestDto) {
-        Recruit recruit = recruitRepository.findById(recruitId).orElseThrow(() -> new EntityNotFoundException("recruit not foud with id : " + recruitId));
-        Place place = placeRepository.findById(requestDto.getPlaceId()).orElseThrow(() -> new EntityNotFoundException("place not foud with id : " + requestDto.getPlaceId()));
+        Recruit recruit = recruitRepository.findById(recruitId).orElseThrow(() -> new ServiceException("404-3", "해당 모집글이 존재하지 않습니다."));
+        Place place = placeRepository.findById(requestDto.getPlaceId()).orElseThrow(() -> new ServiceException("404-2", "해당 장소가 존재하지 않습니다."));
         recruit.update(requestDto, place);
         return new RecruitDetailResponseDto(recruit); // recruitRepository.save(recruit) 불필요!
     }
