@@ -1,6 +1,6 @@
-package com.tripfriend.domain.notice;
+package com.tripfriend.domain.qna.entity;
 
-
+import com.tripfriend.domain.member.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,14 +14,28 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Notice {
+public class Answer {
+
+    public Answer(Question question, Member member, String content, LocalDateTime createdAt) {
+        this.question = question;
+        this.member = member;
+        this.content = content;
+        this.createdAt = createdAt;
+    }
+
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
-    @Column(nullable = false, length = 255)
-    private String title;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "question_id", nullable = false)
+    private Question question;
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
@@ -42,4 +56,5 @@ public class Notice {
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
 }

@@ -18,7 +18,7 @@
 # ☕ Project Overview
 
 ## 1. 프로젝트 명
-### 여행친구 - TripFried
+### 여행친구 - TripFriend
 <br/>
 
 ## 2. 프로젝트 소개
