@@ -15,7 +15,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -52,6 +54,37 @@ public class RecruitService {
     @Transactional
     public List<RecruitListResponseDto> searchRecruits(String keyword) {
         return recruitRepository.searchByTitleOrContent(keyword).stream()
+                .map(RecruitListResponseDto::new)
+                .toList();
+    }
+
+    @Transactional
+    public List<RecruitListResponseDto> searchByIsClosed(Boolean isClosed) {
+        return recruitRepository.findByIsClosed(isClosed).stream()
+                .map(RecruitListResponseDto::new)
+                .toList();
+    }
+
+    @Transactional
+    public List<RecruitListResponseDto> searchAndFilter(
+            Optional<String> keyword,
+            Optional<String> placeCityName,
+            Optional<Boolean> isClosed,
+            Optional<LocalDate> startDate,
+            Optional<LocalDate> endDate,
+            Optional<String> travelStyle,
+            Optional<Boolean> sameGender,
+            Optional<Boolean> sameAge,
+            Optional<Integer> minBudget,
+            Optional<Integer> maxBudget,
+            Optional<Integer> minGroupSize,
+            Optional<Integer> maxGroupSize,
+            Optional<String> sortBy
+    ) {
+        return recruitRepository.searchFilterSort(
+                keyword, placeCityName, isClosed, startDate, endDate,
+                travelStyle, sameGender, sameAge, minBudget, maxBudget, minGroupSize, maxGroupSize, sortBy
+        ).stream()
                 .map(RecruitListResponseDto::new)
                 .toList();
     }

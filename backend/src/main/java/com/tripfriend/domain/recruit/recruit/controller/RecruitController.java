@@ -3,12 +3,15 @@ package com.tripfriend.domain.recruit.recruit.controller;
 import com.tripfriend.domain.recruit.recruit.dto.RecruitRequestDto;
 import com.tripfriend.domain.recruit.recruit.dto.RecruitDetailResponseDto;
 import com.tripfriend.domain.recruit.recruit.dto.RecruitListResponseDto;
+import com.tripfriend.domain.recruit.recruit.entity.Recruit;
 import com.tripfriend.domain.recruit.recruit.service.RecruitService;
 import com.tripfriend.global.dto.RsData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,6 +32,34 @@ public class RecruitController {
     @GetMapping("/search")
     public RsData<List<RecruitListResponseDto>> searchRecruits(@RequestParam("keyword") String keyword){
         return new RsData<>("200-3", "동행 모집 글이 제목과 내용으로 성공적으로 검색되었습니다.", recruitService.searchRecruits(keyword));
+    }
+
+    @GetMapping("/search2")
+    public RsData<List<RecruitListResponseDto>> findRecruitsByIsClosed(@RequestParam("isClosed") Boolean isClosed){
+        return new RsData<>("200-3", "동행 모집 글이 모집여부로 성공적으로 검색되었습니다.", recruitService.searchByIsClosed(isClosed));
+    }
+
+    @GetMapping("/search3")
+    public RsData<List<RecruitListResponseDto>> searchAndFilter(
+            @RequestParam(name = "keyword") Optional<String> keyword,
+            @RequestParam(name = "cityName") Optional<String> cityName,
+            @RequestParam(name = "isClosed") Optional<Boolean> isClosed,
+            @RequestParam(name = "startDate") Optional<LocalDate> startDate,
+            @RequestParam(name = "endDate") Optional<LocalDate> endDate,
+            @RequestParam(name = "travelStyle") Optional<String> travelStyle,
+            @RequestParam(name = "sameGender") Optional<Boolean> sameGender,
+            @RequestParam(name = "sameAge") Optional<Boolean> sameAge,
+            @RequestParam(name = "minBudget") Optional<Integer> minBudget,
+            @RequestParam(name = "maxBudget") Optional<Integer> maxBudget,
+            @RequestParam(name = "minGroupSize") Optional<Integer> minGroupSize,
+            @RequestParam(name = "maxGroupSize") Optional<Integer> maxGroupSize,
+            @RequestParam(name = "sortBy") Optional<String> sortBy
+    ) {
+
+        return new RsData<>("200-3", "동행 모집 글이 여러 조건으로 성공적으로 검색되었습니다.", recruitService.searchAndFilter(
+                keyword, cityName, isClosed, startDate, endDate,
+                travelStyle, sameGender, sameAge, minBudget, maxBudget, minGroupSize, maxGroupSize, sortBy
+        ));
     }
 
     @PostMapping
