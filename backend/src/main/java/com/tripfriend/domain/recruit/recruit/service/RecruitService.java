@@ -40,9 +40,13 @@ public class RecruitService {
 
     @Transactional
     public List<RecruitListResponseDto> findAll() {
+
         return recruitRepository.findAll().stream()
                 .map(RecruitListResponseDto::new)
                 .toList();
+//        return recruitRepository.findByRecruitTest().stream()
+//                .map(RecruitListResponseDto::new)
+//                .toList();
     }
 
     @Transactional
