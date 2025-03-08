@@ -3,6 +3,7 @@ package com.tripfriend.domain.recruit.apply.controller;
 import com.tripfriend.domain.recruit.apply.dto.ApplyCreateRequestDto;
 import com.tripfriend.domain.recruit.apply.dto.ApplyResponseDto;
 import com.tripfriend.domain.recruit.apply.service.ApplyService;
+import com.tripfriend.global.dto.RsData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,18 +16,19 @@ public class ApplyController {
     private final ApplyService applyService;
 
     @GetMapping
-    List<ApplyResponseDto> getApplies(@PathVariable("recruitId") Long recruitId) {
-        return applyService.findByRecruitId(recruitId); // 인자 주기
+    RsData<List<ApplyResponseDto>> getApplies(@PathVariable("recruitId") Long recruitId) {
+        return new RsData<>("200", "동행 요청 댓글 목록이 성공적으로 조회되었습니다.", applyService.findByRecruitId(recruitId)); // 인자 주기
     }
 
     @PostMapping
-    ApplyResponseDto createApply(@PathVariable("recruitId") Long recruitId, @RequestBody ApplyCreateRequestDto requestDto) {
-        return applyService.create(recruitId, requestDto);
+    RsData<ApplyResponseDto> createApply(@PathVariable("recruitId") Long recruitId, @RequestBody ApplyCreateRequestDto requestDto) {
+        return new RsData<>("201", "동행 요청 댓글이 성공적으로 등록되었습니다.", applyService.create(recruitId, requestDto));
     }
 
     @DeleteMapping("/{applyId}")
-    void deleteApply(@PathVariable("applyId") Long applyId) {
+    RsData<Void> deleteApply(@PathVariable("applyId") Long applyId) {
         applyService.delete(applyId);
+        return new RsData<>("200", "동행 요청 댓글이 성공적으로 삭제되었습니다.");
     }
 
 }

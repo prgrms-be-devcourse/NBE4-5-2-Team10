@@ -11,12 +11,11 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
-@Data
+@Data // getter, setter, hashcode, tostring 추가
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class RecruitUpdateRequestDto {
-    private Long recruitId;
+@NoArgsConstructor // serialization 시 필요
+@AllArgsConstructor // builder에 필요
+public class RecruitRequestDto {
     private Long memberId;
 //    private List<Apply> applies;
     private Long placeId;
@@ -33,7 +32,6 @@ public class RecruitUpdateRequestDto {
 
     public Recruit toEntity(Member member, Place place){
         return Recruit.builder()
-                .recruitId(this.recruitId)
                 .member(member)
 //                .applies(applies)
                 .place(place)

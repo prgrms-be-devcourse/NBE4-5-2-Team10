@@ -1,12 +1,10 @@
 package com.tripfriend.domain.recruit.recruit.controller;
 
-import com.tripfriend.domain.recruit.recruit.dto.RecruitCreateRequestDto;
+import com.tripfriend.domain.recruit.recruit.dto.RecruitRequestDto;
 import com.tripfriend.domain.recruit.recruit.dto.RecruitDetailResponseDto;
 import com.tripfriend.domain.recruit.recruit.dto.RecruitListResponseDto;
-import com.tripfriend.domain.recruit.recruit.dto.RecruitUpdateRequestDto;
-import com.tripfriend.domain.recruit.recruit.entity.Recruit;
 import com.tripfriend.domain.recruit.recruit.service.RecruitService;
-import jakarta.persistence.EntityNotFoundException;
+import com.tripfriend.global.dto.RsData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,31 +17,28 @@ public class RecruitController {
     private final RecruitService recruitService;
 
     @GetMapping("/{recruitId}") // 이름 맞춰주기
-    public RecruitDetailResponseDto getRecruit(@PathVariable("recruitId") Long recruitId) {
-        return recruitService.findById(recruitId);
+    public RsData<RecruitDetailResponseDto> getRecruit(@PathVariable("recruitId") Long recruitId) {
+        return new RsData<>("200", "동행 모집 글이 성공적으로 조회되었습니다.", recruitService.findById(recruitId));
     }
 
     @GetMapping
-    public List<RecruitListResponseDto> getRecruits(){
-        return recruitService.findAll();
+    public RsData<List<RecruitListResponseDto>> getRecruits(){
+        return new RsData<>("200", "동행 모집 글 목록이 성공적으로 조회되었습니다.", recruitService.findAll());
     }
 
     @PostMapping
-    public RecruitDetailResponseDto createRecruit (@RequestBody RecruitCreateRequestDto recruitCreateRequestDto) {
-        return recruitService.create(recruitCreateRequestDto);
+    public RsData<RecruitDetailResponseDto> createRecruit (@RequestBody RecruitRequestDto requestDto) {
+        return new RsData<>("201", "동행 모집 글이 성공적으로 등록되었습니다.", recruitService.create(requestDto));
     }
 
     @PutMapping("/{recruitId}")// 일단 put으로 통일
-    public RecruitDetailResponseDto updateRecruit(@PathVariable("recruitId") Long recruitId, @RequestBody RecruitCreateRequestDto requestDto) {
-        return recruitService.update(recruitId, requestDto);
+    public RsData<RecruitDetailResponseDto> updateRecruit(@PathVariable("recruitId") Long recruitId, @RequestBody RecruitRequestDto requestDto) {
+        return new RsData<>("200", "동행 모집 글이 성공적으로 수정되었습니다.", recruitService.update(recruitId, requestDto));
     }
 
     @DeleteMapping("/{recruitId}")
-    public void deleteRecruit(@PathVariable("recruitId") Long recruitId){ // 이름 명시
+    public RsData<Void> deleteRecruit(@PathVariable("recruitId") Long recruitId){ // 이름 명시
         recruitService.delete(recruitId);
+        return new RsData<>("200", "동행 모집 글이 성공적으로 삭제되었습니다.");
     }
-
-
-
-
 }
