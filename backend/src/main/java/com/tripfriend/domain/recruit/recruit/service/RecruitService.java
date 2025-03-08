@@ -50,6 +50,13 @@ public class RecruitService {
     }
 
     @Transactional
+    public List<RecruitListResponseDto> searchRecruits(String keyword) {
+        return recruitRepository.searchByTitleOrContent(keyword).stream()
+                .map(RecruitListResponseDto::new)
+                .toList();
+    }
+
+    @Transactional
     public RecruitDetailResponseDto update(Long recruitId, RecruitRequestDto requestDto) {
         Recruit recruit = recruitRepository.findById(recruitId).orElseThrow(() -> new ServiceException("404-3", "해당 모집글이 존재하지 않습니다."));
         Place place = placeRepository.findById(requestDto.getPlaceId()).orElseThrow(() -> new ServiceException("404-2", "해당 장소가 존재하지 않습니다."));
@@ -60,4 +67,6 @@ public class RecruitService {
     public void delete(Long recruitId) {
         recruitRepository.deleteById(recruitId);
     }
+
+
 }

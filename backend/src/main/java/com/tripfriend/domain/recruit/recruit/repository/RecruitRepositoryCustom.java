@@ -5,4 +5,5 @@ import java.util.List;
 
 public interface RecruitRepositoryCustom {
     List<Recruit> findByRecruitTest();
+    List<Recruit> searchByTitleOrContent(String keyword);
 }

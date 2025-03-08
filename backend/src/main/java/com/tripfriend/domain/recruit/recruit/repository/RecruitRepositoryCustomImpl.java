@@ -13,12 +13,21 @@ import java.util.List;
 public class RecruitRepositoryCustomImpl implements RecruitRepositoryCustom {
 
     private final JPAQueryFactory jpaQueryFactory;
+    private final QRecruit recruit = QRecruit.recruit;
 
     @Override
     public List<Recruit> findByRecruitTest() {
-        QRecruit recruit = QRecruit.recruit;
         return jpaQueryFactory.selectFrom(recruit)
                 .where(recruit.recruitId.eq(1L))
+                .fetch();
+    }
+
+    @Override
+    public List<Recruit> searchByTitleOrContent(String keyword) {
+        return jpaQueryFactory
+                .selectFrom(recruit)
+                .where(recruit.title.containsIgnoreCase(keyword)
+                        .or(recruit.content.containsIgnoreCase(keyword)))
                 .fetch();
     }
 }
