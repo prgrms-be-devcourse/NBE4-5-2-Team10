@@ -89,12 +89,10 @@ public class TripScheduleController {
         );
     }
 
-    // 여행 일정 삭제
+    // 개인 여행 일정 삭제
     @DeleteMapping("/my-schedules/{scheduleId}")
     public RsData<Void> deleteSchedule(@PathVariable Long scheduleId,
                                        @RequestHeader(value = "Authorization", required = false) String token) {
-
-
 
         scheduleService.deleteSchedule(scheduleId, token);
         return new RsData<>(
@@ -120,8 +118,9 @@ public class TripScheduleController {
     }
 
     @PutMapping("/update")
-    public RsData<TripUpdateResDto> updateTrip(@RequestBody @Valid TripUpdateReqDto reqDto) {
-        TripUpdateResDto resTrip = scheduleService.updateTrip(reqDto);
+    public RsData<TripUpdateResDto> updateTrip(@RequestBody @Valid TripUpdateReqDto reqDto,
+                                               @RequestHeader(value = "Authorization", required = false) String token) {
+        TripUpdateResDto resTrip = scheduleService.updateTrip(reqDto, token);
         return new RsData<>(
                 "200-1",
                 "여행 일정 및 여행 정보가 성공적으로 수정되었습니다.",

@@ -39,7 +39,7 @@ public class TripScheduleService {
      * @return 로그인한 회원 객체
      * @throws ServiceException 로그인하지 않은 경우 예외 발생
      */
-    public Member getLoggedInMemberId(String token) {
+    public Member getLoggedInMember(String token) {
         // 로그인 여부 확인 및 회원 정보 가져오기
         Member member = authService.getLoggedInMember(token);
 
@@ -54,8 +54,8 @@ public class TripScheduleService {
     @Transactional
     public TripScheduleResDto createSchedule(TripScheduleReqDto req, String token) {
 
-        // 회원 확인
-        Member member = getLoggedInMemberId(token);
+        // 로그인 한 회원 객체 가져오기
+        Member member = getLoggedInMember(token);
 
         // 여행 일정 생성 및 저장
         TripSchedule newSchedule = TripSchedule.builder()
@@ -89,7 +89,7 @@ public class TripScheduleService {
                 .collect(Collectors.toList());
     }
 
-    // 회원 이름 조회
+    // 회원 이름 조회(필요없을듯)
     @Transactional(readOnly = true)
     public String getMemberName(Long memberId) {
         return memberRepository.findById(memberId)
@@ -97,7 +97,7 @@ public class TripScheduleService {
                 .orElseThrow(() -> new ServiceException("404-1", "해당 회원이 존재하지 않습니다."));
     }
 
-    // 특정 회원의 여행 일정 조회
+    // 특정 회원의 여행 일정 조회(필요없을듯)
     @Transactional(readOnly = true)
     public List<TripScheduleResDto> getSchedulesByMemberId(Long memberId) {
         // 회원 존재 여부 검증
@@ -118,13 +118,20 @@ public class TripScheduleService {
                 .collect(Collectors.toList());
     }
 
-    // 로그인 한 회원의 개인 여행 일정 삭제
+
+    /**
+     * 로그인한 회원이 자신의 여행 일정을 삭제하는 메서드
+     *
+     * @param scheduleId 삭제할 일정 ID
+     * @param token      JWT 토큰 (로그인된 사용자 확인)
+     * @throws ServiceException 로그인되지 않았거나, 권한이 없는 경우 예외 발생
+     */
     @Transactional
     public void deleteSchedule(Long scheduleId,
                                String token) {
 
         // 로그인한 회원 ID 가져오기
-        Member member = getLoggedInMemberId(token);
+        Member member = getLoggedInMember(token);
 
         TripSchedule schedule = tripScheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new ServiceException("404-1", "일정이 존재하지 않습니다."));
@@ -158,11 +165,20 @@ public class TripScheduleService {
 
     // 여행 일정 및 여행 정보 통합 수정 메서드
     @Transactional
-    public TripUpdateResDto updateTrip(@Valid TripUpdateReqDto reqDto) {
-        // 여행 일정 수정
+    public TripUpdateResDto updateTrip(@Valid TripUpdateReqDto reqDto, String token) {
+        // 로그인한 회원 정보 가져오기
+        Member member = getLoggedInMember(token);
+
+        // 여행 일정 확인
         TripSchedule tripSchedule = tripScheduleRepository.findById(reqDto.getTripScheduleId())
                 .orElseThrow(() -> new ServiceException("404-1", "해당 일정이 존재하지 않습니다."));
 
+        // 현재 로그인한 사용자가 일정 생성자인지 확인
+        if (!tripSchedule.getMember().getId().equals(member.getId())){
+            throw new ServiceException("403-1","본인이 생성한 일정만 수정할 수 있습니다.");
+        }
+
+        // 여행 일정 수정
         tripSchedule.updateSchedule(reqDto.getScheduleUpdate());
 
         // 여행 정보 수정
@@ -170,6 +186,11 @@ public class TripScheduleService {
                 .map(infoUpdate -> {
                     TripInformation tripInfo = tripInformationRepository.findById(infoUpdate.getTripInformationId())
                             .orElseThrow(() -> new ServiceException("404-2", "해당 여행 정보가 존재하지 않습니다."));
+
+                    // 본인 확인
+                    if (!tripInfo.getTripSchedule().getMember().getId().equals(member.getId())) {
+                        throw new ServiceException("403-2", "본인이 생성한 일정의 여행 정보만 수정할 수 있습니다.");
+                    }
 
                     tripInfo.updateTripInformation(infoUpdate);
                     return tripInfo;
