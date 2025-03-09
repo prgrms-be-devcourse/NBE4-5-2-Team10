@@ -2,6 +2,7 @@ package com.tripfriend.domain.trip.schedule.service;
 
 import com.tripfriend.domain.member.member.entity.Member;
 import com.tripfriend.domain.member.member.repository.MemberRepository;
+import com.tripfriend.domain.member.member.service.AuthService;
 import com.tripfriend.domain.place.place.entity.Place;
 import com.tripfriend.domain.place.place.repository.PlaceRepository;
 import com.tripfriend.domain.trip.information.dto.TripInformationUpdateReqDto;
@@ -28,16 +29,33 @@ public class TripScheduleService {
     private final MemberRepository memberRepository;
     private final TripInformationService tripInformationService;
     private final TripInformationRepository tripInformationRepository;
+    private final AuthService authService;
     private final PlaceRepository placeRepository;
+
+    /**
+     * 현재 로그인한 회원객체를 반환하는 메서드
+     *
+     * @param token JWT 토큰
+     * @return 로그인한 회원 객체
+     * @throws ServiceException 로그인하지 않은 경우 예외 발생
+     */
+    public Member getLoggedInMemberId(String token) {
+        // 로그인 여부 확인 및 회원 정보 가져오기
+        Member member = authService.getLoggedInMember(token);
+
+        if (member == null) {
+            throw new ServiceException("401-1", "로그인이 필요합니다.");
+        }
+
+        return member;
+    }
 
     // 여행 일정 생성
     @Transactional
-    public TripScheduleResDto createSchedule(TripScheduleReqDto req) {
+    public TripScheduleResDto createSchedule(TripScheduleReqDto req, String token) {
 
         // 회원 확인
-        Member member = memberRepository.findById(req.getMemberId()).orElseThrow(
-                () -> new ServiceException("404-1", "해당 회원이 존재하지 않습니다.")
-        );
+        Member member = getLoggedInMemberId(token);
 
         // 여행 일정 생성 및 저장
         TripSchedule newSchedule = TripSchedule.builder()
@@ -57,7 +75,7 @@ public class TripScheduleService {
         return new TripScheduleResDto(newSchedule);
     }
 
-    // 전체 일정 조회
+    // 전체 일정 조회(필요없을듯)
     @Transactional(readOnly = true)
     public List<TripScheduleResDto> getAllSchedules() {
         List<TripSchedule> schedules = tripScheduleRepository.findAll();

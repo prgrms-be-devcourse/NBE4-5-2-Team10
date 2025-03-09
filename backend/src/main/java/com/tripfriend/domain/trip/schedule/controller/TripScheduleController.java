@@ -7,6 +7,7 @@ import com.tripfriend.domain.trip.schedule.dto.*;
 import com.tripfriend.domain.trip.schedule.entity.TripSchedule;
 import com.tripfriend.domain.trip.schedule.service.TripScheduleService;
 import com.tripfriend.global.dto.RsData;
+import com.tripfriend.global.exception.ServiceException;
 import com.tripfriend.global.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -23,14 +24,16 @@ public class TripScheduleController {
 
     private final TripScheduleService scheduleService;
     private final AuthService authService;
-    private final MemberRepository memberRepository;
 
 
-    // 일정 생성
+    // 개인 일정 생성
     @PostMapping
-    public RsData<TripScheduleResDto> createSchedule(@RequestBody TripScheduleReqDto reqBody) {
-        System.out.println("확인" + reqBody);
-        TripScheduleResDto schedule = scheduleService.createSchedule(reqBody);
+    public RsData<TripScheduleResDto> createSchedule(@RequestBody TripScheduleReqDto reqBody,
+                                                     @RequestHeader(value = "Authorization", required = false) String token) {
+
+
+        // 일정 생성
+        TripScheduleResDto schedule = scheduleService.createSchedule(reqBody, token);
         return new RsData<>(
                 "200-1",
                 "일정이 성공적으로 생성되었습니다.",
@@ -38,7 +41,7 @@ public class TripScheduleController {
         );
     }
 
-    // 전체 일정 조회
+    // 전체 일정 조회(필요없을지도)
     @GetMapping
     public RsData<List<TripScheduleResDto>> getAllSchedules() {
         List<TripScheduleResDto> schedules = scheduleService.getAllSchedules();
@@ -71,7 +74,7 @@ public class TripScheduleController {
         );
     }
 
-    // 특정 회원의 여행 일정 조회
+    // 특정 회원의 여행 일정 조회(필요없음)
     @GetMapping("/member/{memberId}")
     public RsData<List<TripScheduleResDto>> getSchedulesByMember(@PathVariable Long memberId) {
 
@@ -87,8 +90,11 @@ public class TripScheduleController {
     }
 
     // 여행 일정 삭제
-    @DeleteMapping("/{scheduleId}")
+    @DeleteMapping("/my-schedules/{scheduleId}")
     public RsData<Void> deleteSchedule(@PathVariable Long scheduleId) {
+
+
+
         scheduleService.deleteSchedule(scheduleId);
         return new RsData<>(
                 "200-4",
