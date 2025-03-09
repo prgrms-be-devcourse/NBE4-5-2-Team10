@@ -6,11 +6,13 @@ import com.tripfriend.domain.review.dto.ReviewResponseDto;
 import com.tripfriend.domain.review.entity.Review;
 import com.tripfriend.domain.review.repository.CommentRepository;
 import com.tripfriend.domain.review.repository.ReviewRepository;
+import com.tripfriend.global.exception.ServiceException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,7 +27,14 @@ public class ReviewService {
     // 리뷰 생성
     @Transactional
     public ReviewResponseDto createReview(ReviewRequestDto requestDto, Member member) {
+        // 유효성 검증 추가
+        if (requestDto.getPlaceId() == null) {
+            throw new ServiceException("400-1", "여행지 정보는 필수입니다.");
+        }
 
+        if (requestDto.getRating() < 1 || requestDto.getRating() > 5) {
+            throw new ServiceException("400-2", "평점은 1점에서 5점 사이여야 합니다.");
+        }
         Review review = new Review(
                 requestDto.getTitle(),
                 requestDto.getContent(),
@@ -43,7 +52,7 @@ public class ReviewService {
     // 리뷰 상세 조회
     public ReviewResponseDto getReview(Long reviewId) {
         Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 리뷰입니다."));
+                .orElseThrow(() -> new ServiceException("404-1", "존재하지 않는 리뷰입니다."));
 
         // 댓글 수 조회
         int commentCount = commentRepository.findByReviewReviewIdOrderByCreatedAtAsc(reviewId).size();
@@ -53,6 +62,10 @@ public class ReviewService {
 
     // 특정 장소의 리뷰 목록 조회
     public List<ReviewResponseDto> getReviewsByPlace(Long placeId) {
+        if (placeId == null) {
+            throw new ServiceException("400-3", "여행지 ID는 필수입니다.");
+        }
+
         List<Review> reviews = reviewRepository.findByPlaceIdOrderByCreatedAtDesc(placeId);
 
         return reviews.stream()
@@ -67,11 +80,16 @@ public class ReviewService {
     @Transactional
     public ReviewResponseDto updateReview(Long reviewId, ReviewRequestDto requestDto, Member member) {
         Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 리뷰입니다."));
+                .orElseThrow(() -> new ServiceException("404-1", "존재하지 않는 리뷰입니다."));
 
         // 작성자 본인인지 확인
         if (!review.getMember().getId().equals(member.getId())) {
-            throw new IllegalArgumentException("리뷰 작성자만 수정할 수 있습니다.");
+            throw new ServiceException("403-1", "리뷰 작성자만 수정할 수 있습니다.");
+        }
+
+        // 평점 유효성 검증
+        if (requestDto.getRating() < 1 || requestDto.getRating() > 5) {
+            throw new ServiceException("400-2", "평점은 1점에서 5점 사이여야 합니다.");
         }
 
         // 리뷰 내용 업데이트
@@ -87,11 +105,11 @@ public class ReviewService {
     @Transactional
     public void deleteReview(Long reviewId, Member member) {
         Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 리뷰입니다."));
+                .orElseThrow(() -> new ServiceException("404-1", "존재하지 않는 리뷰입니다."));
 
         // 작성자 본인인지 확인
         if (!review.getMember().getId().equals(member.getId())) {
-            throw new IllegalArgumentException("리뷰 작성자만 삭제할 수 있습니다.");
+            throw new ServiceException("403-1", "리뷰 작성자만 삭제할 수 있습니다.");
         }
 
         // 리뷰 삭제
@@ -102,6 +120,11 @@ public class ReviewService {
     public List<ReviewResponseDto> getReviews(String sort, String keyword, Long placeId, Long memberId) {
         List<Review> reviews = new ArrayList<>();
         List<ReviewResponseDto> reviewDtos = new ArrayList<>();
+
+        // 유효하지 않은 정렬 옵션 처리
+        if (!Arrays.asList("newest", "oldest", "highest_rating", "lowest_rating", "comments").contains(sort)) {
+            throw new ServiceException("400-4", "유효하지 않은 정렬 옵션입니다.");
+        }
 
         // 특정 회원의 리뷰만 조회
         if (memberId != null) {
