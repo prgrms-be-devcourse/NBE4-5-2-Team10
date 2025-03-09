@@ -62,19 +62,10 @@ public class TripScheduleController {
     @Operation(summary = "나의 여행 일정 전체 조회")
     public RsData<List<TripScheduleResDto>> getMySchedules(@RequestHeader(value = "Authorization", required = false) String token) {
 
-        // 로그인 확인
-        Member loggedInMember = authService.getLoggedInMember(token);
-
-        // 회원 아이디 가져오기
-        Long memberId = loggedInMember.getId();
-        // 회원 이름 가져오기
-        String memberName = loggedInMember.getUsername();
-
-
-        List<TripScheduleResDto> schedules = scheduleService.getSchedulesByCreator(memberId);
+        List<TripScheduleResDto> schedules = scheduleService.getSchedulesByCreator(token);
         return new RsData<>(
                 "200-6",
-                "'%s'님이 생성한 일정 조회가 완료되었습니다.".formatted(memberName),
+                "'%s'님이 생성한 일정 조회가 완료되었습니다.".formatted(schedules.get(0).getMemberName()),
                 schedules
         );
     }

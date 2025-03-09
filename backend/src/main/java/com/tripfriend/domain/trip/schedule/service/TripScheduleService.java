@@ -174,8 +174,8 @@ public class TripScheduleService {
                 .orElseThrow(() -> new ServiceException("404-1", "해당 일정이 존재하지 않습니다."));
 
         // 현재 로그인한 사용자가 일정 생성자인지 확인
-        if (!tripSchedule.getMember().getId().equals(member.getId())){
-            throw new ServiceException("403-1","본인이 생성한 일정만 수정할 수 있습니다.");
+        if (!tripSchedule.getMember().getId().equals(member.getId())) {
+            throw new ServiceException("403-1", "본인이 생성한 일정만 수정할 수 있습니다.");
         }
 
         // 여행 일정 수정
@@ -202,10 +202,13 @@ public class TripScheduleService {
 
     // 특정 회원이 생성한 여행 일정 조회
     @Transactional(readOnly = true)
-    public List<TripScheduleResDto> getSchedulesByCreator(Long memberId) {
+    public List<TripScheduleResDto> getSchedulesByCreator(String token) {
+
+        // 로그인한 회원 정보 가져오기
+        Member member = getLoggedInMember(token);
 
         // 회원 ID를 기반으로 해당 회원이 만든 여행 일정들을 조회
-        List<TripSchedule> schedules = tripScheduleRepository.findByMemberId(memberId);
+        List<TripSchedule> schedules = tripScheduleRepository.findByMemberId(member.getId());
 
         // 여행 일정이 존재하지 않는 경우 예외 발생
         if (schedules.isEmpty()) {
