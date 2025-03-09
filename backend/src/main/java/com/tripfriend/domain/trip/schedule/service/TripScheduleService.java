@@ -149,6 +149,24 @@ public class TripScheduleService {
 
         return new TripUpdateResDto(tripSchedule, updatedTripInformations);
     }
+
+    // 특정 회원이 생성한 여행 일정 조회
+    @Transactional(readOnly = true)
+    public List<TripScheduleResDto> getSchedulesByCreator(Long memberId) {
+
+        // 회원 ID를 기반으로 해당 회원이 만든 여행 일정들을 조회
+        List<TripSchedule> schedules = tripScheduleRepository.findByMemberId(memberId);
+
+        // 여행 일정이 존재하지 않는 경우 예외 발생
+        if (schedules.isEmpty()) {
+            throw new ServiceException("404-3", "해당 회원의 여행 일정이 존재하지 않습니다.");
+        }
+
+        // 조회한 TripSchedule 엔티티 리스트를 TripScheduleResDto 리스트로 변환하여 반환
+        return schedules.stream()
+                .map(TripScheduleResDto::new)
+                .collect(Collectors.toList());
+    }
 }
 
 

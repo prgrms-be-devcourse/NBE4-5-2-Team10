@@ -2,10 +2,13 @@ package com.tripfriend.domain.trip.schedule.controller;
 
 import com.tripfriend.domain.member.member.entity.Member;
 import com.tripfriend.domain.member.member.repository.MemberRepository;
+import com.tripfriend.domain.member.member.service.AuthService;
 import com.tripfriend.domain.trip.schedule.dto.*;
 import com.tripfriend.domain.trip.schedule.entity.TripSchedule;
 import com.tripfriend.domain.trip.schedule.service.TripScheduleService;
 import com.tripfriend.global.dto.RsData;
+import com.tripfriend.global.util.JwtUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +22,9 @@ import java.util.List;
 public class TripScheduleController {
 
     private final TripScheduleService scheduleService;
+    private final AuthService authService;
     private final MemberRepository memberRepository;
+
 
     // 일정 생성
     @PostMapping
@@ -43,6 +48,27 @@ public class TripScheduleController {
                 schedules
         );
 
+    }
+
+    // 로그인한 회원이 자신의 여행 일정을 조회
+    @GetMapping("/my-schedules")
+    public RsData<List<TripScheduleResDto>> getMySchedules(@RequestHeader(value = "Authorization", required = false) String token) {
+
+        // 로그인 확인
+        Member loggedInMember = authService.getLoggedInMember(token);
+
+        // 회원 아이디 가져오기
+        Long memberId = loggedInMember.getId();
+        // 회원 이름 가져오기
+        String memberName = loggedInMember.getUsername();
+
+
+        List<TripScheduleResDto> schedules = scheduleService.getSchedulesByCreator(memberId);
+        return new RsData<>(
+                "200-6",
+                "'%s'님이 생성한 일정 조회가 완료되었습니다.".formatted(memberName),
+                schedules
+        );
     }
 
     // 특정 회원의 여행 일정 조회
