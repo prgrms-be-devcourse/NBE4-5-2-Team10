@@ -31,6 +31,7 @@ import com.tripfriend.global.exception.ServiceException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,6 +56,7 @@ public class BaseInitData implements CommandLineRunner {
     private final BlacklistRepository blacklistRepository;
     private final QuestionRepository questionRepository;
     private final AnswerRepository answerRepository;
+    private final PasswordEncoder passwordEncoder;
 
 
     @Override
@@ -78,7 +80,7 @@ public class BaseInitData implements CommandLineRunner {
             Member user = Member.builder()
                     .username("user")
                     .email("user@example.com")
-                    .password("12341234")
+                    .password(passwordEncoder.encode("12341234"))
                     .nickname("user")
                     .gender(Gender.MALE)
                     .ageRange(AgeRange.TWENTIES)
@@ -93,7 +95,7 @@ public class BaseInitData implements CommandLineRunner {
             Member admin = Member.builder()
                     .username("admin")
                     .email("admin@example.com")
-                    .password("12341234")
+                    .password(passwordEncoder.encode("12341234"))
                     .nickname("admin")
                     .gender(Gender.FEMALE)
                     .ageRange(AgeRange.THIRTIES)
