@@ -91,11 +91,12 @@ public class TripScheduleController {
 
     // 여행 일정 삭제
     @DeleteMapping("/my-schedules/{scheduleId}")
-    public RsData<Void> deleteSchedule(@PathVariable Long scheduleId) {
+    public RsData<Void> deleteSchedule(@PathVariable Long scheduleId,
+                                       @RequestHeader(value = "Authorization", required = false) String token) {
 
 
 
-        scheduleService.deleteSchedule(scheduleId);
+        scheduleService.deleteSchedule(scheduleId, token);
         return new RsData<>(
                 "200-4",
                 "일정이 성공적으로 삭제되었습니다."

@@ -118,11 +118,22 @@ public class TripScheduleService {
                 .collect(Collectors.toList());
     }
 
-    // 여행 일정 삭제
+    // 로그인 한 회원의 개인 여행 일정 삭제
     @Transactional
-    public void deleteSchedule(Long scheduleId) {
+    public void deleteSchedule(Long scheduleId,
+                               String token) {
+
+        // 로그인한 회원 ID 가져오기
+        Member member = getLoggedInMemberId(token);
+
         TripSchedule schedule = tripScheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new ServiceException("404-1", "해당 일정이 존재하지 않습니다."));
+                .orElseThrow(() -> new ServiceException("404-1", "일정이 존재하지 않습니다."));
+
+        // 현재 로그인한 사용자가 일정 생성자인지 확인
+        if (!schedule.getMember().getId().equals(member.getId())) {
+            throw new ServiceException("403-1", "본인이 생성한 일정만 삭제할 수 있습니다.");
+        }
+
         tripScheduleRepository.delete(schedule);
     }
 
