@@ -9,6 +9,8 @@ import com.tripfriend.domain.trip.schedule.service.TripScheduleService;
 import com.tripfriend.global.dto.RsData;
 import com.tripfriend.global.exception.ServiceException;
 import com.tripfriend.global.util.JwtUtil;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/trip/schedule")
+@Tag(name = "TripSchedule API", description = "여행일정 관련 기능을 제공합니다.")
 public class TripScheduleController {
 
     private final TripScheduleService scheduleService;
@@ -28,6 +31,7 @@ public class TripScheduleController {
 
     // 개인 일정 생성
     @PostMapping
+    @Operation(summary = "나의 여행 일정 등록")
     public RsData<TripScheduleResDto> createSchedule(@RequestBody TripScheduleReqDto reqBody,
                                                      @RequestHeader(value = "Authorization", required = false) String token) {
 
@@ -55,6 +59,7 @@ public class TripScheduleController {
 
     // 로그인한 회원이 자신의 여행 일정을 조회
     @GetMapping("/my-schedules")
+    @Operation(summary = "나의 여행 일정 전체 조회")
     public RsData<List<TripScheduleResDto>> getMySchedules(@RequestHeader(value = "Authorization", required = false) String token) {
 
         // 로그인 확인
@@ -90,6 +95,7 @@ public class TripScheduleController {
     }
 
     // 개인 여행 일정 삭제
+    @Operation(summary = "나의 여행 일정 삭제")
     @DeleteMapping("/my-schedules/{scheduleId}")
     public RsData<Void> deleteSchedule(@PathVariable Long scheduleId,
                                        @RequestHeader(value = "Authorization", required = false) String token) {
@@ -118,6 +124,7 @@ public class TripScheduleController {
     }
 
     @PutMapping("/update")
+    @Operation(summary = "나의 여행 일정 및 여행 정보 통합 수정")
     public RsData<TripUpdateResDto> updateTrip(@RequestBody @Valid TripUpdateReqDto reqDto,
                                                @RequestHeader(value = "Authorization", required = false) String token) {
         TripUpdateResDto resTrip = scheduleService.updateTrip(reqDto, token);
