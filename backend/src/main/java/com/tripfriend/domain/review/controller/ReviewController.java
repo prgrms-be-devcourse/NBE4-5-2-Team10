@@ -7,11 +7,14 @@ import com.tripfriend.domain.review.dto.ReviewResponseDto;
 import com.tripfriend.domain.review.service.ReviewService;
 import com.tripfriend.global.dto.RsData;
 import com.tripfriend.global.exception.ServiceException;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/reviews")
@@ -33,7 +36,7 @@ public class ReviewController {
             @Valid @RequestBody ReviewRequestDto requestDto,
             @RequestParam(defaultValue = "1") Long memberId) {
 
-        // 임시 인증 로직 - 토큰/Redis 인증으로 교체 예정
+        // 임시 인증 로직
         Member member = getMemberById(memberId);
         ReviewResponseDto responseDto = reviewService.createReview(requestDto, member);
         return new RsData<>("201-1", "리뷰가 성공적으로 등록되었습니다.", responseDto);
@@ -41,8 +44,23 @@ public class ReviewController {
 
     // 리뷰 상세 조회
     @GetMapping("/{reviewId}")
-    public RsData<ReviewResponseDto> getReview(@PathVariable Long reviewId) {
-        ReviewResponseDto responseDto = reviewService.getReview(reviewId);
+    public RsData<ReviewResponseDto> getReview(
+            @PathVariable Long reviewId,
+            HttpSession session) {
+
+        // 세션에서 조회한 리뷰 목록 가져오기
+        Set<Long> viewedReviews = (Set<Long>) session.getAttribute("VIEWED_REVIEWS");
+
+        // 세션에 조회 목록이 없으면 새로 생성
+        if (viewedReviews == null) {
+            viewedReviews = new HashSet<>();
+            session.setAttribute("VIEWED_REVIEWS", viewedReviews);
+        }
+
+        // 이미 조회한 리뷰가 아닐 경우에만 조회수 증가
+        boolean isNewView = viewedReviews.add(reviewId);
+
+        ReviewResponseDto responseDto = reviewService.getReview(reviewId, isNewView);
         return new RsData<>("200-1", "리뷰 조회에 성공했습니다.", responseDto);
     }
 
@@ -75,6 +93,16 @@ public class ReviewController {
         reviewService.deleteReview(reviewId, member);
         return new RsData<>("200-4", "리뷰가 성공적으로 삭제되었습니다.");
     }
+
+    // 인기 게시물 조회
+    @GetMapping("/popular")
+    public RsData<List<ReviewResponseDto>> getPopularReviews(
+            @RequestParam(defaultValue = "10") int limit) {
+
+        List<ReviewResponseDto> popularReviews = reviewService.getPopularReviews(limit);
+        return new RsData<>("200-6", "인기 리뷰 목록을 성공적으로 조회했습니다.", popularReviews);
+    }
+
 
     // 리뷰 목록 조회 (정렬 및 검색)
     @GetMapping
