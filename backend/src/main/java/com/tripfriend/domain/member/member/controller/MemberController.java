@@ -44,7 +44,7 @@ public class MemberController {
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletResponse response) {
         authService.logout(response);
-        return ResponseEntity.ok("Logout successful");
+        return ResponseEntity.ok("로그아웃이 실행되었습니다.");
     }
 
     @Operation(summary = "액세스 토큰 재발급")

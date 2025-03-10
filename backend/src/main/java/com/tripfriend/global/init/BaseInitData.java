@@ -77,11 +77,11 @@ public class BaseInitData implements CommandLineRunner {
     // 회원 등록
     private void initMembers() {
         if (memberRepository.count() == 0) {
-            Member user = Member.builder()
-                    .username("user")
-                    .email("user@example.com")
+            Member user1 = Member.builder()
+                    .username("user1")
+                    .email("user1@example.com")
                     .password(passwordEncoder.encode("12341234"))
-                    .nickname("user")
+                    .nickname("user1")
                     .gender(Gender.MALE)
                     .ageRange(AgeRange.TWENTIES)
                     .travelStyle(TravelStyle.TOURISM)
@@ -90,7 +90,37 @@ public class BaseInitData implements CommandLineRunner {
                     .authority("USER")
                     .verified(true)
                     .build();
-            memberRepository.save(user);
+            memberRepository.save(user1);
+
+            Member user2 = Member.builder()
+                    .username("user2")
+                    .email("user2@example.com")
+                    .password(passwordEncoder.encode("12341234"))
+                    .nickname("user2")
+                    .gender(Gender.FEMALE)
+                    .ageRange(AgeRange.THIRTIES)
+                    .travelStyle(TravelStyle.SHOPPING)
+                    .aboutMe("hello")
+                    .rating(0.0)
+                    .authority("USER")
+                    .verified(true)
+                    .build();
+            memberRepository.save(user2);
+
+            Member user3 = Member.builder()
+                    .username("user3")
+                    .email("user3@example.com")
+                    .password(passwordEncoder.encode("12341234"))
+                    .nickname("user3")
+                    .gender(Gender.MALE)
+                    .ageRange(AgeRange.FORTIES_PLUS)
+                    .travelStyle(TravelStyle.RELAXATION)
+                    .aboutMe("hello")
+                    .rating(0.0)
+                    .authority("USER")
+                    .verified(true)
+                    .build();
+            memberRepository.save(user3);
 
             Member admin = Member.builder()
                     .username("admin")
@@ -733,7 +763,7 @@ public class BaseInitData implements CommandLineRunner {
 
     private void initBlacklists() {
         if (blacklistRepository.count() == 0) {
-            Member user = memberRepository.findByUsername("user").orElseThrow();
+            Member user = memberRepository.findByUsername("user1").orElseThrow();
 
             blacklistRepository.save(new Blacklist(user, "비정상 행위로 인해 차단됨", LocalDateTime.now()));
 
@@ -747,7 +777,7 @@ public class BaseInitData implements CommandLineRunner {
 
     private void initQuestionsAndAnswers() {
         if (questionRepository.count() == 0) {
-            Member user = memberRepository.findByUsername("user").orElseThrow();
+            Member user = memberRepository.findByUsername("user1").orElseThrow();
             Member admin = memberRepository.findByUsername("admin").orElseThrow();
 
             Question question1 = questionRepository.save(new Question(user, "TripFirend란?", "TripFirend에 대해 알고 싶어요.", LocalDateTime.now()));

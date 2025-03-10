@@ -40,9 +40,6 @@ public class MemberService {
             throw new RuntimeException("이미 사용 중인 닉네임입니다.");
         }
 
-        // 이메일 인증 코드 발송
-        mailService.sendAuthCode(email);
-
         // 비밀번호 암호화
         String encryptedPassword = passwordEncoder.encode(joinRequestDto.getPassword());
 
@@ -117,11 +114,11 @@ public class MemberService {
     public MemberResponseDto getMyPage(Long id, String username) {
 
         Member member = memberRepository.findById(id)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with ID: " + id));
+                .orElseThrow(() -> new UsernameNotFoundException("존재하지 않는 회원입니다."));
 
         // 보안 강화: 본인의 정보만 조회할 수 있도록 체크
         if (!member.getUsername().equals(username)) {
-            throw new AccessDeniedException("You are not authorized to view this profile.");
+            throw new AccessDeniedException("본인만 확인할 수 있습니다.");
         }
 
         return MemberResponseDto.fromEntity(member);
