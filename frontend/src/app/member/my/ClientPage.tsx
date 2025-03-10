@@ -4,14 +4,21 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
-// 사용자 정보 타입 정의
-interface UserProfile {
+// Backend DTO에 맞춘 사용자 정보 타입 정의
+interface MemberResponseDto {
   id: number;
-  name: string;
+  username: string;
   email: string;
+  nickname: string;
   profileImage: string;
-  bio: string;
-  joinDate: string;
+  gender: string;
+  ageRange: string;
+  travelStyle: string;
+  aboutMe: string;
+  rating: number;
+  createdAt: string;
+  updatedAt: string;
+  authority: string;
 }
 
 // 사용자 여행 정보 타입 정의
@@ -26,13 +33,21 @@ interface TripInfo {
 
 export default function ClientPage() {
   // 사용자 프로필 상태
-  const [userProfile, setUserProfile] = useState<UserProfile>({
+  const [userProfile, setUserProfile] = useState<MemberResponseDto>({
     id: 1,
-    name: "홍길동",
+    username: "honggildong",
     email: "user@example.com",
+    nickname: "홍길동",
     profileImage: "/placeholder.jpg",
-    bio: "여행을 좋아하는 20대 직장인입니다. 맛집 탐방과 현지 문화 체험을 즐겨요!",
-    joinDate: "2024-01-15",
+    gender: "MALE",
+    ageRange: "TWENTIES",
+    travelStyle: "ADVENTURE",
+    aboutMe:
+      "여행을 좋아하는 20대 직장인입니다. 맛집 탐방과 현지 문화 체험을 즐겨요!",
+    rating: 4.5,
+    createdAt: "2024-01-15T12:00:00",
+    updatedAt: "2024-02-20T15:30:00",
+    authority: "ROLE_USER",
   });
 
   // 내가 만든 여행 목록
@@ -99,6 +114,8 @@ export default function ClientPage() {
   const handleSaveProfile = () => {
     setUserProfile(editedProfile);
     setIsEditing(false);
+    // API 호출 추가 가능
+    // updateMemberProfile(editedProfile).then(...)
   };
 
   // 프로필 수정 취소 핸들러
@@ -109,7 +126,9 @@ export default function ClientPage() {
 
   // 프로필 입력 변경 핸들러
   const handleProfileChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target;
     setEditedProfile({
@@ -118,17 +137,120 @@ export default function ClientPage() {
     });
   };
 
-  // 실제 API 호출은 useEffect에서 처리할 수 있음
+  // 백엔드 API 호출
   useEffect(() => {
-    // API에서 사용자 정보 로드
-    // 예시: fetchUserProfile().then(data => setUserProfile(data));
-    // API에서 여행 정보 로드
-    // 예시: fetchUserTrips().then(data => {
-    //   setMyTrips(data.myTrips);
-    //   setParticipatingTrips(data.participatingTrips);
-    //   setCompletedTrips(data.completedTrips);
-    // });
+    // accessToken 가져오기
+    const accessToken = localStorage.getItem("accessToken");
+
+    // 토큰이 없을 경우 처리
+    if (!accessToken) {
+      console.log("로그인이 필요합니다");
+      // 로그인 페이지로 리다이렉트 (Next.js의 router 사용)
+      // 아래 주석을 해제하고 원하는 로그인 페이지 경로로 변경하세요
+      // import { useRouter } from 'next/navigation'; // 컴포넌트 상단에 추가
+      // const router = useRouter(); // 컴포넌트 내부에 추가
+      // router.push('/login');
+      return;
+    }
+
+    // 마이페이지 정보 가져오기
+    fetch("http://localhost:8080/member/mypage", {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          if (response.status === 401) {
+            console.error("인증이 만료되었습니다. 다시 로그인해 주세요.");
+
+            // 새로운 accessToken 얻기 시도
+            const refreshToken = localStorage.getItem("refreshToken");
+            if (refreshToken) {
+              return fetch("http://localhost:8080/auth/refresh", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ refreshToken }),
+              }).then((refreshResponse) => {
+                if (refreshResponse.ok) {
+                  return refreshResponse.json().then((data) => {
+                    // 새 accessToken 저장
+                    localStorage.setItem("accessToken", data.accessToken);
+
+                    // 새 토큰으로 다시 마이페이지 요청
+                    return fetch("http://localhost:8080/member/mypage", {
+                      headers: {
+                        Authorization: `Bearer ${data.accessToken}`,
+                      },
+                    });
+                  });
+                } else {
+                  // refreshToken도 만료된 경우 로그인 페이지로 리다이렉트
+                  localStorage.removeItem("accessToken");
+                  localStorage.removeItem("refreshToken");
+                  // router.push('/login');
+                  throw new Error("로그인이 필요합니다");
+                }
+              });
+            } else {
+              // refreshToken이 없는 경우
+              localStorage.removeItem("accessToken");
+              // router.push('/login');
+              throw new Error("로그인이 필요합니다");
+            }
+          }
+          throw new Error(`마이페이지 로딩 실패: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        if (data) {
+          // null 체크 추가
+          setUserProfile(data);
+          setEditedProfile(data);
+        }
+      })
+      .catch((error) => {
+        console.error("마이페이지 로딩 실패:", error);
+      });
   }, []);
+
+  // 생성일자 포맷팅 함수
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("ko-KR");
+  };
+
+  // 여행 스타일 한글화
+  const getTravelStyleInKorean = (style: string) => {
+    const styles: { [key: string]: string } = {
+      ADVENTURE: "모험적인",
+      RELAXATION: "휴양적인",
+      CULTURE: "문화탐방",
+      FOOD: "맛집탐방",
+      SHOPPING: "쇼핑",
+      NATURE: "자연",
+      CITY: "도시",
+      BUDGET: "경제적인",
+      LUXURY: "럭셔리한",
+    };
+    return styles[style] || style;
+  };
+
+  // 연령대 한글화
+  const getAgeRangeInKorean = (ageRange: string) => {
+    const ranges: { [key: string]: string } = {
+      TEENS: "10대",
+      TWENTIES: "20대",
+      THIRTIES: "30대",
+      FORTIES: "40대",
+      FIFTIES: "50대",
+      OVER_SIXTIES: "60대 이상",
+    };
+    return ranges[ageRange] || ageRange;
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -208,11 +330,11 @@ export default function ClientPage() {
                   // 수정 모드
                   <div>
                     <div className="mb-4">
-                      <label className="block text-gray-700 mb-2">이름</label>
+                      <label className="block text-gray-700 mb-2">닉네임</label>
                       <input
                         type="text"
-                        name="name"
-                        value={editedProfile.name}
+                        name="nickname"
+                        value={editedProfile.nickname}
                         onChange={handleProfileChange}
                         className="w-full p-2 border rounded-md"
                       />
@@ -228,12 +350,62 @@ export default function ClientPage() {
                       />
                     </div>
                     <div className="mb-4">
+                      <label className="block text-gray-700 mb-2">성별</label>
+                      <select
+                        name="gender"
+                        value={editedProfile.gender}
+                        onChange={handleProfileChange}
+                        className="w-full p-2 border rounded-md"
+                      >
+                        <option value="MALE">남성</option>
+                        <option value="FEMALE">여성</option>
+                        <option value="OTHER">기타</option>
+                      </select>
+                    </div>
+                    <div className="mb-4">
+                      <label className="block text-gray-700 mb-2">연령대</label>
+                      <select
+                        name="ageRange"
+                        value={editedProfile.ageRange}
+                        onChange={handleProfileChange}
+                        className="w-full p-2 border rounded-md"
+                      >
+                        <option value="TEENS">10대</option>
+                        <option value="TWENTIES">20대</option>
+                        <option value="THIRTIES">30대</option>
+                        <option value="FORTIES">40대</option>
+                        <option value="FIFTIES">50대</option>
+                        <option value="OVER_SIXTIES">60대 이상</option>
+                      </select>
+                    </div>
+                    <div className="mb-4">
+                      <label className="block text-gray-700 mb-2">
+                        여행 스타일
+                      </label>
+                      <select
+                        name="travelStyle"
+                        value={editedProfile.travelStyle}
+                        onChange={handleProfileChange}
+                        className="w-full p-2 border rounded-md"
+                      >
+                        <option value="ADVENTURE">모험적인</option>
+                        <option value="RELAXATION">휴양적인</option>
+                        <option value="CULTURE">문화탐방</option>
+                        <option value="FOOD">맛집탐방</option>
+                        <option value="SHOPPING">쇼핑</option>
+                        <option value="NATURE">자연</option>
+                        <option value="CITY">도시</option>
+                        <option value="BUDGET">경제적인</option>
+                        <option value="LUXURY">럭셔리한</option>
+                      </select>
+                    </div>
+                    <div className="mb-4">
                       <label className="block text-gray-700 mb-2">
                         자기소개
                       </label>
                       <textarea
-                        name="bio"
-                        value={editedProfile.bio}
+                        name="aboutMe"
+                        value={editedProfile.aboutMe}
                         onChange={handleProfileChange}
                         className="w-full p-2 border rounded-md h-32"
                       ></textarea>
@@ -257,17 +429,38 @@ export default function ClientPage() {
                   // 표시 모드
                   <div>
                     <h3 className="text-2xl font-bold mb-2">
-                      {userProfile.name}
+                      {userProfile.nickname}
                     </h3>
-                    <p className="text-gray-600 mb-4">{userProfile.email}</p>
+                    <p className="text-gray-600 mb-1">{userProfile.email}</p>
+                    <p className="text-gray-600 mb-4">
+                      평점: ⭐ {userProfile.rating?.toFixed(1) || "평가 없음"}
+                    </p>
+                    <div className="mb-4">
+                      <h4 className="text-lg font-semibold mb-2">기본 정보</h4>
+                      <p className="text-gray-700 mb-1">
+                        성별:{" "}
+                        {userProfile.gender === "MALE"
+                          ? "남성"
+                          : userProfile.gender === "FEMALE"
+                          ? "여성"
+                          : "기타"}
+                      </p>
+                      <p className="text-gray-700 mb-1">
+                        연령대: {getAgeRangeInKorean(userProfile.ageRange)}
+                      </p>
+                      <p className="text-gray-700 mb-1">
+                        여행 스타일:{" "}
+                        {getTravelStyleInKorean(userProfile.travelStyle)}
+                      </p>
+                    </div>
                     <div className="mb-6">
                       <h4 className="text-lg font-semibold mb-2">자기소개</h4>
-                      <p className="text-gray-700">{userProfile.bio}</p>
+                      <p className="text-gray-700">{userProfile.aboutMe}</p>
                     </div>
                     <div>
                       <h4 className="text-lg font-semibold mb-2">회원 정보</h4>
                       <p className="text-gray-700">
-                        가입일: {userProfile.joinDate}
+                        가입일: {formatDate(userProfile.createdAt)}
                       </p>
                       <p className="text-gray-700">
                         작성한 여행: {myTrips.length}개
