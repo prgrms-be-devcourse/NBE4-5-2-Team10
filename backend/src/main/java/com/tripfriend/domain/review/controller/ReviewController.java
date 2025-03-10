@@ -34,7 +34,7 @@ public class ReviewController {
     @PostMapping
     public RsData<ReviewResponseDto> createReview(
             @Valid @RequestBody ReviewRequestDto requestDto,
-            @RequestParam(defaultValue = "1") Long memberId) {
+            @RequestParam(name = "memberId", defaultValue = "1") Long memberId) {
 
         // 임시 인증 로직
         Member member = getMemberById(memberId);
@@ -45,7 +45,7 @@ public class ReviewController {
     // 리뷰 상세 조회
     @GetMapping("/{reviewId}")
     public RsData<ReviewResponseDto> getReview(
-            @PathVariable Long reviewId,
+            @PathVariable("reviewId") Long reviewId,
             HttpSession session) {
 
         // 세션에서 조회한 리뷰 목록 가져오기
@@ -66,7 +66,7 @@ public class ReviewController {
 
     // 특정 장소의 리뷰 목록 조회
     @GetMapping("/place/{placeId}")
-    public RsData<List<ReviewResponseDto>> getReviewsByPlace(@PathVariable Long placeId) {
+    public RsData<List<ReviewResponseDto>> getReviewsByPlace(@PathVariable("placeId") Long placeId) {
         List<ReviewResponseDto> responseDtoList = reviewService.getReviewsByPlace(placeId);
         return new RsData<>("200-2", "장소의 리뷰 목록을 성공적으로 조회했습니다.", responseDtoList);
     }
@@ -74,9 +74,9 @@ public class ReviewController {
     // 리뷰 수정
     @PutMapping("/{reviewId}")
     public RsData<ReviewResponseDto> updateReview(
-            @PathVariable Long reviewId,
+            @PathVariable("reviewId") Long reviewId,
             @Valid @RequestBody ReviewRequestDto requestDto,
-            @RequestParam(defaultValue = "1") Long memberId){
+            @RequestParam(name = "memberId",defaultValue = "1") Long memberId){
         // 임시 인증 로직
         Member member = getMemberById(memberId);
         ReviewResponseDto responseDto = reviewService.updateReview(reviewId, requestDto, member);
@@ -86,8 +86,8 @@ public class ReviewController {
     // 리뷰 삭제
     @DeleteMapping("/{reviewId}")
     public RsData<Void> deleteReview(
-            @PathVariable Long reviewId,
-            @RequestParam(defaultValue = "1") Long memberId) {
+            @PathVariable("reviewId") Long reviewId,
+            @RequestParam(name = "memberId", defaultValue = "1") Long memberId) {
         // 임시 인증 로직
         Member member = getMemberById(memberId);
         reviewService.deleteReview(reviewId, member);
@@ -97,7 +97,7 @@ public class ReviewController {
     // 인기 게시물 조회
     @GetMapping("/popular")
     public RsData<List<ReviewResponseDto>> getPopularReviews(
-            @RequestParam(defaultValue = "10") int limit) {
+            @RequestParam(name = "limit", defaultValue = "10") int limit) {
 
         List<ReviewResponseDto> popularReviews = reviewService.getPopularReviews(limit);
         return new RsData<>("200-6", "인기 리뷰 목록을 성공적으로 조회했습니다.", popularReviews);
@@ -107,10 +107,10 @@ public class ReviewController {
     // 리뷰 목록 조회 (정렬 및 검색)
     @GetMapping
     public RsData<List<ReviewResponseDto>> getReviews(
-            @RequestParam(defaultValue = "newest") String sort,
-            @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) Long placeId,
-            @RequestParam(required = false) Long memberId) {
+            @RequestParam(name = "sort",defaultValue = "newest") String sort,
+            @RequestParam(name = "keyword", required = false) String keyword,
+            @RequestParam(name = "placeId", required = false) Long placeId,
+            @RequestParam(name = "memberId",required = false) Long memberId) {
 
         List<ReviewResponseDto> reviews = reviewService.getReviews(sort, keyword, placeId, memberId);
         return new RsData<>("200-5", "리뷰 목록을 성공적으로 조회했습니다.", reviews);
