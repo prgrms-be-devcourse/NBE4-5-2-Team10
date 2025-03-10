@@ -15,7 +15,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ApplyCreateRequestDto {
-    private Long memberId;
+//    private Long memberId;
     private String content;
 
     public Apply toEntity(Member member, Recruit recruit) {

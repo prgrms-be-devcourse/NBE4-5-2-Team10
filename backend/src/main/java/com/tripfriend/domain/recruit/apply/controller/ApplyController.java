@@ -21,13 +21,13 @@ public class ApplyController {
     }
 
     @PostMapping
-    RsData<ApplyResponseDto> createApply(@PathVariable("recruitId") Long recruitId, @RequestBody ApplyCreateRequestDto requestDto) {
-        return new RsData<>("201-4", "동행 요청 댓글이 성공적으로 등록되었습니다.", applyService.create(recruitId, requestDto));
+    RsData<ApplyResponseDto> createApply(@PathVariable("recruitId") Long recruitId, @RequestBody ApplyCreateRequestDto requestDto, @RequestHeader(value = "Authorization", required = false) String token){
+        return new RsData<>("201-4", "동행 요청 댓글이 성공적으로 등록되었습니다.", applyService.create(recruitId, requestDto, token));
     }
 
     @DeleteMapping("/{applyId}")
-    RsData<Void> deleteApply(@PathVariable("applyId") Long applyId) {
-        applyService.delete(applyId);
+    RsData<Void> deleteApply(@PathVariable("applyId") Long applyId, @RequestHeader(value = "Authorization", required = false) String token) {
+        applyService.delete(applyId, token);
         return new RsData<>("200-4", "동행 요청 댓글이 성공적으로 삭제되었습니다.");
     }
 
