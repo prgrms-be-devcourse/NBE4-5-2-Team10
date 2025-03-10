@@ -46,3 +46,5 @@ db_test.mv.db
 db_test.trace.mv.db
 
 .env
+
+src/main/generated
