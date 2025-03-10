@@ -3,14 +3,12 @@ package com.tripfriend.domain.recruit.recruit.entity;
 import com.tripfriend.domain.member.member.entity.Member;
 import com.tripfriend.domain.place.place.entity.Place;
 import com.tripfriend.domain.recruit.apply.entity.Apply;
-import com.tripfriend.domain.recruit.recruit.dto.RecruitCreateRequestDto;
-import com.tripfriend.domain.recruit.recruit.dto.RecruitUpdateRequestDto;
+import com.tripfriend.domain.recruit.recruit.dto.RecruitRequestDto;
 import com.tripfriend.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.*;
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -70,7 +68,7 @@ public class Recruit extends BaseEntity {
     @Column(name = "group_size", nullable = false)
     private Integer groupSize = 2;
 
-    public Recruit update(RecruitCreateRequestDto requestDto, Place place){
+    public Recruit update(RecruitRequestDto requestDto, Place place){
         this.place = place;
         this.title = requestDto.getTitle();
         this.content = requestDto.getContent();

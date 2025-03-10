@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface RecruitRepository extends JpaRepository<Recruit, Long> {
+public interface RecruitRepository extends JpaRepository<Recruit, Long>, RecruitRepositoryCustom {
 }
