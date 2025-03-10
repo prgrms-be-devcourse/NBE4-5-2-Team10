@@ -6,16 +6,37 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
+// 폼 데이터 타입 정의
+interface FormData {
+  username: string;
+  password: string;
+  rememberMe: boolean;
+}
+
+// 에러 타입 정의
+interface FormErrors {
+  username: string;
+  password: string;
+  general: string;
+}
+
+// 인증 응답 타입 정의
+interface AuthResponse {
+  accessToken: string;
+  refreshToken?: string;
+  message?: string;
+}
+
 export default function ClientPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [formData, setFormData] = useState({
-    email: "",
+  const [formData, setFormData] = useState<FormData>({
+    username: "",
     password: "",
     rememberMe: false,
   });
-  const [errors, setErrors] = useState({
-    email: "",
+  const [errors, setErrors] = useState<FormErrors>({
+    username: "",
     password: "",
     general: "",
   });
@@ -37,7 +58,7 @@ export default function ClientPage() {
     }
   }, [searchParams]);
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
     setFormData({
       ...formData,
@@ -45,10 +66,10 @@ export default function ClientPage() {
     });
 
     // Clear the error when user starts typing
-    if (errors[name]) {
+    if (name in errors) {
       setErrors({
         ...errors,
-        [name]: "",
+        [name as keyof FormErrors]: "",
       });
     }
   };
@@ -57,15 +78,15 @@ export default function ClientPage() {
     let isValid = true;
     const newErrors = { ...errors };
 
-    // Email validation
-    if (!formData.email) {
-      newErrors.email = "이메일을 입력해주세요";
+    // Username validation
+    if (!formData.username) {
+      newErrors.username = "아이디는 필수 입력값입니다";
       isValid = false;
     }
 
     // Password validation
     if (!formData.password) {
-      newErrors.password = "비밀번호를 입력해주세요";
+      newErrors.password = "비밀번호는 필수 입력값입니다";
       isValid = false;
     }
 
@@ -73,7 +94,7 @@ export default function ClientPage() {
     return isValid;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!validateForm()) {
@@ -83,23 +104,107 @@ export default function ClientPage() {
     setIsLoading(true);
 
     try {
-      // Mock API call - replace with actual login API
-      console.log("로그인 데이터:", formData);
+      // 절대 경로로 API 엔드포인트 지정 (개발 서버 포트에 맞게 수정)
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+      const loginUrl = `${apiUrl}/member/login`;
 
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      console.log("로그인 요청 URL:", loginUrl);
+      console.log("요청 데이터:", {
+        username: formData.username,
+        password: formData.password,
+      });
 
-      // Redirect to home page after successful login
+      // Make API call to Spring backend login endpoint
+      const response = await fetch(loginUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          username: formData.username,
+          password: formData.password,
+        }),
+        credentials: "include", // Important to include cookies
+      });
+
+      console.log("응답 상태:", response.status);
+      console.log("응답 헤더:", Object.fromEntries([...response.headers]));
+
+      // 응답 내용을 텍스트로 먼저 확인
+      const responseText = await response.text();
+      console.log("응답 텍스트:", responseText);
+
+      // 응답이 비어있거나 HTML인 경우 처리
+      if (!responseText || responseText.trim().startsWith("<!DOCTYPE")) {
+        throw new Error("서버에서 유효하지 않은 응답을 반환했습니다.");
+      }
+
+      // 유효한 JSON이면 파싱
+      let authData: AuthResponse;
+      try {
+        authData = JSON.parse(responseText);
+      } catch (e) {
+        console.error("JSON 파싱 오류:", e);
+        throw new Error("서버 응답을 처리할 수 없습니다.");
+      }
+
+      if (!response.ok) {
+        throw new Error(authData.message || "로그인에 실패했습니다.");
+      }
+
+      console.log("인증 응답 데이터:", authData);
+
+      // 토큰이 응답에 있는 경우 처리
+      if (authData.accessToken) {
+        // 로컬 스토리지에 저장 (선택적)
+        if (formData.rememberMe) {
+          localStorage.setItem("accessToken", authData.accessToken);
+          if (authData.refreshToken) {
+            localStorage.setItem("refreshToken", authData.refreshToken);
+          }
+        }
+      }
+
+      // 쿠키 확인 (HttpOnly 쿠키는 보이지 않음)
+      console.log("현재 쿠키:", document.cookie);
+
+      // 토큰이 응답에 있는 경우 처리
+      if (authData.accessToken) {
+        // 로컬 스토리지에 저장 (선택적)
+        localStorage.setItem("accessToken", authData.accessToken);
+        // 사용자 정의 이벤트 발생
+        window.dispatchEvent(new Event("login"));
+
+        if (formData.rememberMe && authData.refreshToken) {
+          localStorage.setItem("refreshToken", authData.refreshToken);
+        }
+      }
+
+      // 쿠키 확인 (HttpOnly 쿠키는 보이지 않음)
+      console.log("현재 쿠키:", document.cookie);
+
+      // 로그인 성공 - 홈페이지로 리디렉션
       router.push("/");
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("로그인 오류:", error);
       setErrors({
         ...errors,
-        general: "이메일 또는 비밀번호가 일치하지 않습니다.",
+        general:
+          error instanceof Error
+            ? error.message
+            : "로그인 처리 중 오류가 발생했습니다.",
       });
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // 267, 271라인 오류를 해결하기 위한 함수들 (코드에 없지만 오류가 있으므로 추가)
+  const handleSocialLogin = () => {
+    // Google 로그인 로직
+    console.log("소셜 로그인 시도");
+    // 구현이 필요합니다
   };
 
   return (
@@ -109,7 +214,7 @@ export default function ClientPage() {
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-8">
           <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
-            트래블메이트 로그인
+            TripFriend 로그인
           </h2>
 
           {showRegisteredMessage && (
@@ -127,26 +232,26 @@ export default function ClientPage() {
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
               <label
-                htmlFor="email"
+                htmlFor="username"
                 className="block text-gray-700 font-medium mb-2"
               >
-                이메일
+                아이디
               </label>
               <input
-                type="email"
-                id="email"
-                name="email"
-                placeholder="example@email.com"
+                type="text"
+                id="username"
+                name="username"
+                placeholder="사용자 아이디"
                 className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
-                  errors.email
+                  errors.username
                     ? "border-red-500 focus:ring-red-200"
                     : "border-gray-300 focus:ring-blue-200"
                 }`}
-                value={formData.email}
+                value={formData.username}
                 onChange={handleChange}
               />
-              {errors.email && (
-                <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+              {errors.username && (
+                <p className="text-red-500 text-sm mt-1">{errors.username}</p>
               )}
             </div>
 
@@ -229,7 +334,11 @@ export default function ClientPage() {
               또는 소셜 계정으로 로그인
             </p>
             <div className="flex justify-center space-x-4">
-              <button className="flex items-center justify-center w-full px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition duration-300">
+              <button
+                type="button"
+                onClick={handleSocialLogin}
+                className="flex items-center justify-center w-full px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition duration-300"
+              >
                 <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                   <path
                     fill="#4285F4"

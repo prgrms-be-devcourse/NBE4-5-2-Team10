@@ -6,7 +6,7 @@ export default function Footer() {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <h4 className="text-lg font-semibold mb-4">트래블메이트</h4>
+            <h4 className="text-lg font-semibold mb-4">TripFriend</h4>
             <p className="text-gray-400">
               함께하는 여행의 즐거움을 경험하세요.
             </p>
