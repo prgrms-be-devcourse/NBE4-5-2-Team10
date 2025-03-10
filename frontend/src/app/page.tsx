@@ -59,7 +59,10 @@ export default function Home() {
         <div className="container mx-auto px-4 py-16 md:py-24">
           <div className="max-w-2xl">
             <h2 className="text-3xl md:text-5xl font-bold mb-6">
-              혼자 떠나는 여행, 함께할 동행을 찾아보세요
+              혼자 떠나는 여행
+            </h2>
+            <h2 className="text-3xl md:text-5xl font-bold mb-6">
+              함께할 동행을 찾아보세요
             </h2>
             <p className="text-xl mb-8">
               전 세계 여행자들과 함께하는 특별한 여행 경험을 만들어보세요.

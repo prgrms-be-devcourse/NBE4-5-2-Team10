@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface Place {
   id: number;
@@ -16,6 +17,7 @@ export default function ClientPage() {
   const [loading, setLoading] = useState(true);
   const [selectedCity, setSelectedCity] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const router = useRouter(); // useRouter 함수 호출
 
   useEffect(() => {
     fetch("http://localhost:8080/place") // 백엔드 API 호출
@@ -78,19 +80,34 @@ export default function ClientPage() {
       </div>
 
       {/* 여행지 리스트 */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredPlaces.map((place) => (
-          <div key={place.id} className="bg-white rounded-lg shadow-md p-4">
-            <img
-              src={place.image || "/default-placeholder.jpg"} // ✅ 이미지 추가
-              alt={place.cityName}
-              className="w-full h-40 object-cover rounded-md"
-            />
-            <h3 className="text-xl font-semibold mt-2">{place.placeName}</h3>
-            <p className="text-gray-600">{place.description}</p>
-          </div>
-        ))}
-      </div>
+      {filteredPlaces.length === 0 ? (
+        <p className="text-gray-500">해당 조건에 맞는 여행지가 없습니다.</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredPlaces.map((place) => (
+            <div
+              key={place.id}
+              className="bg-white rounded-lg shadow-md p-4 cursor-pointer"
+            >
+              {/* 이미지 클릭 시 이동 */}
+              <img
+                src={place.image || "/default-placeholder.jpg"}
+                alt={place.cityName}
+                className="w-full h-40 object-cover rounded-md cursor-pointer"
+                onClick={() => router.push(`/place/${place.id}`)}
+              />
+              {/* 장소명 클릭 시 이동 */}
+              <h3
+                className="text-xl font-semibold mt-2 text-blue-500 cursor-pointer"
+                onClick={() => router.push(`/place/${place.id}`)}
+              >
+                {place.placeName}
+              </h3>
+              <p className="text-gray-600">{place.description}</p>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
