@@ -9,15 +9,8 @@ import com.tripfriend.global.dto.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -31,25 +24,7 @@ public class PlaceController {
     // 여행지 등록
     @PostMapping
     @Operation(summary = "여행지 등록")
-    public RsData<PlaceResDto> createPlace(@RequestBody PlaceCreateReqDto req,
-                                           @RequestParam("image")MultipartFile image) throws IOException {
-
-        String fileName = null;
-
-        // 이미지 처리
-        if (!image.isEmpty()) {
-            String uploadDir = "src/main/resources/static/";
-            File uploadDirFile = new File(uploadDir);
-
-            if (!uploadDirFile.exists()) {
-                uploadDirFile.mkdirs();
-            }
-
-            fileName = image.getOriginalFilename();
-            Path filePath = Paths.get(uploadDir + fileName);
-
-            image.transferTo(filePath);
-        }
+    public RsData<PlaceResDto> createPlace(@RequestBody PlaceCreateReqDto req) {
 
         Place savePlace = placeService.createPlace(req);
         PlaceResDto placeResDto = new PlaceResDto(savePlace);

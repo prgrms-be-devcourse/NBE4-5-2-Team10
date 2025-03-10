@@ -44,9 +44,9 @@ public class Place {
     private List<Recruit> recruits;
 
     // 후기 게시글 1:N 연결
-    @OneToMany(mappedBy = "place", cascade = CascadeType.REMOVE)
-    @JsonIgnore
-    private List<Review> reviews;
+//    @OneToMany(mappedBy = "place", cascade = CascadeType.REMOVE)
+//    @JsonIgnore
+//    private List<Review> reviews;
 
     @Column(name = "city_name", nullable = false)
     private String cityName; // 도시명
