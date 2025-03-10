@@ -3,18 +3,19 @@ import { useState } from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import Place from "./place/ClientPage"; // 여행지 조회
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [destination, setDestination] = useState("");
 
-  // 인기 여행지 데이터
-  const popularDestinations = [
-    { id: 1, name: "제주도", image: "/placeholder.jpg", tripCount: 243 },
-    { id: 2, name: "방콕", image: "/placeholder.jpg", tripCount: 187 },
-    { id: 3, name: "오사카", image: "/placeholder.jpg", tripCount: 156 },
-    { id: 4, name: "파리", image: "/placeholder.jpg", tripCount: 142 },
-  ];
+  // // 인기 여행지 데이터
+  // const popularDestinations = [
+  //   { id: 1, name: "제주도", image: "/placeholder.jpg", tripCount: 243 },
+  //   { id: 2, name: "방콕", image: "/placeholder.jpg", tripCount: 187 },
+  //   { id: 3, name: "오사카", image: "/placeholder.jpg", tripCount: 156 },
+  //   { id: 4, name: "파리", image: "/placeholder.jpg", tripCount: 142 },
+  // ];
 
   // 최근 등록된 여행 동행 데이터
   const recentTrips = [
@@ -58,7 +59,10 @@ export default function Home() {
         <div className="container mx-auto px-4 py-16 md:py-24">
           <div className="max-w-2xl">
             <h2 className="text-3xl md:text-5xl font-bold mb-6">
-              혼자 떠나는 여행, 함께할 동행을 찾아보세요
+              혼자 떠나는 여행
+            </h2>
+            <h2 className="text-3xl md:text-5xl font-bold mb-6">
+              함께할 동행을 찾아보세요
             </h2>
             <p className="text-xl mb-8">
               전 세계 여행자들과 함께하는 특별한 여행 경험을 만들어보세요.
@@ -101,33 +105,8 @@ export default function Home() {
 
       {/* 인기 여행지 섹션 */}
       <div className="container mx-auto px-4 py-12">
-        <h3 className="text-2xl font-bold mb-6">인기 여행지</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {popularDestinations.map((dest) => (
-            <div
-              key={dest.id}
-              className="bg-white rounded-lg shadow-md overflow-hidden"
-            >
-              <img
-                src={dest.image}
-                alt={dest.name}
-                className="w-full h-40 object-cover"
-              />
-              <div className="p-4">
-                <h4 className="text-xl font-semibold mb-2">{dest.name}</h4>
-                <p className="text-gray-600">
-                  현재 {dest.tripCount}개의 여행이 계획되어 있습니다
-                </p>
-                <Link
-                  href={`/destination/${dest.id}`}
-                  className="mt-3 inline-block text-blue-600 hover:underline"
-                >
-                  여행 둘러보기
-                </Link>
-              </div>
-            </div>
-          ))}
-        </div>
+        {/* <h3 className="text-2xl font-bold mb-6">인기 여행지</h3> */}
+        <Place />
       </div>
 
       {/* 최근 등록된 여행 동행 */}

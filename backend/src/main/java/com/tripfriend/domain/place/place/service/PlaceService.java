@@ -20,7 +20,12 @@ public class PlaceService {
 
     // 여행 장소 등록
     public Place createPlace(PlaceCreateReqDto req) {
-        Place place = req.toEntity();
+        Place place = Place.builder()
+                .cityName(req.getCityName())
+                .placeName(req.getPlaceName())
+                .description(req.getDescription())
+                .category(req.getCategory())
+                .build();
         placeRepository.save(place);
 
         return place;
