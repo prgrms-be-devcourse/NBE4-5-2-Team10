@@ -7,6 +7,9 @@ import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.tripfriend.domain.recruit.recruit.entity.QRecruit;
 import com.tripfriend.domain.recruit.recruit.entity.Recruit;
+import com.tripfriend.domain.member.member.entity.AgeRange;
+import com.tripfriend.domain.member.member.entity.Gender;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -46,7 +49,7 @@ public class RecruitRepositoryCustomImpl implements RecruitRepositoryCustom {
     }
 
     @Override
-    public List<Recruit> searchFilterSort(Optional<String> keyword, Optional<String> placeCityName, Optional<Boolean> isClosed, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Optional<String> travelStyle, Optional<Boolean> sameGender, Optional<Boolean> sameAge, Optional<Integer> minBudget, Optional<Integer> maxBudget, Optional<Integer> minGroupSize, Optional<Integer> maxGroupSize, Optional<String> sortBy) {
+    public List<Recruit> searchFilterSort(Optional<String> keyword, Optional<String> placeCityName, Optional<Boolean> isClosed, Optional<LocalDate> startDate, Optional<LocalDate> endDate, Optional<String> travelStyle, Optional<Boolean> sameGender, Optional<Boolean> sameAge, Optional<Integer> minBudget, Optional<Integer> maxBudget, Optional<Integer> minGroupSize, Optional<Integer> maxGroupSize, Optional<String> sortBy, Gender userGender, AgeRange userAgeRange) {
         BooleanBuilder builder = new BooleanBuilder();
 
         // 제목, 내용 검색
@@ -68,11 +71,25 @@ public class RecruitRepositoryCustomImpl implements RecruitRepositoryCustom {
         // 여행 스타일 필터링
         travelStyle.ifPresent(style -> builder.and(recruit.travelStyle.stringValue().eq(style)));
 
-        // 성별 필터링
-        sameGender.ifPresent(gender -> builder.and(recruit.sameGender.eq(gender)));
+        // ✅ 성별 필터링 (sameGender가 true일 경우에만 필터링 적용)
+        sameGender.ifPresent(sg -> {
+            if (sg) { // sameGender가 true일 경우, 같은 성별인 경우만 허용
+                builder.and(
+                        recruit.member.gender.eq(userGender)
+                                .or(recruit.sameGender.isFalse())
+                );
+            }
+        });
 
-        // 나이대 필터링
-        sameAge.ifPresent(age -> builder.and(recruit.sameAge.eq(age)));
+        // ✅ 나이대 필터링 (sameAge가 true일 경우에만 필터링 적용)
+        sameAge.ifPresent(sa -> {
+            if (sa) { // sameAge가 true일 경우, 같은 나이대인 경우만 허용
+                builder.and(
+                        recruit.member.ageRange.eq(userAgeRange)
+                                .or(recruit.sameAge.isFalse())
+                );
+            }
+        });
 
         // 예산 필터링
         minBudget.ifPresent(min -> builder.and(recruit.budget.goe(min)));

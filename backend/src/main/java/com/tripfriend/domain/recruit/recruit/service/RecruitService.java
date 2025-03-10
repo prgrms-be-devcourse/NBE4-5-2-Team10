@@ -2,6 +2,7 @@ package com.tripfriend.domain.recruit.recruit.service;
 
 import com.tripfriend.domain.member.member.entity.Member;
 import com.tripfriend.domain.member.member.repository.MemberRepository;
+import com.tripfriend.domain.member.member.service.AuthService;
 import com.tripfriend.domain.place.place.entity.Place;
 import com.tripfriend.domain.place.place.repository.PlaceRepository;
 import com.tripfriend.domain.recruit.recruit.dto.RecruitRequestDto;
@@ -25,6 +26,25 @@ public class RecruitService {
     private final RecruitRepository recruitRepository;
     private final MemberRepository memberRepository;
     private final PlaceRepository placeRepository;
+    private final AuthService authService;
+
+    /**
+     * 현재 로그인한 회원객체를 반환하는 메서드
+     *
+     * @param token JWT 토큰
+     * @return 로그인한 회원 객체
+     * @throws ServiceException 로그인하지 않은 경우 예외 발생
+     */
+    public Member getLoggedInMember(String token) {
+        // 로그인 여부 확인 및 회원 정보 가져오기
+        Member member = authService.getLoggedInMember(token);
+
+        if (member == null) {
+            throw new ServiceException("401-1", "로그인이 필요합니다.");
+        }
+
+        return member;
+    }
 
     @Transactional
     public RecruitDetailResponseDto findById(Long id) {
@@ -79,11 +99,13 @@ public class RecruitService {
             Optional<Integer> maxBudget,
             Optional<Integer> minGroupSize,
             Optional<Integer> maxGroupSize,
-            Optional<String> sortBy
+            Optional<String> sortBy,
+            String token
     ) {
+        Member member = getLoggedInMember(token);
         return recruitRepository.searchFilterSort(
                 keyword, placeCityName, isClosed, startDate, endDate,
-                travelStyle, sameGender, sameAge, minBudget, maxBudget, minGroupSize, maxGroupSize, sortBy
+                travelStyle, sameGender, sameAge, minBudget, maxBudget, minGroupSize, maxGroupSize, sortBy, member.getGender(), member.getAgeRange()
         ).stream()
                 .map(RecruitListResponseDto::new)
                 .toList();

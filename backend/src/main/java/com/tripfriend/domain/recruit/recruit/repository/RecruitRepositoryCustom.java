@@ -1,5 +1,7 @@
 package com.tripfriend.domain.recruit.recruit.repository;
 
+import com.tripfriend.domain.member.member.entity.AgeRange;
+import com.tripfriend.domain.member.member.entity.Gender;
 import com.tripfriend.domain.recruit.recruit.entity.Recruit;
 import com.tripfriend.domain.recruit.recruit.entity.TravelStyle;
 
@@ -24,6 +26,8 @@ public interface RecruitRepositoryCustom {
             Optional<Integer> maxBudget,
             Optional<Integer> minGroupSize,
             Optional<Integer> maxGroupSize,
-            Optional<String> sortBy
+            Optional<String> sortBy,
+            Gender userGender,
+            AgeRange userAgeRange
     );
 }

@@ -53,12 +53,13 @@ public class RecruitController {
             @RequestParam(name = "maxBudget") Optional<Integer> maxBudget,
             @RequestParam(name = "minGroupSize") Optional<Integer> minGroupSize,
             @RequestParam(name = "maxGroupSize") Optional<Integer> maxGroupSize,
-            @RequestParam(name = "sortBy") Optional<String> sortBy
+            @RequestParam(name = "sortBy") Optional<String> sortBy,
+            @RequestHeader(value = "Authorization", required = false) String token
     ) {
 
         return new RsData<>("200-3", "동행 모집 글이 여러 조건으로 성공적으로 검색되었습니다.", recruitService.searchAndFilter(
                 keyword, cityName, isClosed, startDate, endDate,
-                travelStyle, sameGender, sameAge, minBudget, maxBudget, minGroupSize, maxGroupSize, sortBy
+                travelStyle, sameGender, sameAge, minBudget, maxBudget, minGroupSize, maxGroupSize, sortBy, token
         ));
     }
 
