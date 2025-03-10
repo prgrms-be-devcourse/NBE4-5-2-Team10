@@ -2,10 +2,16 @@ package com.tripfriend.domain.trip.schedule.controller;
 
 import com.tripfriend.domain.member.member.entity.Member;
 import com.tripfriend.domain.member.member.repository.MemberRepository;
+import com.tripfriend.domain.member.member.service.AuthService;
 import com.tripfriend.domain.trip.schedule.dto.*;
 import com.tripfriend.domain.trip.schedule.entity.TripSchedule;
 import com.tripfriend.domain.trip.schedule.service.TripScheduleService;
 import com.tripfriend.global.dto.RsData;
+import com.tripfriend.global.exception.ServiceException;
+import com.tripfriend.global.util.JwtUtil;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,16 +22,22 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/trip/schedule")
+@Tag(name = "TripSchedule API", description = "여행일정 관련 기능을 제공합니다.")
 public class TripScheduleController {
 
     private final TripScheduleService scheduleService;
-    private final MemberRepository memberRepository;
+    private final AuthService authService;
 
-    // 일정 생성
+
+    // 개인 일정 생성
     @PostMapping
-    public RsData<TripScheduleResDto> createSchedule(@RequestBody TripScheduleReqDto reqBody) {
-        System.out.println("확인" + reqBody);
-        TripScheduleResDto schedule = scheduleService.createSchedule(reqBody);
+    @Operation(summary = "나의 여행 일정 등록")
+    public RsData<TripScheduleResDto> createSchedule(@RequestBody TripScheduleReqDto reqBody,
+                                                     @RequestHeader(value = "Authorization", required = false) String token) {
+
+
+        // 일정 생성
+        TripScheduleResDto schedule = scheduleService.createSchedule(reqBody, token);
         return new RsData<>(
                 "200-1",
                 "일정이 성공적으로 생성되었습니다.",
@@ -33,7 +45,7 @@ public class TripScheduleController {
         );
     }
 
-    // 전체 일정 조회
+    // 전체 일정 조회(필요없을지도)
     @GetMapping
     public RsData<List<TripScheduleResDto>> getAllSchedules() {
         List<TripScheduleResDto> schedules = scheduleService.getAllSchedules();
@@ -45,7 +57,20 @@ public class TripScheduleController {
 
     }
 
-    // 특정 회원의 여행 일정 조회
+    // 로그인한 회원이 자신의 여행 일정을 조회
+    @GetMapping("/my-schedules")
+    @Operation(summary = "나의 여행 일정 전체 조회")
+    public RsData<List<TripScheduleResDto>> getMySchedules(@RequestHeader(value = "Authorization", required = false) String token) {
+
+        List<TripScheduleResDto> schedules = scheduleService.getSchedulesByCreator(token);
+        return new RsData<>(
+                "200-6",
+                "'%s'님이 생성한 일정 조회가 완료되었습니다.".formatted(schedules.get(0).getMemberName()),
+                schedules
+        );
+    }
+
+    // 특정 회원의 여행 일정 조회(필요없음)
     @GetMapping("/member/{memberId}")
     public RsData<List<TripScheduleResDto>> getSchedulesByMember(@PathVariable Long memberId) {
 
@@ -60,10 +85,13 @@ public class TripScheduleController {
         );
     }
 
-    // 여행 일정 삭제
-    @DeleteMapping("/{scheduleId}")
-    public RsData<Void> deleteSchedule(@PathVariable Long scheduleId) {
-        scheduleService.deleteSchedule(scheduleId);
+    // 개인 여행 일정 삭제
+    @Operation(summary = "나의 여행 일정 삭제")
+    @DeleteMapping("/my-schedules/{scheduleId}")
+    public RsData<Void> deleteSchedule(@PathVariable Long scheduleId,
+                                       @RequestHeader(value = "Authorization", required = false) String token) {
+
+        scheduleService.deleteSchedule(scheduleId, token);
         return new RsData<>(
                 "200-4",
                 "일정이 성공적으로 삭제되었습니다."
@@ -87,8 +115,10 @@ public class TripScheduleController {
     }
 
     @PutMapping("/update")
-    public RsData<TripUpdateResDto> updateTrip(@RequestBody @Valid TripUpdateReqDto reqDto) {
-        TripUpdateResDto resTrip = scheduleService.updateTrip(reqDto);
+    @Operation(summary = "나의 여행 일정 및 여행 정보 통합 수정")
+    public RsData<TripUpdateResDto> updateTrip(@RequestBody @Valid TripUpdateReqDto reqDto,
+                                               @RequestHeader(value = "Authorization", required = false) String token) {
+        TripUpdateResDto resTrip = scheduleService.updateTrip(reqDto, token);
         return new RsData<>(
                 "200-1",
                 "여행 일정 및 여행 정보가 성공적으로 수정되었습니다.",

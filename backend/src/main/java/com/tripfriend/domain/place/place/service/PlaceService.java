@@ -5,6 +5,7 @@ import com.tripfriend.domain.place.place.dto.PlaceResDto;
 import com.tripfriend.domain.place.place.dto.PlaceUpdateReqDto;
 import com.tripfriend.domain.place.place.entity.Place;
 import com.tripfriend.domain.place.place.repository.PlaceRepository;
+import com.tripfriend.global.exception.ServiceException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,19 +19,23 @@ public class PlaceService {
     private final PlaceRepository placeRepository;
 
     // 여행 장소 등록
-    public Place createPlace(PlaceCreateReqDto placeCreateRequestDto) {
-        Place place = placeCreateRequestDto.toEntity();
-        return placeRepository.save(place);
+    public Place createPlace(PlaceCreateReqDto req) {
+        Place place = req.toEntity();
+        placeRepository.save(place);
+
+        return place;
     }
 
     // 여행 장소 전체 리스트 조회
     public List<Place> getAllPlaces() {
-        return placeRepository.findAll();
+        List<Place> places = placeRepository.findAll();
+        return places;
     }
 
     // 여행 장소 단건 조회
-    public Optional<Place> getPlace(Long id) {
-        return placeRepository.findById(id);
+    public Place getPlace(Long id) {
+        return placeRepository.findById(id)
+                .orElseThrow(() -> new ServiceException("404-1", "해당 장소가 존재하지 않습니다."));
     }
 
     // 여행 장소 삭제
@@ -41,13 +46,12 @@ public class PlaceService {
 
     // 여행 장소 수정
     @Transactional
-    public PlaceResDto updatePlace(Place place, PlaceUpdateReqDto placeUpdateReqDto) {
-        place.setCityName(placeUpdateReqDto.getCityName());
-        place.setPlaceName(placeUpdateReqDto.getPlaceName());
-        place.setDescription(placeUpdateReqDto.getDescription());
-        place.setCategory(placeUpdateReqDto.getCategory());
+    public Place updatePlace(Place place, PlaceUpdateReqDto req) {
+        place.setCityName(req.getCityName());
+        place.setPlaceName(req.getPlaceName());
+        place.setDescription(req.getDescription());
+        place.setCategory(req.getCategory());
 
-        Place updatePlace = placeRepository.save(place);
-        return new PlaceResDto(updatePlace);
+        return placeRepository.save(place);
     }
 }
