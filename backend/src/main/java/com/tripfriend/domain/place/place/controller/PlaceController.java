@@ -7,7 +7,9 @@ import com.tripfriend.domain.place.place.entity.Place;
 import com.tripfriend.domain.place.place.service.PlaceService;
 import com.tripfriend.global.dto.RsData;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -50,7 +52,8 @@ public class PlaceController {
     // 특정 여행지 조회 - 단건 조회
     @GetMapping("/{id}")
     @Operation(summary = "여행지 조회")
-    public RsData<PlaceResDto> getPlace(@PathVariable Long id) {
+    public RsData<PlaceResDto> getPlace(@Parameter(description = "여행지 ID", required = true, example = "1")
+                                        @PathVariable Long id) {
         Place place = placeService.getPlace(id);
         PlaceResDto placeResDto = new PlaceResDto(place);
         return new RsData<>(
@@ -63,7 +66,8 @@ public class PlaceController {
     // 특정 여행지 삭제
     @DeleteMapping("/{id}")
     @Operation(summary = "여행지 삭제")
-    public RsData<Void> deletePlace(@PathVariable Long id) {
+    public RsData<Void> deletePlace(@Parameter(description = "여행지 ID", required = true, example = "1")
+                                    @PathVariable Long id) {
         Place place = placeService.getPlace(id);
         placeService.deletePlace(place);
         return new RsData<>(
@@ -75,7 +79,9 @@ public class PlaceController {
     // 특정 여행지 정보 수정
     @PutMapping("/{id}")
     @Operation(summary = "여행지 정보 수정")
-    public RsData<PlaceResDto> updatePlace(@PathVariable Long id, @RequestBody PlaceUpdateReqDto placeUpdateReqDto) {
+    public RsData<PlaceResDto> updatePlace(@Parameter(description = "여행지 ID", required = true, example = "1")
+                                           @PathVariable Long id,
+                                           @RequestBody PlaceUpdateReqDto placeUpdateReqDto) {
         Place place = placeService.getPlace(id);
         Place updatePlace = placeService.updatePlace(place, placeUpdateReqDto);
         PlaceResDto placeResDto = new PlaceResDto(updatePlace);
