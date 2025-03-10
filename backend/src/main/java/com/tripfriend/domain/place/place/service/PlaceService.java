@@ -19,8 +19,14 @@ public class PlaceService {
     private final PlaceRepository placeRepository;
 
     // 여행 장소 등록
-    public Place createPlace(PlaceCreateReqDto req) {
-        Place place = req.toEntity();
+    public Place createPlace(PlaceCreateReqDto req, String fileName) {
+        Place place = Place.builder()
+                .cityName(req.getCityName())
+                .placeName(req.getPlaceName())
+                .description(req.getDescription())
+                .category(req.getCategory())
+                .imageUrl("http://localhost:8080/"+fileName)
+                .build();
         placeRepository.save(place);
 
         return place;

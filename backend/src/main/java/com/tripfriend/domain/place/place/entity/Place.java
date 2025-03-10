@@ -34,6 +34,10 @@ public class Place {
     @JsonIgnore
     private List<TripInformation> tripInformations = new ArrayList<>();
 
+    // 이미지 저장 URL
+    @Column(name = "image_url")
+    private String imageUrl;
+
     // 동행 게시글 1:N 연결
     @OneToMany(mappedBy = "place", cascade = CascadeType.REMOVE)
     @JsonIgnore
