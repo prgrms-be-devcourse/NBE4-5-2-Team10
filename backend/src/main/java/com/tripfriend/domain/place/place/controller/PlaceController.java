@@ -36,6 +36,7 @@ public class PlaceController {
 
         String fileName = null;
 
+        // 이미지 처리
         if (!image.isEmpty()) {
             String uploadDir = "src/main/resources/static/";
             File uploadDirFile = new File(uploadDir);
@@ -50,7 +51,7 @@ public class PlaceController {
             image.transferTo(filePath);
         }
 
-        Place savePlace = placeService.createPlace(req, fileName);
+        Place savePlace = placeService.createPlace(req);
         PlaceResDto placeResDto = new PlaceResDto(savePlace);
         return new RsData<>(
                 "200-1",
