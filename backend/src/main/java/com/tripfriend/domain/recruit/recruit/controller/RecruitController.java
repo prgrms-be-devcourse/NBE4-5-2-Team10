@@ -64,18 +64,18 @@ public class RecruitController {
     }
 
     @PostMapping
-    public RsData<RecruitDetailResponseDto> createRecruit (@RequestBody RecruitRequestDto requestDto) {
-        return new RsData<>("201-3", "동행 모집 글이 성공적으로 등록되었습니다.", recruitService.create(requestDto));
+    public RsData<RecruitDetailResponseDto> createRecruit (@RequestBody RecruitRequestDto requestDto, @RequestHeader(value = "Authorization", required = false) String token) {
+        return new RsData<>("201-3", "동행 모집 글이 성공적으로 등록되었습니다.", recruitService.create(requestDto, token));
     }
 
     @PutMapping("/{recruitId}")// 일단 put으로 통일
-    public RsData<RecruitDetailResponseDto> updateRecruit(@PathVariable("recruitId") Long recruitId, @RequestBody RecruitRequestDto requestDto) {
-        return new RsData<>("200-3", "동행 모집 글이 성공적으로 수정되었습니다.", recruitService.update(recruitId, requestDto));
+    public RsData<RecruitDetailResponseDto> updateRecruit(@PathVariable("recruitId") Long recruitId, @RequestBody RecruitRequestDto requestDto, @RequestHeader(value = "Authorization", required = false) String token) {
+        return new RsData<>("200-3", "동행 모집 글이 성공적으로 수정되었습니다.", recruitService.update(recruitId, requestDto, token));
     }
 
     @DeleteMapping("/{recruitId}")
-    public RsData<Void> deleteRecruit(@PathVariable("recruitId") Long recruitId){ // 이름 명시
-        recruitService.delete(recruitId);
+    public RsData<Void> deleteRecruit(@PathVariable("recruitId") Long recruitId, @RequestHeader(value = "Authorization", required = false) String token){ // 이름 명시
+        recruitService.delete(recruitId, token);
         return new RsData<>("200-3", "동행 모집 글이 성공적으로 삭제되었습니다.");
     }
 }

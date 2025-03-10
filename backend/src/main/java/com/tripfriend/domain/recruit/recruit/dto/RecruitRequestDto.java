@@ -16,7 +16,7 @@ import java.time.LocalDate;
 @NoArgsConstructor // serialization 시 필요
 @AllArgsConstructor // builder에 필요
 public class RecruitRequestDto {
-    private Long memberId;
+//    private Long memberId;
 //    private List<Apply> applies;
     private Long placeId;
     private String title;

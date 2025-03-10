@@ -53,8 +53,8 @@ public class RecruitService {
     }
 
     @Transactional
-    public RecruitDetailResponseDto create(RecruitRequestDto requestDto) {
-        Member member = memberRepository.findById(requestDto.getMemberId()).orElseThrow(() -> new ServiceException("404-1", "해당 회원이 존재하지 않습니다."));
+    public RecruitDetailResponseDto create(RecruitRequestDto requestDto, String token) {
+        Member member = getLoggedInMember(token);
         Place place = placeRepository.findById(requestDto.getPlaceId()).orElseThrow(() -> new ServiceException("404-2", "해당 장소가 존재하지 않습니다."));
 
         return new RecruitDetailResponseDto(recruitRepository.save(requestDto.toEntity(member, place)));
@@ -112,14 +112,31 @@ public class RecruitService {
     }
 
     @Transactional
-    public RecruitDetailResponseDto update(Long recruitId, RecruitRequestDto requestDto) {
+    public RecruitDetailResponseDto update(Long recruitId, RecruitRequestDto requestDto, String token) {
         Recruit recruit = recruitRepository.findById(recruitId).orElseThrow(() -> new ServiceException("404-3", "해당 모집글이 존재하지 않습니다."));
         Place place = placeRepository.findById(requestDto.getPlaceId()).orElseThrow(() -> new ServiceException("404-2", "해당 장소가 존재하지 않습니다."));
+
+        Member member = getLoggedInMember(token);
+        // 본인 확인
+        if (!recruit.getMember().getId().equals(member.getId())) {
+            throw new ServiceException("403-2", "본인이 등록한 동행 모집글만 수정할 수 있습니다.");
+        }
+
         recruit.update(requestDto, place);
         return new RecruitDetailResponseDto(recruit); // recruitRepository.save(recruit) 불필요!
     }
 
-    public void delete(Long recruitId) {
+    public void delete(Long recruitId, String token) {
+
+        Recruit recruit = recruitRepository.findById(recruitId).orElseThrow(() -> new ServiceException("404-3", "해당 모집글이 존재하지 않습니다."));
+
+        Member member = getLoggedInMember(token);
+
+        // 본인 확인
+        if (!recruit.getMember().getId().equals(member.getId())) {
+            throw new ServiceException("403-2", "본인이 등록한 동행 모집글만 수정할 수 있습니다.");
+        }
+
         recruitRepository.deleteById(recruitId);
     }
 
