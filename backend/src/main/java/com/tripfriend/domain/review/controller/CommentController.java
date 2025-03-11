@@ -31,7 +31,7 @@ public class CommentController {
     @PostMapping
     public RsData<CommentResponseDto> createComment(
             @Valid @RequestBody CommentRequestDto requestDto,
-            @RequestParam(defaultValue = "1") Long memberId) {
+            @RequestParam(name = "memberId",defaultValue = "1") Long memberId) {
         // 임시 인증 로직
         Member member = getMemberById(memberId);
         CommentResponseDto responseDto = commentService.createComment(requestDto, member);
@@ -40,21 +40,21 @@ public class CommentController {
 
     // 댓글 상세 조회
     @GetMapping("/{commentId}")
-    public RsData<CommentResponseDto> getComment(@PathVariable Long commentId) {
+    public RsData<CommentResponseDto> getComment(@PathVariable("commentId") Long commentId) {
         CommentResponseDto responseDto = commentService.getComment(commentId);
         return new RsData<>("200-1", "댓글 조회에 성공했습니다.", responseDto);
     }
 
     // 특정 리뷰의 댓글 목록 조회
     @GetMapping("/review/{reviewId}")
-    public RsData<List<CommentResponseDto>> getCommentsByReview(@PathVariable Long reviewId) {
+    public RsData<List<CommentResponseDto>> getCommentsByReview(@PathVariable("reviewId") Long reviewId) {
         List<CommentResponseDto> responseDtoList = commentService.getCommentsByReview(reviewId);
         return new RsData<>("200-2", "리뷰의 댓글 목록을 성공적으로 조회했습니다.", responseDtoList);
     }
 
     // 특정 회원의 댓글 목록 조회
     @GetMapping("/member/{memberId}")
-    public RsData<List<CommentResponseDto>> getCommentsByMember(@PathVariable Long memberId) {
+    public RsData<List<CommentResponseDto>> getCommentsByMember(@PathVariable("memberId") Long memberId) {
         List<CommentResponseDto> responseDtoList = commentService.getCommentsByMember(memberId);
         return new RsData<>("200-3", "회원의 댓글 목록을 성공적으로 조회했습니다.", responseDtoList);
     }
@@ -62,9 +62,9 @@ public class CommentController {
     // 댓글 수정
     @PutMapping("/{commentId}")
     public RsData<CommentResponseDto> updateComment(
-            @PathVariable Long commentId,
+            @PathVariable("commentId") Long commentId,
             @Valid @RequestBody CommentRequestDto requestDto,
-            @RequestParam(defaultValue = "1") Long memberId) {
+            @RequestParam(name = "memberId",defaultValue = "1") Long memberId) {
 
         // 임시 인증 로직
         Member member = getMemberById(memberId);
@@ -75,8 +75,8 @@ public class CommentController {
     // 댓글 삭제
     @DeleteMapping("/{commentId}")
     public RsData<Void> deleteComment(
-            @PathVariable Long commentId,
-            @RequestParam(defaultValue = "1") Long memberId) {
+            @PathVariable("commentId") Long commentId,
+            @RequestParam(name = "memberId", defaultValue = "1") Long memberId) {
 
         // 임시 인증 로직
         Member member = getMemberById(memberId);
