@@ -16,8 +16,8 @@ interface Recruit {
   startDate: string;
   endDate: string;
   travelStyle: string;
-  sameGender: boolean;
-  sameAge: boolean;
+  genderRestriction: string;
+  ageRestriction: string;
   budget: number;
   groupSize: number;
   createdAt: string;
@@ -26,24 +26,40 @@ interface Recruit {
 
 export default function RecruitListPage() {
   const [recruits, setRecruits] = useState<Recruit[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchRecruits() {
       try {
         const data = await getRecruits();
         console.log("📢 API 응답 데이터:", data);
-        setRecruits(data.data);
+        setRecruits(data.data); // API에서 받아온 데이터 저장
       } catch (error) {
         console.error("모집 글을 불러오는 중 오류 발생:", error);
+        setError("모집 글을 불러오는 중 오류가 발생했습니다.");
       }
     }
 
     fetchRecruits();
   }, []);
 
+  // 날짜 포맷 함수 (YYYY-MM-DD HH:mm)
+  const formatDateTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString("ko-KR", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <h2 className="text-3xl font-bold mb-6">여행 동행 모집</h2>
+
+      {error && <p className="text-red-500">{error}</p>}
 
       {recruits.length === 0 ? (
         <p>모집 글이 없습니다.</p>
@@ -85,22 +101,41 @@ export default function RecruitListPage() {
                   🎒 여행 스타일: {recruit.travelStyle}
                 </p>
 
-                {/* 조건 표시 */}
+                {/* 모집 상태 & 제한 조건 */}
                 <div className="mt-2 flex space-x-2">
-                  {recruit.sameGender && (
+                  {/* 모집 상태 (초록색: 모집 중 / 빨간색: 모집 마감) */}
+                  <span
+                    className={`px-2 py-1 text-xs rounded-full ${
+                      recruit.isClosed
+                        ? "bg-red-100 text-red-600"
+                        : "bg-green-100 text-green-600"
+                    }`}
+                  >
+                    {recruit.isClosed ? "모집 마감" : "모집 중"}
+                  </span>
+
+                  {/* 성별 제한 */}
+                  {recruit.genderRestriction !== "모든 성별" && (
                     <span className="px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded-full">
-                      동일 성별만
+                      {recruit.genderRestriction}
                     </span>
                   )}
-                  {recruit.sameAge && (
+
+                  {/* 나이 제한 */}
+                  {recruit.ageRestriction !== "모든 연령대" && (
                     <span className="px-2 py-1 bg-green-100 text-green-600 text-xs rounded-full">
-                      동일 연령대만
+                      {recruit.ageRestriction}
                     </span>
                   )}
-                  {recruit.isClosed && (
-                    <span className="px-2 py-1 bg-red-100 text-red-600 text-xs rounded-full">
-                      모집 마감
-                    </span>
+                </div>
+
+                {/* 생성 & 수정 시간 */}
+                <div className="mt-2 text-gray-500 text-sm">
+                  <p>🕒 작성: {formatDateTime(recruit.createdAt)}</p>
+                  {recruit.createdAt !== recruit.updatedAt && (
+                    <p className="text-gray-400">
+                      📝 수정됨: {formatDateTime(recruit.updatedAt)}
+                    </p>
                   )}
                 </div>
               </div>

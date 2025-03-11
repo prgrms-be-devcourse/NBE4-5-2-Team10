@@ -6,12 +6,22 @@ import { getRecruitById } from "@/lib/api/recruit";
 
 interface RecruitDetail {
   recruitId: number;
-  title: string;
+  memberProfileImage: string;
+  memberNickname: string;
+  genderRestriction: string;
+  ageRestriction: string;
   placeCityName: string;
   placePlaceName: string;
+  title: string;
+  content: string;
+  isClosed: boolean;
+  startDate: string;
+  endDate: string;
+  travelStyle: string;
+  budget: number;
   groupSize: number;
-  description: string;
   createdAt: string;
+  updatedAt: string;
 }
 
 export default function RecruitDetailPage({
@@ -38,21 +48,94 @@ export default function RecruitDetailPage({
 
   if (!recruit) return <p>로딩 중...</p>;
 
+  // 날짜 포맷 함수 (YYYY-MM-DD HH:mm)
+  const formatDateTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString("ko-KR", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-gray-50 p-8 max-w-2xl mx-auto">
+      {/* 제목 */}
       <h2 className="text-3xl font-bold mb-4">{recruit.title}</h2>
+
+      {/* 모집자 정보 */}
+      <div className="flex items-center space-x-4 mb-4">
+        <img
+          src={recruit.memberProfileImage || "/default-profile.png"}
+          alt="프로필 이미지"
+          className="w-12 h-12 rounded-full object-cover"
+        />
+        <div>
+          <p className="text-gray-700 font-semibold">
+            {recruit.memberNickname}
+          </p>
+          <p className="text-gray-500 text-sm">
+            작성일: {formatDateTime(recruit.createdAt)}
+          </p>
+          {recruit.createdAt !== recruit.updatedAt && (
+            <p className="text-gray-400 text-sm">
+              수정됨: {formatDateTime(recruit.updatedAt)}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* 모집 정보 */}
       <p className="text-gray-600">
         🗺️ 여행지: {recruit.placeCityName}, {recruit.placePlaceName}
       </p>
+      <p className="text-gray-600">
+        ⏳ 일정: {recruit.startDate} ~ {recruit.endDate}
+      </p>
       <p className="text-gray-600">👥 모집 인원: {recruit.groupSize}명</p>
       <p className="text-gray-600">
-        📅 등록일: {new Date(recruit.createdAt).toLocaleDateString()}
+        💰 예산: {recruit.budget.toLocaleString()}원
       </p>
-      <p className="mt-4">{recruit.description}</p>
+      <p className="text-gray-600">🎒 여행 스타일: {recruit.travelStyle}</p>
+
+      {/* 모집 상태 & 조건 */}
+      <div className="mt-4 flex space-x-2">
+        {/* 모집 상태 (초록색: 모집 중 / 빨간색: 모집 마감) */}
+        <span
+          className={`px-2 py-1 text-xs rounded-full ${
+            recruit.isClosed
+              ? "bg-red-100 text-red-600"
+              : "bg-green-100 text-green-600"
+          }`}
+        >
+          {recruit.isClosed ? "모집 마감" : "모집 중"}
+        </span>
+
+        {/* 성별 제한 */}
+        {recruit.genderRestriction !== "모든 성별" && (
+          <span className="px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded-full">
+            {recruit.genderRestriction}
+          </span>
+        )}
+
+        {/* 나이 제한 */}
+        {recruit.ageRestriction !== "모든 연령대" && (
+          <span className="px-2 py-1 bg-green-100 text-green-600 text-xs rounded-full">
+            {recruit.ageRestriction}
+          </span>
+        )}
+      </div>
+
+      {/* 내용 */}
+      <p className="mt-6 text-gray-700 whitespace-pre-line">
+        {recruit.content}
+      </p>
 
       {/* 모집 참여 버튼 */}
       <button
-        className="mt-6 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+        className="mt-6 w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
         onClick={() => alert("모집 참여 기능 구현 필요!")}
       >
         모집 참여하기
