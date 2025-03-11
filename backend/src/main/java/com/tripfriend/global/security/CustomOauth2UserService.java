@@ -79,6 +79,8 @@ public class CustomOauth2UserService extends DefaultOAuth2UserService {
                     .rating(rating)
                     .authority(authority)
                     .verified(verified)
+                    .provider(provider)
+                    .providerId(providerId)
                     .build();
 
             // 새로운 회원 DB에 저장

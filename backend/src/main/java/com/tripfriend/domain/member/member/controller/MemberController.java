@@ -5,7 +5,6 @@ import com.tripfriend.domain.member.member.entity.Member;
 import com.tripfriend.domain.member.member.service.AuthService;
 import com.tripfriend.domain.member.member.service.MailService;
 import com.tripfriend.domain.member.member.service.MemberService;
-import com.tripfriend.global.oauth.OAuth2UserInfo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
@@ -38,13 +37,6 @@ public class MemberController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequestDto loginRequestDto, HttpServletResponse response) {
         AuthResponseDto authResponse = authService.login(loginRequestDto, response);
-        return ResponseEntity.ok(authResponse);
-    }
-
-    @Operation(summary = "oauth2 로그인")
-    @PostMapping("/oauth2/login")
-    public ResponseEntity<?> oauth2Login(@RequestBody OAuth2UserInfo oAuth2UserInfo, HttpServletResponse response) {
-        AuthResponseDto authResponse = authService.oauth2Login(oAuth2UserInfo, response);
         return ResponseEntity.ok(authResponse);
     }
 
