@@ -68,7 +68,7 @@ public class BaseInitData implements CommandLineRunner {
         initApplies(); // 동행댓글 등록
         initReviews(); // 리뷰 등록
         initComments(); // 리뷰댓글 등록
-        //initNotices(); // 공지 데이터 추가
+        initNotices(); // 공지 데이터 추가
         initBlacklists(); // 블랙리스트 추가
         initQuestionsAndAnswers(); // 질문 및 답변 추가
 
@@ -748,18 +748,18 @@ public class BaseInitData implements CommandLineRunner {
         }
     }
 
-//    private void initNotices() {
-//        if (noticeRepository.count() == 0) {
-//            Member admin = memberRepository.findByUsername("admin").orElseThrow();
-//
-//            noticeRepository.save(new Notice("공지사항 1", "첫 번째 공지입니다.", admin, LocalDateTime.now()));
-//            noticeRepository.save(new Notice("공지사항 2", "두 번째 공지입니다.", admin, LocalDateTime.now()));
-//
-//            System.out.println("공지사항 데이터가 등록되었습니다.");
-//        } else {
-//            System.out.println("이미 공지 데이터가 존재합니다.");
-//        }
-//    }
+    private void initNotices() {
+        if (noticeRepository.count() == 0) {
+            Member admin = memberRepository.findByUsername("admin").orElseThrow();
+
+            noticeRepository.save(new Notice("공지사항 1", "첫 번째 공지입니다.", admin, LocalDateTime.now()));
+            noticeRepository.save(new Notice("공지사항 2", "두 번째 공지입니다.", admin, LocalDateTime.now()));
+
+            System.out.println("공지사항 데이터가 등록되었습니다.");
+        } else {
+            System.out.println("이미 공지 데이터가 존재합니다.");
+        }
+    }
 
     private void initBlacklists() {
         if (blacklistRepository.count() == 0) {
