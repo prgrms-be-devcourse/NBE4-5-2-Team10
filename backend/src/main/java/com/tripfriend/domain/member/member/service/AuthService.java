@@ -5,6 +5,7 @@ import com.tripfriend.domain.member.member.dto.LoginRequestDto;
 import com.tripfriend.domain.member.member.dto.TokenInfoDto;
 import com.tripfriend.domain.member.member.entity.Member;
 import com.tripfriend.domain.member.member.repository.MemberRepository;
+import com.tripfriend.global.oauth.OAuth2UserInfo;
 import com.tripfriend.global.util.JwtUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -41,6 +42,11 @@ public class AuthService {
         addCookie(response, "refreshToken", refreshToken, 60 * 60 * 24 * 7); // 7일
 
         return new AuthResponseDto(accessToken, refreshToken);
+    }
+
+    public AuthResponseDto oauth2Login(OAuth2UserInfo oAuth2UserInfo, HttpServletResponse response) {
+
+        return null;
     }
 
     // 로그아웃 처리
