@@ -58,6 +58,48 @@ export default function ClientPage() {
     }
   }, [searchParams]);
 
+  // 소셜 로그인 처리를 위한 useEffect 추가
+  useEffect(() => {
+    // 소셜 로그인 완료 후 토큰 확인
+    const accessToken = searchParams.get("accessToken");
+    const refreshToken = searchParams.get("refreshToken");
+    const error = searchParams.get("error");
+
+    if (accessToken) {
+      console.log("소셜 로그인 성공, 액세스 토큰 수신:", accessToken);
+
+      // 액세스 토큰 저장
+      localStorage.setItem("accessToken", accessToken);
+
+      // 리프레시 토큰이 있으면 저장
+      if (refreshToken) {
+        console.log("리프레시 토큰 수신:", refreshToken);
+        localStorage.setItem("refreshToken", refreshToken);
+      }
+
+      // 사용자 정의 이벤트 발생
+      window.dispatchEvent(new Event("login"));
+
+      // 토큰 파라미터 제거 (URL 정리)
+      const url = new URL(window.location.href);
+      const params = new URLSearchParams(url.search);
+      params.delete("accessToken");
+      params.delete("refreshToken");
+      const newUrl =
+        url.pathname + (params.toString() ? "?" + params.toString() : "");
+      window.history.replaceState({}, document.title, newUrl);
+
+      // 홈페이지로 리디렉션
+      router.push("/");
+    } else if (error) {
+      // 소셜 로그인 에러 처리
+      setErrors({
+        ...errors,
+        general: "소셜 로그인에 실패했습니다: " + error,
+      });
+    }
+  }, [searchParams, router, errors]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
     setFormData({
@@ -200,11 +242,18 @@ export default function ClientPage() {
     }
   };
 
-  // 267, 271라인 오류를 해결하기 위한 함수들 (코드에 없지만 오류가 있으므로 추가)
-  const handleSocialLogin = () => {
-    // Google 로그인 로직
-    console.log("소셜 로그인 시도");
-    // 구현이 필요합니다
+  // 소셜 로그인 함수 업데이트 - 리디렉션 URL 지정
+  const handleSocialLogin = (provider: string) => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+    // 현재 URL을 기준으로 리디렉션 URL 설정 (로그인 페이지로 돌아옴)
+    const redirectUri = encodeURIComponent(
+      window.location.origin + window.location.pathname
+    );
+
+    console.log(`${provider} 소셜 로그인 시도, 리디렉션 URL: ${redirectUri}`);
+
+    // 리디렉션 URL 파라미터를 추가하여 소셜 로그인 페이지로 이동
+    window.location.href = `${apiUrl}/oauth2/authorization/${provider}?redirect_uri=${redirectUri}`;
   };
 
   return (
@@ -216,19 +265,16 @@ export default function ClientPage() {
           <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
             TripFriend 로그인
           </h2>
-
           {showRegisteredMessage && (
             <div className="mb-6 bg-green-100 text-green-700 p-3 rounded-lg">
               회원가입이 완료되었습니다. 이제 로그인할 수 있습니다.
             </div>
           )}
-
           {errors.general && (
             <div className="mb-6 bg-red-100 text-red-700 p-3 rounded-lg">
               {errors.general}
             </div>
           )}
-
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
               <label
@@ -316,7 +362,6 @@ export default function ClientPage() {
               {isLoading ? "로그인 중..." : "로그인"}
             </button>
           </form>
-
           <div className="mt-6 text-center">
             <p className="text-gray-600">
               계정이 없으신가요?{" "}
@@ -328,15 +373,14 @@ export default function ClientPage() {
               </Link>
             </p>
           </div>
-
           <div className="mt-8 pt-6 border-t border-gray-200">
             <p className="text-center text-gray-600 mb-4">
               또는 소셜 계정으로 로그인
             </p>
-            <div className="flex justify-center space-x-4">
+            <div className="flex flex-col space-y-3">
               <button
                 type="button"
-                onClick={handleSocialLogin}
+                onClick={() => handleSocialLogin("google")}
                 className="flex items-center justify-center w-full px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition duration-300"
               >
                 <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
@@ -358,6 +402,44 @@ export default function ClientPage() {
                   />
                 </svg>
                 Google로 로그인
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSocialLogin("kakao")}
+                className="flex items-center justify-center w-full px-4 py-2 bg-yellow-300 rounded-lg hover:bg-yellow-400 transition duration-300 text-gray-800"
+              >
+                <svg
+                  className="w-5 h-5 mr-2"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M12 3C6.477 3 2 6.477 2 10.8C2 13.7 3.859 16.261 6.686 17.635C6.458 18.498 5.506 21.094 5.444 21.376C5.371 21.724 5.651 21.99 5.957 21.794C6.206 21.639 9.334 19.499 10.476 18.72C10.981 18.802 11.481 18.843 12 18.843C17.523 18.843 22 15.366 22 10.8C22 6.477 17.523 3 12 3Z"
+                    fill="#371D1E"
+                  />
+                </svg>
+                카카오로 로그인
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSocialLogin("naver")}
+                className="flex items-center justify-center w-full px-4 py-2 bg-green-500 rounded-lg hover:bg-green-600 transition duration-300 text-white"
+              >
+                <svg
+                  className="w-5 h-5 mr-2"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M16.273 12.845L7.376 0H0V24H7.727V11.155L16.624 24H24V0H16.273V12.845Z"
+                    fill="white"
+                  />
+                </svg>
+                네이버로 로그인
               </button>
             </div>
           </div>

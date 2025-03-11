@@ -4,7 +4,8 @@ public enum TravelStyle {
 
     TOURISM("관광"),
     RELAXATION("휴양"),
-    SHOPPING("쇼핑");
+    SHOPPING("쇼핑"),
+    UNKNOWN("알 수 없음");;
 
     private final String travelStyle;
 

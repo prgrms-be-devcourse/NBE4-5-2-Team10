@@ -20,7 +20,7 @@ public class Member {
     @Column(name = "username", nullable = false, length = 100, unique = true)
     private String username;
 
-    @Column(name = "email", nullable = false, unique = true)
+    @Column(name = "email", nullable = false)
     private String email;
 
     @Column(name = "password", nullable = false)
@@ -62,6 +62,13 @@ public class Member {
 
     @Column(name = "verified", nullable = false)
     private boolean verified; // 이메일 인증 여부
+
+    // 소셜 로그인 식별
+    @Column(name = "provider")
+    private String provider;
+
+    @Column(name = "provider_id")
+    private String providerId;
 
     @PrePersist
     protected void onCreate() {

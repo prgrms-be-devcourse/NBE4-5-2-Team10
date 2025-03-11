@@ -1,6 +1,7 @@
 package com.tripfriend.global.security;
 
 import com.tripfriend.global.filter.JwtAuthenticationFilter;
+import com.tripfriend.global.handler.OAuth2AuthenticationSuccessHandler;
 import com.tripfriend.global.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -23,6 +24,8 @@ public class SecurityConfig {
 
     private final JwtUtil jwtUtil;
     private final CustomUserDetailsService customUserDetailsService;
+    private final CustomOauth2UserService customOauth2UserService;
+    private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -36,7 +39,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .anyRequest().permitAll()
                 )
-                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+                // oauth2 로그인 활성화
+                .oauth2Login(oauth2 -> oauth2
+                                .userInfoEndpoint(userInfo -> userInfo
+                                        .userService(customOauth2UserService))
+                                .successHandler(oAuth2AuthenticationSuccessHandler)
+                );
 
         return http.build();
     }
