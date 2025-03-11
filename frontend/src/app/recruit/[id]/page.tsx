@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getRecruitById } from "@/lib/api/recruit";
 
+// 모집 상세 타입 정의
 interface RecruitDetail {
   recruitId: number;
   memberProfileImage: string;
@@ -20,6 +21,17 @@ interface RecruitDetail {
   travelStyle: string;
   budget: number;
   groupSize: number;
+  createdAt: string;
+  updatedAt: string;
+  applies: CommentType[]; // ✅ 댓글 목록 추가
+}
+
+// 댓글 타입 정의
+interface CommentType {
+  applyId: number;
+  memberProfileImage: string;
+  memberNickname: string;
+  content: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -102,7 +114,7 @@ export default function RecruitDetailPage({
 
       {/* 모집 상태 & 조건 */}
       <div className="mt-4 flex space-x-2">
-        {/* 모집 상태 (초록색: 모집 중 / 빨간색: 모집 마감) */}
+        {/* 모집 상태 */}
         <span
           className={`px-2 py-1 text-xs rounded-full ${
             recruit.isClosed
@@ -140,6 +152,45 @@ export default function RecruitDetailPage({
       >
         모집 참여하기
       </button>
+
+      {/* ✅ 댓글 목록 */}
+      <div className="mt-10">
+        <h3 className="text-2xl font-semibold mb-4">💬 댓글</h3>
+
+        {recruit.applies.length === 0 ? (
+          <p className="text-gray-500">아직 댓글이 없습니다.</p>
+        ) : (
+          <ul className="space-y-4">
+            {recruit.applies.map((comment) => (
+              <li
+                key={comment.applyId}
+                className="p-4 bg-white shadow-md rounded-lg flex items-start space-x-4"
+              >
+                {/* 댓글 작성자 프로필 */}
+                <img
+                  src={comment.memberProfileImage || "/default-profile.png"}
+                  alt="프로필 이미지"
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+                <div>
+                  <p className="text-gray-700 font-semibold">
+                    {comment.memberNickname}
+                  </p>
+                  <p className="text-gray-600 mt-1">{comment.content}</p>
+                  <p className="text-gray-400 text-xs mt-1">
+                    작성일: {formatDateTime(comment.createdAt)}
+                  </p>
+                  {comment.createdAt !== comment.updatedAt && (
+                    <p className="text-gray-400 text-xs">
+                      수정됨: {formatDateTime(comment.updatedAt)}
+                    </p>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }
