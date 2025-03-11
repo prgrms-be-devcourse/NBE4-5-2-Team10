@@ -5,13 +5,13 @@ import com.tripfriend.domain.member.member.repository.MemberRepository;
 import com.tripfriend.domain.member.member.service.AuthService;
 import com.tripfriend.domain.place.place.entity.Place;
 import com.tripfriend.domain.place.place.repository.PlaceRepository;
+import com.tripfriend.domain.recruit.apply.dto.ApplyResponseDto;
+import com.tripfriend.domain.recruit.recruit.dto.RecruitListResponseDto;
 import com.tripfriend.domain.recruit.recruit.dto.RecruitRequestDto;
 import com.tripfriend.domain.recruit.recruit.dto.RecruitDetailResponseDto;
-import com.tripfriend.domain.recruit.recruit.dto.RecruitListResponseDto;
 import com.tripfriend.domain.recruit.recruit.entity.Recruit;
 import com.tripfriend.domain.recruit.recruit.repository.RecruitRepository;
 import com.tripfriend.global.exception.ServiceException;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,7 +49,10 @@ public class RecruitService {
     @Transactional
     public RecruitDetailResponseDto findById(Long id) {
         Recruit recruit = recruitRepository.findById(id).orElseThrow(() -> new ServiceException("404-3", "해당 모집글이 존재하지 않습니다."));
-        return new RecruitDetailResponseDto(recruit);
+        List<ApplyResponseDto> applies = recruit.getApplies().stream()
+                .map(ApplyResponseDto::new)
+                .toList();
+        return new RecruitDetailResponseDto(recruit, applies);
     }
 
     @Transactional

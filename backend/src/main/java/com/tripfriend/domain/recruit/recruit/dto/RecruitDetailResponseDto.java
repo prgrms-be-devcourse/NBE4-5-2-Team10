@@ -1,8 +1,7 @@
 package com.tripfriend.domain.recruit.recruit.dto;
 
-import com.tripfriend.domain.member.member.entity.Member;
-import com.tripfriend.domain.place.place.entity.Place;
-import com.tripfriend.domain.recruit.apply.entity.Apply;
+import com.tripfriend.domain.member.member.entity.Gender;
+import com.tripfriend.domain.recruit.apply.dto.ApplyResponseDto;
 import com.tripfriend.domain.recruit.recruit.entity.Recruit;
 import com.tripfriend.domain.recruit.recruit.entity.TravelStyle;
 import lombok.AllArgsConstructor;
@@ -24,6 +23,8 @@ public class RecruitDetailResponseDto {
     private Long memberId;
     private String memberProfileImage;
     private String memberNickname;
+    private String genderRestriction;
+    private String ageRestriction;
     //    private List<Apply> applies;
 //    private Place place;
     private Long placeId;
@@ -35,14 +36,15 @@ public class RecruitDetailResponseDto {
     private LocalDate startDate;
     private LocalDate endDate;
     private TravelStyle travelStyle;
-    private boolean sameGender;
-    private boolean sameAge;
+    //    private boolean sameGender;
+//    private boolean sameAge;
     private Integer budget = 0;
     private Integer groupSize = 2;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private List<ApplyResponseDto> applies;
 
-    public RecruitDetailResponseDto (Recruit recruit){
+    public RecruitDetailResponseDto(Recruit recruit){
         this.recruitId = recruit.getRecruitId();
 //        this.member = recruit.getMember();
         this.memberId = recruit.getMember().getId();
@@ -59,11 +61,31 @@ public class RecruitDetailResponseDto {
         this.startDate = recruit.getStartDate();
         this.endDate = recruit.getEndDate();
         this.travelStyle = recruit.getTravelStyle();
-        this.sameGender = recruit.isSameGender();
-        this.sameAge = recruit.isSameAge();
+//        this.sameGender = recruit.isSameGender();
+//        this.sameAge = recruit.isSameAge();
         this.budget = recruit.getBudget();
         this.groupSize = recruit.getGroupSize();
         this.createdAt = recruit.getCreatedAt();
         this.updatedAt = recruit.getUpdatedAt();
+        // 성별 제한 설정
+        this.genderRestriction = recruit.isSameGender()
+                ? (recruit.getMember().getGender() == Gender.MALE ? "남자만" : "여자만")
+                : "모든 성별";
+
+        // 나이대 제한 설정
+        this.ageRestriction = recruit.isSameAge()
+                ? switch (recruit.getMember().getAgeRange()) {
+            case TEENS -> "10대만";
+            case TWENTIES -> "20대만";
+            case THIRTIES -> "30대만";
+            case FORTIES_PLUS -> "40대 이상만";
+        }
+                : "모든 연령대";
+    }
+
+    // ✅ 댓글을 포함할 경우에만 사용
+    public RecruitDetailResponseDto(Recruit recruit, List<ApplyResponseDto> applies) {
+        this(recruit); // 기존 생성자 호출
+        this.applies = applies;
     }
 }

@@ -1,9 +1,8 @@
 package com.tripfriend.domain.recruit.recruit.controller;
 
+import com.tripfriend.domain.recruit.recruit.dto.RecruitListResponseDto;
 import com.tripfriend.domain.recruit.recruit.dto.RecruitRequestDto;
 import com.tripfriend.domain.recruit.recruit.dto.RecruitDetailResponseDto;
-import com.tripfriend.domain.recruit.recruit.dto.RecruitListResponseDto;
-import com.tripfriend.domain.recruit.recruit.entity.Recruit;
 import com.tripfriend.domain.recruit.recruit.service.RecruitService;
 import com.tripfriend.global.dto.RsData;
 import lombok.RequiredArgsConstructor;
