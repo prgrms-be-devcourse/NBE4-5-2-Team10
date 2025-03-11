@@ -84,8 +84,7 @@ public class CustomOauth2UserService extends DefaultOAuth2UserService {
             // 새로운 회원 DB에 저장
             memberRepository.save(memberEntity);
 
-            // 추가 정보를 입력할 화면으로 리다이렉트
-
+            return new PrincipalDetails(memberEntity, oAuth2User.getAttributes());
         } else {
             System.out.println("로그인을 이미 한 적이 있습니다. 당신은 자동 회원가입이 되어 있습니다.");
             // 이미 존재하는 사용자라면 기본 정보를 기반으로 로그인 처리
