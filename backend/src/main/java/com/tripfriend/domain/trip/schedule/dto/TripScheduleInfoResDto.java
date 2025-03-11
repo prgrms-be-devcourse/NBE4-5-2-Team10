@@ -1,7 +1,5 @@
 package com.tripfriend.domain.trip.schedule.dto;
 
-import com.tripfriend.domain.place.place.dto.PlaceResDto;
-import com.tripfriend.domain.trip.information.dto.TripInformationReqDto;
 import com.tripfriend.domain.trip.information.dto.TripInformationResDto;
 import com.tripfriend.domain.trip.information.entity.TripInformation;
 import com.tripfriend.domain.trip.schedule.entity.TripSchedule;
@@ -12,7 +10,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Getter
-public class TripScheduleResDto { // 여행 일정 정보 DTO
+public class TripScheduleInfoResDto {// 여행 일정 정보 DTO
     private Long id;
     private String memberName;
     private String title;
@@ -20,10 +18,10 @@ public class TripScheduleResDto { // 여행 일정 정보 DTO
     private String description;
     private LocalDate startDate;
     private LocalDate endDate;
-//    private List<TripInformationResDto> tripInformations; // 해당 여행지 일정에 대한 정보
+    private List<TripInformationResDto> tripInformations; // 해당 여행지 일정에 대한 정보
 
-    // TripSchedule 엔티티를 DTO로 변환하는 생성자
-    public TripScheduleResDto(TripSchedule tripSchedule) {
+    // 여행 정보까지 반환
+    public TripScheduleInfoResDto(TripSchedule tripSchedule, List<TripInformationResDto> tripInformations) {
         this.id = tripSchedule.getId();
         this.memberName = tripSchedule.getMember().getUsername();
         this.title = tripSchedule.getTitle();
@@ -32,9 +30,9 @@ public class TripScheduleResDto { // 여행 일정 정보 DTO
         this.startDate = tripSchedule.getStartDate();
         this.endDate = tripSchedule.getEndDate();
 
-//        this.tripInformations = tripSchedule.getTripInformations()
-//                .stream()
-//                .map(TripInformationResDto::new)
-//                .collect(Collectors.toList());
+        this.tripInformations = tripSchedule.getTripInformations()
+                .stream()
+                .map(TripInformationResDto::new)
+                .collect(Collectors.toList());
     }
 }

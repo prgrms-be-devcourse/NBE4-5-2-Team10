@@ -5,6 +5,7 @@ import com.tripfriend.domain.member.member.repository.MemberRepository;
 import com.tripfriend.domain.member.member.service.AuthService;
 import com.tripfriend.domain.place.place.entity.Place;
 import com.tripfriend.domain.place.place.repository.PlaceRepository;
+import com.tripfriend.domain.trip.information.dto.TripInformationResDto;
 import com.tripfriend.domain.trip.information.dto.TripInformationUpdateReqDto;
 import com.tripfriend.domain.trip.information.entity.TripInformation;
 import com.tripfriend.domain.trip.information.repository.TripInformationRepository;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -52,8 +54,7 @@ public class TripScheduleService {
 
     // 여행 일정 생성
     @Transactional
-    public TripScheduleResDto createSchedule(TripScheduleReqDto req, String token) {
-
+    public TripScheduleInfoResDto createSchedule(TripScheduleReqDto req, String token) {
         // 로그인 한 회원 객체 가져오기
         Member member = getLoggedInMember(token);
 
@@ -67,12 +68,35 @@ public class TripScheduleService {
                 .build();
         tripScheduleRepository.save(newSchedule);
 
-        // TripInformation 추가 (여행지 정보)
+        // 여행 정보 저장 (Service 메서드 활용)
         if (req.getTripInformations() != null && !req.getTripInformations().isEmpty()) {
             tripInformationService.addTripInformations(newSchedule, req.getTripInformations());
         }
 
-        return new TripScheduleResDto(newSchedule);
+        // TripInformation을 TripInformationResDto로 변환
+        List<TripInformationResDto> tripInfoDtos = Optional.ofNullable(req.getTripInformations())
+                .orElse(List.of())
+                .stream()
+                .map(tripInfo -> {
+                    Place place = placeRepository.findById(tripInfo.getPlaceId())
+                            .orElseThrow(() -> new ServiceException("404-2", "해당 장소가 존재하지 않습니다."));
+
+                    return new TripInformationResDto(
+                            tripInfo.getPlaceId(),
+                            place.getCityName(),
+                            place.getPlaceName(),
+                            tripInfo.getVisitTime(),
+                            tripInfo.getDuration(),
+                            tripInfo.getTransportation(),
+                            tripInfo.getCost(),
+                            tripInfo.getNotes(),
+                            tripInfo.getPriority(),
+                            false
+                    );
+                })
+                .collect(Collectors.toList());
+
+        return new TripScheduleInfoResDto(newSchedule, tripInfoDtos);
     }
 
     // 전체 일정 조회(필요없을듯)
@@ -220,6 +244,32 @@ public class TripScheduleService {
                 .map(TripScheduleResDto::new)
                 .collect(Collectors.toList());
     }
+
+    // 특정 회원이 생성한 여행 일정의 세부 정보 조회
+    @Transactional
+    public List<TripScheduleInfoResDto> getTripInfo(String token, Long id) {
+
+        // 로그인한 회원 정보 가져오기
+        Member member = getLoggedInMember(token);
+
+        // 일정 조회
+        TripSchedule schedule = tripScheduleRepository.findById(id)
+                .orElseThrow(() -> new ServiceException("404-1", "해당 일정이 존재하지 않습니다"));
+
+        // 본인 확인
+        if (!schedule.getMember().getId().equals(member.getId())) {
+            throw new ServiceException("403-1", "본인이 생성한 일정만 조회할 수 있습니다.");
+        }
+
+        // 여행 일정에 포함된 여행 정보 조회 후 DTO 변환
+        List<TripInformationResDto> tripInformations = tripInformationRepository.findByTripScheduleId(id)
+                .stream()
+                .map(TripInformationResDto::new) // DTO 변환
+                .collect(Collectors.toList());
+
+        return List.of(new TripScheduleInfoResDto(schedule, tripInformations));
+    }
+
 }
 
 
