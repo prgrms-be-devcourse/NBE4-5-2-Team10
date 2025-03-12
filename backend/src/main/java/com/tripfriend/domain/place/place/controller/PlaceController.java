@@ -11,6 +11,8 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -38,14 +40,26 @@ public class PlaceController {
     // 전체 여행지 조회
     @GetMapping
     @Operation(summary = "전체 여행지 조회")
-    public RsData<List<PlaceResDto>> getAllPlaces() {
-        List<Place> places = placeService.getAllPlaces();
+    public RsData<List<PlaceResDto>> getAllPlaces(@RequestParam(required = false) String cityName) {
+        List<Place> places;
+        if (cityName != null && !cityName.isEmpty()) {
+            places = placeService.getPlacesByCity(cityName);
+        } else {
+            places = placeService.getAllPlaces();
+        }
         List<PlaceResDto> placeResDtos = places.stream().map(PlaceResDto::new).toList();
         return new RsData<>(
                 "200-2",
                 "전체 여행지가 성공적으로 조회되었습니다.",
                 placeResDtos
         );
+    }
+
+    // 도시 목록(distinct cityName) 조회
+    @GetMapping("/cities")
+    public RsData<List<String>> getDistinctCities() {
+        List<String> cities = placeService.getDistinctCities();
+        return new RsData<>("200", "도시 목록 조회 성공", cities);
     }
 
     // 특정 여행지 조회 - 단건 조회
