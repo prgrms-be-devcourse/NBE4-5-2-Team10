@@ -28,6 +28,11 @@ public class RecruitController {
         return new RsData<>("200-3", "동행 모집 글 목록이 성공적으로 조회되었습니다.", recruitService.findAll());
     }
 
+    @GetMapping("/recent3")
+    public RsData<List<RecruitListResponseDto>> getRecent3Recruits(){
+        return new RsData<>("200-3", "최근 동행 모집 글 목록이 성공적으로 조회되었습니다.", recruitService.findRecent3());
+    }
+
     @GetMapping("/search")
     public RsData<List<RecruitListResponseDto>> searchRecruits(@RequestParam("keyword") String keyword){
         return new RsData<>("200-3", "동행 모집 글이 제목과 내용으로 성공적으로 검색되었습니다.", recruitService.searchRecruits(keyword));

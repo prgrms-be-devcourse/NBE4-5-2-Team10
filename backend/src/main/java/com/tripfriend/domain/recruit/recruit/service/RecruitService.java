@@ -66,12 +66,19 @@ public class RecruitService {
     @Transactional
     public List<RecruitListResponseDto> findAll() {
 
-        return recruitRepository.findAll().stream()
+        return recruitRepository.findAllByOrderByCreatedAtDesc().stream()
                 .map(RecruitListResponseDto::new)
                 .toList();
 //        return recruitRepository.findByRecruitTest().stream()
 //                .map(RecruitListResponseDto::new)
 //                .toList();
+    }
+
+    @Transactional
+    public List<RecruitListResponseDto> findRecent3() {
+        return recruitRepository.findTop3ByOrderByCreatedAtDesc().stream()
+                .map(RecruitListResponseDto::new)
+                .toList();
     }
 
     @Transactional
