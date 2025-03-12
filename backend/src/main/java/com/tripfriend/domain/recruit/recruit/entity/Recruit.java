@@ -44,7 +44,7 @@ public class Recruit extends BaseEntity {
     private String content;
 
     @Column(name = "is_closed", nullable = false)
-    private boolean isClosed; // 어차피 null 안 되니까 Boolean 안 씀
+    private boolean isClosed = false; // 어차피 null 안 되니까 Boolean 안 씀
 
     @Column(name = "start_date", nullable = false)
     private LocalDate startDate;

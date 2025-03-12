@@ -1,9 +1,8 @@
 package com.tripfriend.domain.recruit.recruit.controller;
 
+import com.tripfriend.domain.recruit.recruit.dto.RecruitListResponseDto;
 import com.tripfriend.domain.recruit.recruit.dto.RecruitRequestDto;
 import com.tripfriend.domain.recruit.recruit.dto.RecruitDetailResponseDto;
-import com.tripfriend.domain.recruit.recruit.dto.RecruitListResponseDto;
-import com.tripfriend.domain.recruit.recruit.entity.Recruit;
 import com.tripfriend.domain.recruit.recruit.service.RecruitService;
 import com.tripfriend.global.dto.RsData;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +26,11 @@ public class RecruitController {
     @GetMapping
     public RsData<List<RecruitListResponseDto>> getRecruits(){
         return new RsData<>("200-3", "동행 모집 글 목록이 성공적으로 조회되었습니다.", recruitService.findAll());
+    }
+
+    @GetMapping("/recent3")
+    public RsData<List<RecruitListResponseDto>> getRecent3Recruits(){
+        return new RsData<>("200-3", "최근 동행 모집 글 목록이 성공적으로 조회되었습니다.", recruitService.findRecent3());
     }
 
     @GetMapping("/search")

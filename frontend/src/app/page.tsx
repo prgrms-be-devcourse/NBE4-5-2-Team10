@@ -1,13 +1,37 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Place from "./place/ClientPage"; // 여행지 조회
+import { fetchWithAuth } from "@/lib/auth"; // 인증된 요청을 위한 유틸
+
+const API_BASE_URL = "http://localhost:8080/recruits"; // 🔹 실제 API 주소
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [destination, setDestination] = useState("");
+  const [recentTrips, setRecentTrips] = useState([]); // 🔹 최신 모집글 데이터 저장
+
+  // 모집 글 타입 정의
+  interface recentTrips {
+    recruitId: number;
+    memberProfileImage: string;
+    memberNickname: string;
+    placeCityName: string;
+    placePlaceName: string;
+    title: string;
+    isClosed: boolean;
+    startDate: string;
+    endDate: string;
+    travelStyle: string;
+    genderRestriction: string;
+    ageRestriction: string;
+    budget: number;
+    groupSize: number;
+    createdAt: string;
+    updatedAt: string;
+  }
 
   // // 인기 여행지 데이터
   // const popularDestinations = [
@@ -18,29 +42,46 @@ export default function Home() {
   // ];
 
   // 최근 등록된 여행 동행 데이터
-  const recentTrips = [
-    {
-      id: 101,
-      title: "제주도 4박 5일 같이 여행하실 분",
-      destination: "제주도",
-      date: "2025-04-10 ~ 2025-04-14",
-      companions: 2,
-    },
-    {
-      id: 102,
-      title: "태국 방콕 맛집 투어 동행 구해요",
-      destination: "방콕",
-      date: "2025-05-15 ~ 2025-05-20",
-      companions: 1,
-    },
-    {
-      id: 103,
-      title: "오사카 2박 3일 여행 파트너 찾습니다",
-      destination: "오사카",
-      date: "2025-04-22 ~ 2025-04-24",
-      companions: 3,
-    },
-  ];
+  // const recentTrips = [
+  //   {
+  //     id: 101,
+  //     title: "제주도 4박 5일 같이 여행하실 분",
+  //     destination: "제주도",
+  //     date: "2025-04-10 ~ 2025-04-14",
+  //     companions: 2,
+  //   },
+  //   {
+  //     id: 102,
+  //     title: "태국 방콕 맛집 투어 동행 구해요",
+  //     destination: "방콕",
+  //     date: "2025-05-15 ~ 2025-05-20",
+  //     companions: 1,
+  //   },
+  //   {
+  //     id: 103,
+  //     title: "오사카 2박 3일 여행 파트너 찾습니다",
+  //     destination: "오사카",
+  //     date: "2025-04-22 ~ 2025-04-24",
+  //     companions: 3,
+  //   },
+  // ];
+
+  useEffect(() => {
+    async function fetchRecentTrips() {
+      try {
+        const response = await fetchWithAuth(`${API_BASE_URL}/recent3`);
+        if (!response.ok)
+          throw new Error("최근 모집글을 불러오는 데 실패했습니다.");
+        const data = await response.json();
+        console.log(data.data);
+        setRecentTrips(data.data);
+      } catch (error) {
+        console.error("❌ 모집글 데이터 불러오기 오류:", error);
+      }
+    }
+
+    fetchRecentTrips();
+  }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -114,23 +155,29 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-2xl font-bold">최근 등록된 여행 동행</h3>
-            <Link href="/trips" className="text-blue-600 hover:underline">
+            <Link
+              href="/recruit/list"
+              className="text-blue-600 hover:underline"
+            >
               모두 보기
             </Link>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {recentTrips.map((trip) => (
-              <div key={trip.id} className="bg-white rounded-lg shadow-md p-6">
+            {recentTrips.map((trip: recentTrips) => (
+              <div
+                key={trip.recruitId}
+                className="bg-white rounded-lg shadow-md p-6"
+              >
                 <h4 className="text-lg font-semibold mb-2">{trip.title}</h4>
                 <div className="mb-4">
                   <p className="text-gray-600 mb-1">
-                    여행지: {trip.destination}
+                    여행지: {trip.placePlaceName}
                   </p>
-                  <p className="text-gray-600 mb-1">날짜: {trip.date}</p>
-                  <p className="text-gray-600">모집인원: {trip.companions}명</p>
+                  <p className="text-gray-600 mb-1">날짜: {trip.startDate}</p>
+                  <p className="text-gray-600">모집인원: {trip.groupSize}명</p>
                 </div>
                 <Link
-                  href={`/trip/${trip.id}`}
+                  href={`/recruit/${trip.recruitId}`}
                   className="inline-block bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
                 >
                   자세히 보기
