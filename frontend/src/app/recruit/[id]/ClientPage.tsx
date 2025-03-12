@@ -11,6 +11,7 @@ const USER_INFO_URL = "http://localhost:8080/member/mypage";
 // 댓글 타입 정의
 interface CommentType {
   applyId: number;
+  memberId: number;
   memberProfileImage: string;
   memberNickname: string;
   content: string;
@@ -75,6 +76,7 @@ export default function RecruitDetailPage(/*{
   const router = useRouter();
   const params = useParams(); // ✅ Next.js 최신 버전에서는 useParams() 사용
   const recruitId = params.id; // 🔹 비동기적으로 가져오기
+  const [commentContent, setCommentContent] = useState(""); // ✅ 댓글 입력 상태
 
   useEffect(() => {
     if (!recruitId) return; // ✅ params.id가 없을 경우 실행하지 않음
@@ -137,6 +139,95 @@ export default function RecruitDetailPage(/*{
       router.push("/recruit/list");
     } catch (error) {
       console.error("❌ 모집글 삭제 오류:", error);
+    }
+  };
+
+  const handleCommentSubmit = async () => {
+    if (!commentContent.trim()) {
+      alert("댓글을 입력해주세요!");
+      return;
+    }
+
+    try {
+      const response = await fetchWithAuth(
+        `${API_BASE_URL}/${recruitId}/applies`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: commentContent }),
+        }
+      );
+
+      if (!response.ok) throw new Error("댓글 등록 실패");
+
+      const newComment = await response.json(); // ✅ 백엔드에서 반환된 새 댓글 데이터를 받음
+
+      console.log("✅ 새 댓글 등록 완료:", newComment.data);
+
+      // ✅ recruit 상태를 새로운 댓글 데이터로 업데이트
+      setRecruit((prev) => ({
+        ...prev,
+        applies: [...prev.applies, newComment.data], // 백엔드에서 받은 `newComment`를 포함하여 업데이트
+      }));
+
+      setCommentContent(""); // 입력창 초기화
+    } catch (error) {
+      console.error("❌ 댓글 등록 오류:", error);
+    }
+  };
+
+  //   const handleCommentSubmit = async () => {
+  //     if (!commentContent.trim()) {
+  //       alert("댓글을 입력해주세요!");
+  //       return;
+  //     }
+
+  //     try {
+  //       const response = await fetchWithAuth(
+  //         `${API_BASE_URL}/${recruitId}/applies`,
+  //         {
+  //           method: "POST",
+  //           headers: { "Content-Type": "application/json" },
+  //           body: JSON.stringify({ content: commentContent }),
+  //         }
+  //       );
+
+  //       if (!response.ok) throw new Error("댓글 등록 실패");
+
+  //       const newComment = await response.json();
+
+  //       setRecruit((prev) => ({
+  //         ...prev,
+  //         applies: [...prev.applies, newComment], // ✅ 기존 댓글 목록에 추가
+  //       }));
+
+  //       setCommentContent(""); // 입력창 초기화
+  //     } catch (error) {
+  //       console.error("❌ 댓글 등록 오류:", error);
+  //     }
+  //   };
+
+  const handleDeleteComment = async (commentId: number) => {
+    if (!window.confirm("댓글을 삭제하시겠습니까?")) return;
+
+    try {
+      const response = await fetchWithAuth(
+        `${API_BASE_URL}/${recruitId}/applies/${commentId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) throw new Error("댓글 삭제 실패");
+
+      setRecruit((prev) => ({
+        ...prev,
+        applies: prev.applies.filter(
+          (comment) => comment.applyId !== commentId
+        ), // ✅ 삭제된 댓글 제거
+      }));
+    } catch (error) {
+      console.error("❌ 댓글 삭제 오류:", error);
     }
   };
 
@@ -252,6 +343,21 @@ export default function RecruitDetailPage(/*{
         모집 참여하기
       </button>
 
+      <div className="mt-6">
+        <textarea
+          value={commentContent}
+          onChange={(e) => setCommentContent(e.target.value)}
+          placeholder="댓글을 입력하세요..."
+          className="w-full p-2 border rounded"
+        ></textarea>
+        <button
+          onClick={handleCommentSubmit}
+          className="mt-2 px-4 py-2 bg-green-500 text-white rounded"
+        >
+          댓글 등록
+        </button>
+      </div>
+
       {/* ✅ 댓글 목록 */}
       <div className="mt-10">
         <h3 className="text-2xl font-semibold mb-4">💬 댓글</h3>
@@ -261,10 +367,9 @@ export default function RecruitDetailPage(/*{
           <ul className="space-y-4">
             {recruit.applies.map((comment) => (
               <li
-                key={comment.applyId}
+                key={comment.applyId || Math.random()} // ✅ key 속성 추가 (백엔드에서 `applyId`가 없을 경우 대비)
                 className="p-4 bg-white shadow-md rounded-lg flex items-start space-x-4"
               >
-                {/* 댓글 작성자 프로필 */}
                 <img
                   src={comment.memberProfileImage || "/default-profile.png"}
                   alt="프로필 이미지"
@@ -276,14 +381,23 @@ export default function RecruitDetailPage(/*{
                   </p>
                   <p className="text-gray-600 mt-1">{comment.content}</p>
                   <p className="text-gray-400 text-xs mt-1">
-                    작성일: {formatDateTime(comment.createdAt)}
+                    작성일:{" "}
+                    {comment.createdAt
+                      ? formatDateTime(comment.createdAt)
+                      : "날짜 없음"}{" "}
+                    {/* ✅ 예외 처리 */}
                   </p>
-                  {comment.createdAt !== comment.updatedAt && (
-                    <p className="text-gray-400 text-xs">
-                      수정됨: {formatDateTime(comment.updatedAt)}
-                    </p>
-                  )}
                 </div>
+
+                {/* 내가 작성한 댓글이면 삭제 버튼 표시 */}
+                {comment.memberId === myMemberId && (
+                  <button
+                    onClick={() => handleDeleteComment(comment.applyId)}
+                    className="ml-auto px-2 py-1 text-red-500"
+                  >
+                    삭제
+                  </button>
+                )}
               </li>
             ))}
           </ul>
