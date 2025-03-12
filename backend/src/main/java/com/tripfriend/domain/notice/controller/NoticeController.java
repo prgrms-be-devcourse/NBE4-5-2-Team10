@@ -1,6 +1,6 @@
 package com.tripfriend.domain.notice.controller;
 
-import com.tripfriend.domain.notice.dao.Dao;
+import com.tripfriend.domain.notice.dto.Dto;
 import com.tripfriend.domain.notice.entity.Notice;
 import com.tripfriend.domain.notice.repository.NoticeRepository;
 import com.tripfriend.domain.notice.service.NoticeService;
@@ -42,7 +42,7 @@ public class NoticeController {
     @CheckPermission("ADMIN")
     public ResponseEntity<Notice> updateNotice(
             @PathVariable("id") Long id,
-            @RequestBody Dao request) {
+            @RequestBody Dto request) {
         return ResponseEntity.ok(
                 noticeService.updateNoticeById(id, request.getTitle(), request.getContent())
         );
