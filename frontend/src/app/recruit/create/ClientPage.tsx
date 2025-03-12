@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { fetchWithAuth } from "@/lib/auth";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 const API_BASE_URL = "http://localhost:8080/recruits";
 const PLACE_API_URL = "http://localhost:8080/place";
@@ -85,6 +87,8 @@ export default function CreateRecruitPage() {
 
   return (
     <div className="min-h-screen p-8 bg-gray-50 max-w-xl mx-auto">
+      {/* 헤더 컴포넌트 사용 */}
+      <Header />
       <h2 className="text-3xl font-bold mb-6">동행 모집 글 작성</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
@@ -201,6 +205,8 @@ export default function CreateRecruitPage() {
           작성 완료
         </button>
       </form>
+      {/* 푸터 컴포넌트 사용 */}
+      <Footer />
     </div>
   );
 }

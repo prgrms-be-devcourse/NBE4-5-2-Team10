@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { getRecruitById } from "@/lib/api/recruit";
 import { fetchWithAuth } from "@/lib/auth";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 const API_BASE_URL = "http://localhost:8080/recruits";
 const USER_INFO_URL = "http://localhost:8080/member/mypage";
@@ -245,6 +247,8 @@ export default function RecruitDetailPage(/*{
 
   return (
     <div className="min-h-screen bg-gray-50 p-8 max-w-2xl mx-auto">
+      {/* 헤더 컴포넌트 사용 */}
+      <Header />
       {/* 제목 */}
       <h2 className="text-3xl font-bold mb-4">{recruit.title}</h2>
 
@@ -403,6 +407,8 @@ export default function RecruitDetailPage(/*{
           </ul>
         )}
       </div>
+      {/* 푸터 컴포넌트 사용 */}
+      <Footer />
     </div>
   );
 }

@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getRecruits } from "@/lib/api/recruit";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 // 모집 글 타입 정의
 interface Recruit {
@@ -57,6 +59,8 @@ export default function RecruitListPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
+      {/* 헤더 컴포넌트 사용 */}
+      <Header />
       <h2 className="text-3xl font-bold mb-6">여행 동행 모집</h2>
 
       {error && <p className="text-red-500">{error}</p>}
@@ -143,6 +147,15 @@ export default function RecruitListPage() {
           ))}
         </ul>
       )}
+      {/* 플로팅 버튼 */}
+      <Link href="/recruit/create">
+        <button className="fixed bottom-16 right-6 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition">
+          ✏️ 글 작성
+        </button>
+      </Link>
+
+      {/* 푸터 컴포넌트 사용 */}
+      <Footer />
     </div>
   );
 }

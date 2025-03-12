@@ -95,7 +95,7 @@ export default function Header() {
             여행 동행 찾기
           </Link>
           <Link
-            href="recruit/create"
+            href="/recruit/create"
             className="text-gray-700 hover:text-blue-600"
           >
             동행 등록하기
