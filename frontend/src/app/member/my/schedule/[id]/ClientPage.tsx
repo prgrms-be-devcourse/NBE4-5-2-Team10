@@ -30,12 +30,12 @@ interface TripSchedule {
 interface ApiResponse {
   code: string;
   msg: string;
-  data: TripSchedule;
+  data: TripSchedule[];
 }
 
 export default function ClientPage() {
   const { id } = useParams();
-  const [schedule, setSchedule] = useState<TripSchedule | null>(null);
+  const [schedule, setSchedule] = useState<TripSchedule[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,7 +44,6 @@ export default function ClientPage() {
 
     // accessToken 가져오기
     const token = localStorage.getItem("accessToken");
-    console.log(token);
 
     if (!token) {
       setError("로그인이 필요합니다.");
@@ -61,7 +60,6 @@ export default function ClientPage() {
             credentials: "include", // 쿠키 포함
             headers: {
               Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
             },
           }
         );
@@ -76,12 +74,6 @@ export default function ClientPage() {
           throw new Error("해당 ID의 여행 일정이 존재하지 않습니다.");
         }
         console.log("API 응답 데이터 내부 데이터:", result.data);
-        console.log(
-          "API 응답 데이터 내부 tripInformations:",
-          result.data.tripInformations
-        );
-        console.log("전체 응답:", JSON.stringify(result, null, 2));
-
         setSchedule(result.data);
       } catch (err) {
         setError(err instanceof Error ? err.message : "알 수 없는 오류 발생");
@@ -93,62 +85,76 @@ export default function ClientPage() {
     fetchSchedule();
   }, [id]);
 
-  if (loading) return <p>로딩 중...</p>;
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
-  if (!schedule) return <p>일정 정보를 찾을 수 없습니다.</p>;
-  console.log("스케줄 확인 : ", schedule);
-  console.log("세부일정 확인 : ", schedule.tripInformations);
+  if (loading) return <p className="p-6 text-xl">로딩 중...</p>;
+  if (error) return <p className="p-6 text-xl text-red-600">{error}</p>;
+  if (schedule.length === 0)
+    return <p className="p-6 text-xl">일정 정보를 찾을 수 없습니다.</p>;
 
   return (
-    <div>
-      <h1>{schedule.title}</h1>
-      <p>
-        <strong>작성자:</strong> {schedule.memberName}
-      </p>
-      <p>
-        <strong>도시:</strong> {schedule.cityName}
-      </p>
-      <p>
-        <strong>설명:</strong> {schedule.description}
-      </p>
-      <p>
-        <strong>여행 기간:</strong> {schedule.startDate} ~ {schedule.endDate}
-      </p>
+    <div className="p-6">
+      {schedule.map((sch) => (
+        <div
+          key={sch.id}
+          className="mb-8 border border-gray-300 rounded-lg p-6 shadow"
+        >
+          <h1 className="text-3xl font-bold mb-2">{sch.title}</h1>
+          <p className="text-lg mb-1">
+            <strong>작성자:</strong> {sch.memberName}
+          </p>
+          <p className="text-lg mb-1">
+            <strong>도시:</strong> {sch.cityName}
+          </p>
+          <p className="text-lg mb-1">
+            <strong>설명:</strong> {sch.description}
+          </p>
+          <p className="text-md mb-3">
+            <strong>여행 기간:</strong> {sch.startDate} ~ {sch.endDate}
+          </p>
 
-      <h2>세부 일정</h2>
-      <ul>
-        {schedule?.tripInformations?.map((info) => (
-          <li key={info.placeId}>
-            <p>
-              <strong>장소:</strong> {info.placeName} ({info.cityName})
-            </p>
-            <p>
-              <strong>방문 시간:</strong>{" "}
-              {new Date(info.visitTime).toLocaleString()}
-            </p>
-            <p>
-              <strong>소요 시간:</strong> {info.duration}시간
-            </p>
-            <p>
-              <strong>이동 수단:</strong> {info.transportation}
-            </p>
-            <p>
-              <strong>비용:</strong> {info.cost}원
-            </p>
-            <p>
-              <strong>메모:</strong> {info.notes}
-            </p>
-            <p>
-              <strong>우선순위:</strong> {info.priority}
-            </p>
-            <p>
-              <strong>방문 여부:</strong>{" "}
-              {info.visited ? "✅ 방문 완료" : "❌ 방문 예정"}
-            </p>
-            <hr />
-          </li>
-        )) || <p>일정 정보가 없습니다.</p>}
-      </ul>
+          <h2 className="text-2xl font-semibold mb-4">세부 일정</h2>
+          <ul>
+            {sch.tripInformations && sch.tripInformations.length > 0 ? (
+              sch.tripInformations.map((info) => (
+                <li
+                  key={info.placeId}
+                  className="mb-4 p-4 bg-white rounded shadow"
+                >
+                  <p className="text-xl font-bold">
+                    {info.placeName} ({info.cityName})
+                  </p>
+                  <p className="text-md">
+                    <strong>방문 시간:</strong>{" "}
+                    {new Date(info.visitTime).toLocaleString()}
+                  </p>
+                  <p className="text-md">
+                    <strong>소요 시간:</strong> {info.duration}시간
+                  </p>
+                  <p className="text-md">
+                    <strong>이동 수단:</strong> {info.transportation}
+                  </p>
+                  <p className="text-md">
+                    <strong>비용:</strong> {info.cost}원
+                  </p>
+                  <p className="text-md">
+                    <strong>메모:</strong> {info.notes}
+                  </p>
+                  <p
+                    className={`text-md font-bold ${
+                      info.visited ? "text-green-600" : "text-red-600"
+                    }`}
+                  >
+                    {info.visited ? "✅ 방문 완료" : "❌ 방문 예정"}
+                  </p>
+                </li>
+              ))
+            ) : (
+              <p className="text-md text-gray-600">
+                세부 일정 정보가 없습니다.
+              </p>
+            )}
+          </ul>
+        </div>
+      ))}
     </div>
   );
 }
