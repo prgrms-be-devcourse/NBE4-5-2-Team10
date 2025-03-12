@@ -1,7 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+
+interface Place {
+  id: number;
+  placeName: string;
+}
 
 interface TripInformation {
   placeId: number;
@@ -26,22 +31,67 @@ interface TripSchedule {
 export default function ClientPage() {
   const router = useRouter();
 
-  // 여행 일정 기본 필드
+  // 기본 일정 정보를 위한 상태
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [cityName, setCityName] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  // 세부 일정 배열 (동적 추가)
+  // 동적 세부 일정 정보를 위한 상태
   const [tripInformations, setTripInformations] = useState<TripInformation[]>(
     []
   );
 
-  // 임의의 교통수단 옵션 (필요에 따라 확장 가능)
+  // 도시 목록 및 장소 목록을 위한 상태
+  const [cities, setCities] = useState<string[]>([]);
+  const [places, setPlaces] = useState<Place[]>([]);
+
+  // 교통수단 옵션
   const transportationOptions = ["WALK", "BUS", "SUBWAY", "CAR", "TAXI", "ETC"];
 
-  // 세부 일정 추가 핸들러
+  // 컴포넌트 마운트 시 중복 제거된 도시 목록을 가져옴
+  useEffect(() => {
+    const fetchCities = async () => {
+      try {
+        const response = await fetch("http://localhost:8080/place/cities");
+        if (!response.ok) {
+          throw new Error("도시 목록을 불러오는데 실패했습니다.");
+        }
+        const data = await response.json();
+        if (data && data.data) {
+          setCities(data.data);
+        }
+      } catch (error: any) {
+        console.error(error.message);
+      }
+    };
+    fetchCities();
+  }, []);
+
+  // cityName이 변경되면 해당 도시에 대한 장소 목록을 가져옴
+  useEffect(() => {
+    if (!cityName) return;
+    const fetchPlaces = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:8080/place?cityName=${cityName}`
+        );
+        if (!response.ok) {
+          throw new Error("장소 목록을 불러오는데 실패했습니다.");
+        }
+        const data = await response.json();
+        if (data && data.data) {
+          setPlaces(data.data);
+        }
+      } catch (error: any) {
+        console.error(error.message);
+      }
+    };
+    fetchPlaces();
+  }, [cityName]);
+
+  // 새로운 세부 일정을 추가함
   const addTripInformation = () => {
     setTripInformations([
       ...tripInformations,
@@ -58,7 +108,7 @@ export default function ClientPage() {
     ]);
   };
 
-  // 세부 일정 변경 핸들러
+  // 특정 세부 일정 항목의 필드를 업데이트 함
   const updateTripInformation = (
     index: number,
     field: keyof TripInformation,
@@ -69,16 +119,16 @@ export default function ClientPage() {
     setTripInformations(updated);
   };
 
-  // 세부 일정 제거 핸들러
+  // 세부 일정 항목을 제거함
   const removeTripInformation = (index: number) => {
     setTripInformations(tripInformations.filter((_, idx) => idx !== index));
   };
 
-  // 등록 API 호출
+  // 폼 제출을 처리함
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 등록할 여행 일정 객체 생성
+    // 전송할 일정 객체를 구성함
     const schedule: TripSchedule = {
       title,
       description,
@@ -98,11 +148,9 @@ export default function ClientPage() {
         },
         body: JSON.stringify(schedule),
       });
-
       if (!response.ok) {
         throw new Error("등록에 실패했습니다.");
       }
-      // 등록 성공 후, 목록 페이지나 상세 페이지로 이동
       router.push("/member/my");
     } catch (error: any) {
       alert(error.message || "알 수 없는 오류가 발생했습니다.");
@@ -136,14 +184,20 @@ export default function ClientPage() {
         </div>
 
         <div>
-          <label className="block mb-1">도시</label>
-          <input
-            type="text"
+          <label className="block mb-1">도시 선택</label>
+          <select
             value={cityName}
             onChange={(e) => setCityName(e.target.value)}
             className="w-full border rounded p-2"
             required
-          />
+          >
+            <option value="">선택하세요</option>
+            {cities.map((city) => (
+              <option key={city} value={city}>
+                {city}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="flex space-x-4">
@@ -198,9 +252,8 @@ export default function ClientPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block mb-1">장소 ID</label>
-                    <input
-                      type="number"
+                    <label className="block mb-1">장소 선택</label>
+                    <select
                       value={info.placeId || ""}
                       onChange={(e) =>
                         updateTripInformation(
@@ -211,7 +264,14 @@ export default function ClientPage() {
                       }
                       className="w-full border rounded p-2"
                       required
-                    />
+                    >
+                      <option value="">선택하세요</option>
+                      {places.map((place) => (
+                        <option key={place.id} value={place.id}>
+                          {place.placeName}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <div>
                     <label className="block mb-1">방문 시간</label>
