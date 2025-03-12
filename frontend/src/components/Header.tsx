@@ -88,10 +88,16 @@ export default function Header() {
           </Link>
         </div>
         <div className="hidden md:flex space-x-6">
-          <Link href="/trips" className="text-gray-700 hover:text-blue-600">
+          <Link
+            href="/recruit/list"
+            className="text-gray-700 hover:text-blue-600"
+          >
             여행 동행 찾기
           </Link>
-          <Link href="/create" className="text-gray-700 hover:text-blue-600">
+          <Link
+            href="recruit/create"
+            className="text-gray-700 hover:text-blue-600"
+          >
             동행 등록하기
           </Link>
           <Link href="/community" className="text-gray-700 hover:text-blue-600">
