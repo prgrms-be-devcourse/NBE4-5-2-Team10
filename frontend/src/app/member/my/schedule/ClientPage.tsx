@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation"; // useRouter 추가
 
 interface TripSchedule {
   id: number;
@@ -14,6 +15,7 @@ const ClientPage = () => {
   const [schedules, setSchedules] = useState<TripSchedule[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter(); // useRouter 사용
 
   useEffect(() => {
     const fetchSchedules = async () => {
@@ -58,7 +60,12 @@ const ClientPage = () => {
               날짜 : {schedule.startDate} ~ {schedule.endDate}
             </p>
             <div className="mt-4">
-              <button className="bg-blue-500 text-white px-3 py-2 rounded mr-3">
+              <button
+                className="bg-blue-500 text-white px-3 py-2 rounded mr-3"
+                onClick={() =>
+                  router.push(`/member/my/schedule/${schedule.id}`)
+                }
+              >
                 상세 보기
               </button>
               <button className="bg-gray-500 text-white px-3 py-2 rounded">
