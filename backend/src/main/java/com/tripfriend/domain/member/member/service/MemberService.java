@@ -6,6 +6,7 @@ import com.tripfriend.domain.member.member.dto.MemberUpdateRequestDto;
 import com.tripfriend.domain.member.member.entity.Member;
 import com.tripfriend.domain.member.member.repository.MemberRepository;
 import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -22,7 +23,7 @@ import java.util.stream.Collectors;
 public class MemberService {
 
     private final MemberRepository memberRepository;
-
+    private final AuthService authService;
     private final MailService mailService;
     private final PasswordEncoder passwordEncoder;
 
@@ -104,12 +105,13 @@ public class MemberService {
     }
 
     @Transactional
-    public void deleteMember(Long id) {
+    public void deleteMember(Long id, HttpServletResponse response) {
 
         if (!memberRepository.existsById(id)) {
             throw new RuntimeException("존재하지 않는 회원입니다.");
         }
 
+        authService.logout(response);
         memberRepository.deleteById(id);
     }
 

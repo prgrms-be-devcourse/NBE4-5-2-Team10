@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import Schedule from "./schedule/ClientPage";
 
 // Backend DTO에 맞춘 사용자 정보 타입 정의
 interface MemberResponseDto {
@@ -121,6 +120,9 @@ export default function ClientPage() {
   // 탭 상태 관리
   const [activeTab, setActiveTab] = useState("profile");
 
+  // 회원 탈퇴 확인 모달 상태
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
   // 프로필 수정 모드 진입 핸들러
   const handleEditProfile = () => {
     // 수정 모드로 들어갈 때 현재 프로필 데이터로 초기화하되, null/undefined 값을 빈 문자열로 처리
@@ -211,8 +213,98 @@ export default function ClientPage() {
     const { name, value } = e.target;
     setEditedProfile({
       ...editedProfile,
-      [name]: value,
+      [name]: value || "", // 값이 null이나 undefined면 빈 문자열 사용
     });
+  };
+
+  // 회원 탈퇴 모달 열기 핸들러
+  const handleOpenDeleteModal = () => {
+    setShowDeleteModal(true);
+  };
+
+  // 회원 탈퇴 모달 닫기 핸들러
+  const handleCloseDeleteModal = () => {
+    setShowDeleteModal(false);
+  };
+
+  // 회원 탈퇴 실행 핸들러
+  const handleDeleteAccount = async () => {
+    try {
+      // accessToken 가져오기
+      const accessToken = localStorage.getItem("accessToken");
+
+      if (!accessToken) {
+        console.error("로그인이 필요합니다");
+        router.push("/member/login");
+        return;
+      }
+
+      // 회원 탈퇴 API 호출
+      const response = await fetch("http://localhost:8080/member/delete", {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        credentials: "include", // 쿠키를 포함하도록 설정
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error("인증이 만료되었습니다");
+        }
+        throw new Error(`회원 탈퇴 실패: ${response.status}`);
+      }
+
+      // 회원 탈퇴 성공 처리
+      let responseData;
+
+      // 204 상태 코드인 경우 (No Content)
+      if (response.status === 204) {
+        responseData = { success: true, msg: "회원이 삭제되었습니다." };
+      } else {
+        // 응답 본문이 있는 경우 JSON으로 파싱
+        try {
+          responseData = await response.json();
+        } catch (e) {
+          // JSON 파싱 실패 시 성공으로 처리 (204이지만 본문이 없는 경우)
+          responseData = { success: true, msg: "회원이 삭제되었습니다." };
+        }
+      }
+
+      // 로컬 스토리지의 토큰 제거
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+
+      // 추가: 로그아웃 API 호출하여 쿠키의 토큰도 제거
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+      const logoutUrl = `${apiUrl}/member/logout`;
+
+      try {
+        await fetch(logoutUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include", // 쿠키를 포함하도록 설정
+        });
+      } catch (logoutError) {
+        console.error("로그아웃 처리 중 오류:", logoutError);
+        // 로그아웃 실패해도 페이지 이동은 계속 진행
+      }
+
+      // 커스텀 이벤트 발생 (Header 컴포넌트의 상태 업데이트를 위함)
+      window.dispatchEvent(new Event("logout"));
+
+      // 성공 메시지 표시
+      alert(responseData.msg || "회원 탈퇴가 완료되었습니다.");
+
+      // 홈페이지로 리다이렉트
+      router.push("/");
+    } catch (error) {
+      console.error("회원 탈퇴 오류:", error);
+      alert(error.message || "회원 탈퇴 중 오류가 발생했습니다.");
+      setShowDeleteModal(false);
+    }
   };
 
   // 백엔드 API 호출
@@ -385,12 +477,20 @@ export default function ClientPage() {
                   className="w-48 h-48 rounded-full object-cover mb-4"
                 />
                 {!isEditing && (
-                  <button
-                    onClick={handleEditProfile}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 w-full max-w-xs"
-                  >
-                    프로필 수정
-                  </button>
+                  <div className="space-y-2 w-full max-w-xs">
+                    <button
+                      onClick={handleEditProfile}
+                      className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 w-full"
+                    >
+                      프로필 수정
+                    </button>
+                    <button
+                      onClick={handleOpenDeleteModal}
+                      className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 w-full"
+                    >
+                      회원 탈퇴
+                    </button>
+                  </div>
                 )}
               </div>
 
@@ -404,7 +504,7 @@ export default function ClientPage() {
                       <input
                         type="text"
                         name="nickname"
-                        value={editedProfile.nickname || ""}
+                        value={editedProfile.nickname}
                         onChange={handleProfileChange}
                         className="w-full p-2 border rounded-md"
                       />
@@ -414,7 +514,7 @@ export default function ClientPage() {
                       <input
                         type="email"
                         name="email"
-                        value={editedProfile.email || ""}
+                        value={editedProfile.email}
                         onChange={handleProfileChange}
                         className="w-full p-2 border rounded-md"
                       />
@@ -423,7 +523,7 @@ export default function ClientPage() {
                       <label className="block text-gray-700 mb-2">성별</label>
                       <select
                         name="gender"
-                        value={editedProfile.gender || ""}
+                        value={editedProfile.gender}
                         onChange={handleProfileChange}
                         className="w-full p-2 border rounded-md"
                       >
@@ -435,7 +535,7 @@ export default function ClientPage() {
                       <label className="block text-gray-700 mb-2">연령대</label>
                       <select
                         name="ageRange"
-                        value={editedProfile.ageRange || ""}
+                        value={editedProfile.ageRange}
                         onChange={handleProfileChange}
                         className="w-full p-2 border rounded-md"
                       >
@@ -451,13 +551,13 @@ export default function ClientPage() {
                       </label>
                       <select
                         name="travelStyle"
-                        value={editedProfile.travelStyle || ""}
+                        value={editedProfile.travelStyle}
                         onChange={handleProfileChange}
                         className="w-full p-2 border rounded-md"
                       >
                         <option value="TOURISM">관광</option>
                         <option value="RELAXATION">휴양</option>
-                        <option value="CULSHOPPINGTURE">쇼핑</option>
+                        <option value="SHOPPING">쇼핑</option>
                       </select>
                     </div>
                     <div className="mb-4">
@@ -466,7 +566,7 @@ export default function ClientPage() {
                       </label>
                       <textarea
                         name="aboutMe"
-                        value={editedProfile.aboutMe || ""} // null/undefined 방지
+                        value={editedProfile.aboutMe}
                         onChange={handleProfileChange}
                         className="w-full p-2 border rounded-md h-32"
                       ></textarea>
@@ -543,7 +643,75 @@ export default function ClientPage() {
         {/* 내가 만든 여행 섹션 */}
         {activeTab === "myTrips" && (
           <div>
-            <Schedule />
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold">내가 만든 여행</h3>
+              <Link
+                href="/trips/create"
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+              >
+                새 여행 만들기
+              </Link>
+            </div>
+
+            {myTrips.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {myTrips.map((trip) => (
+                  <div
+                    key={trip.id}
+                    className="bg-white rounded-lg shadow-md p-6"
+                  >
+                    <h4 className="text-lg font-semibold mb-2">{trip.title}</h4>
+                    <div className="mb-4">
+                      <p className="text-gray-600 mb-1">
+                        여행지: {trip.destination}
+                      </p>
+                      <p className="text-gray-600 mb-1">날짜: {trip.date}</p>
+                      <p className="text-gray-600 mb-1">
+                        상태:{" "}
+                        <span
+                          className={`font-medium ${
+                            trip.status === "준비중"
+                              ? "text-blue-600"
+                              : trip.status === "여행중"
+                              ? "text-green-600"
+                              : "text-gray-600"
+                          }`}
+                        >
+                          {trip.status}
+                        </span>
+                      </p>
+                      <p className="text-gray-600">
+                        모집인원: {trip.companions}명
+                      </p>
+                    </div>
+                    <div className="flex space-x-2">
+                      <Link
+                        href={`/trip/${trip.id}`}
+                        className="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 text-sm"
+                      >
+                        상세 보기
+                      </Link>
+                      <Link
+                        href={`/trip/edit/${trip.id}`}
+                        className="bg-gray-200 text-gray-800 px-3 py-1 rounded-md hover:bg-gray-300 text-sm"
+                      >
+                        수정하기
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="bg-white rounded-lg shadow-md p-6 text-center">
+                <p className="text-gray-500 mb-4">아직 만든 여행이 없습니다.</p>
+                <Link
+                  href="/trips/create"
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                >
+                  첫 여행 만들기
+                </Link>
+              </div>
+            )}
           </div>
         )}
 
@@ -653,6 +821,33 @@ export default function ClientPage() {
           </div>
         )}
       </div>
+
+      {/* 회원 탈퇴 확인 모달 */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-xl font-bold mb-4">회원 탈퇴</h3>
+            <p className="text-gray-700 mb-6">
+              정말로 탈퇴하시겠습니까? 모든 회원 정보와 여행 데이터가 삭제되며
+              이 작업은 되돌릴 수 없습니다.
+            </p>
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={handleCloseDeleteModal}
+                className="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+              >
+                탈퇴하기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>

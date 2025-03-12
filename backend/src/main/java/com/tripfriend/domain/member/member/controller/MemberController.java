@@ -71,10 +71,12 @@ public class MemberController {
     }
 
     @Operation(summary = "회원 삭제")
-    @DeleteMapping("/{id}")
-    public RsData<Void> deleteMember(@PathVariable Long id) {
+    @DeleteMapping("/delete")
+    public RsData<Void> deleteMember(@RequestHeader(value = "Authorization", required = false) String token, HttpServletResponse response) {
 
-        memberService.deleteMember(id);
+        Member loggedInMember = authService.getLoggedInMember(token);
+
+        memberService.deleteMember(loggedInMember.getId(), response);
         return new RsData<>("204-1", "회원이 삭제되었습니다.", null);
     }
 
