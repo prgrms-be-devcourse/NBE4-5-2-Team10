@@ -16,7 +16,6 @@ interface TripInformation {
   cost: number;
   notes: string;
   priority: number;
-  visited: boolean;
 }
 
 interface TripSchedule {
@@ -103,7 +102,6 @@ export default function ClientPage() {
         cost: 0,
         notes: "",
         priority: 0,
-        visited: false,
       },
     ]);
   };
@@ -364,21 +362,6 @@ export default function ClientPage() {
                       }
                       className="w-full border rounded p-2"
                     />
-                  </div>
-                  <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={info.visited}
-                      onChange={(e) =>
-                        updateTripInformation(
-                          index,
-                          "visited",
-                          e.target.checked
-                        )
-                      }
-                      className="mr-2"
-                    />
-                    <span>방문 여부</span>
                   </div>
                 </div>
               </div>
