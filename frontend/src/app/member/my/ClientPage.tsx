@@ -22,6 +22,13 @@ interface MemberResponseDto {
   authority: string;
 }
 
+// RsData 응답 형식 정의
+interface RsData<T> {
+  code: string;
+  msg: string;
+  data: T;
+}
+
 // 사용자 여행 정보 타입 정의
 interface TripInfo {
   id: number;
@@ -113,12 +120,79 @@ export default function ClientPage() {
   // 탭 상태 관리
   const [activeTab, setActiveTab] = useState("profile");
 
+  // 프로필 수정 모드 진입 핸들러
+  const handleEditProfile = () => {
+    // 수정 모드로 들어갈 때 현재 프로필 데이터로 초기화하되, null/undefined 값을 빈 문자열로 처리
+    const sanitizedProfile = {
+      ...userProfile,
+      nickname: userProfile.nickname || "",
+      email: userProfile.email || "",
+      gender: userProfile.gender || "",
+      ageRange: userProfile.ageRange || "",
+      travelStyle: userProfile.travelStyle || "",
+      aboutMe: userProfile.aboutMe || "",
+    };
+    setEditedProfile(sanitizedProfile);
+    setIsEditing(true);
+  };
+
   // 프로필 수정 저장 핸들러
   const handleSaveProfile = () => {
-    setUserProfile(editedProfile);
-    setIsEditing(false);
-    // API 호출 추가 가능
-    // updateMemberProfile(editedProfile).then(...)
+    // accessToken 가져오기
+    const accessToken = localStorage.getItem("accessToken");
+
+    if (!accessToken) {
+      console.error("로그인이 필요합니다");
+      router.push("/member/login");
+      return;
+    }
+
+    // MemberUpdateRequestDto 형식으로 데이터 구성
+    const memberUpdateRequestDto = {
+      email: editedProfile.email,
+      nickname: editedProfile.nickname,
+      gender: editedProfile.gender,
+      ageRange: editedProfile.ageRange,
+      travelStyle: editedProfile.travelStyle,
+      aboutMe: editedProfile.aboutMe,
+      // 필요한 경우 프로필 이미지 정보 추가
+    };
+
+    // 회원정보 수정 API 호출
+    fetch("http://localhost:8080/member/update", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(memberUpdateRequestDto),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          if (response.status === 401) {
+            throw new Error("인증이 만료되었습니다");
+          }
+          throw new Error(`회원정보 수정 실패: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((responseData: RsData<MemberResponseDto>) => {
+        // API 응답 처리
+        if (responseData.code.startsWith("200")) {
+          // 성공적으로 업데이트된 경우
+          setUserProfile(responseData.data);
+          setIsEditing(false);
+          // 성공 메시지 표시 (옵션)
+          alert(responseData.msg || "회원 정보가 수정되었습니다.");
+        } else {
+          // 서버에서 오류 응답을 보낸 경우
+          throw new Error(responseData.msg || "회원정보 수정 실패");
+        }
+      })
+      .catch((error) => {
+        console.error("회원정보 수정 오류:", error);
+        alert(error.message || "회원정보 수정 중 오류가 발생했습니다.");
+      });
   };
 
   // 프로필 수정 취소 핸들러
@@ -197,7 +271,7 @@ export default function ClientPage() {
             } else {
               // refreshToken이 없는 경우
               localStorage.removeItem("accessToken");
-              router.push("/member/login");
+              router.push("/login");
               throw new Error("로그인이 필요합니다");
             }
           }
@@ -205,11 +279,14 @@ export default function ClientPage() {
         }
         return response.json();
       })
-      .then((data) => {
-        if (data) {
-          // null 체크 추가
-          setUserProfile(data);
-          setEditedProfile(data);
+      .then((responseData: RsData<MemberResponseDto>) => {
+        if (responseData && responseData.data) {
+          // RsData 형식에서 실제 데이터 추출
+          setUserProfile(responseData.data);
+          setEditedProfile(responseData.data);
+
+          // 성공 메시지 확인 (필요시 사용)
+          console.log(`마이페이지 로딩 성공: ${responseData.msg}`);
         }
       })
       .catch((error) => {
@@ -308,7 +385,7 @@ export default function ClientPage() {
                 />
                 {!isEditing && (
                   <button
-                    onClick={() => setIsEditing(true)}
+                    onClick={handleEditProfile}
                     className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 w-full max-w-xs"
                   >
                     프로필 수정
@@ -326,7 +403,7 @@ export default function ClientPage() {
                       <input
                         type="text"
                         name="nickname"
-                        value={editedProfile.nickname}
+                        value={editedProfile.nickname || ""}
                         onChange={handleProfileChange}
                         className="w-full p-2 border rounded-md"
                       />
@@ -336,7 +413,7 @@ export default function ClientPage() {
                       <input
                         type="email"
                         name="email"
-                        value={editedProfile.email}
+                        value={editedProfile.email || ""}
                         onChange={handleProfileChange}
                         className="w-full p-2 border rounded-md"
                       />
@@ -345,7 +422,7 @@ export default function ClientPage() {
                       <label className="block text-gray-700 mb-2">성별</label>
                       <select
                         name="gender"
-                        value={editedProfile.gender}
+                        value={editedProfile.gender || ""}
                         onChange={handleProfileChange}
                         className="w-full p-2 border rounded-md"
                       >
@@ -357,7 +434,7 @@ export default function ClientPage() {
                       <label className="block text-gray-700 mb-2">연령대</label>
                       <select
                         name="ageRange"
-                        value={editedProfile.ageRange}
+                        value={editedProfile.ageRange || ""}
                         onChange={handleProfileChange}
                         className="w-full p-2 border rounded-md"
                       >
@@ -373,13 +450,13 @@ export default function ClientPage() {
                       </label>
                       <select
                         name="travelStyle"
-                        value={editedProfile.travelStyle}
+                        value={editedProfile.travelStyle || ""}
                         onChange={handleProfileChange}
                         className="w-full p-2 border rounded-md"
                       >
                         <option value="TOURISM">관광</option>
                         <option value="RELAXATION">휴양</option>
-                        <option value="SHOPPING">쇼핑</option>
+                        <option value="CULSHOPPINGTURE">쇼핑</option>
                       </select>
                     </div>
                     <div className="mb-4">
@@ -388,7 +465,7 @@ export default function ClientPage() {
                       </label>
                       <textarea
                         name="aboutMe"
-                        value={editedProfile.aboutMe}
+                        value={editedProfile.aboutMe || ""} // null/undefined 방지
                         onChange={handleProfileChange}
                         className="w-full p-2 border rounded-md h-32"
                       ></textarea>

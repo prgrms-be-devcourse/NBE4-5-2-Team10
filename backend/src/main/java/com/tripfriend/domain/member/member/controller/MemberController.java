@@ -61,10 +61,12 @@ public class MemberController {
     }
 
     @Operation(summary = "회원정보 수정")
-    @PutMapping("/{id}")
-    public RsData<MemberResponseDto> updateMember(@PathVariable Long id, @RequestBody MemberUpdateRequestDto memberUpdateRequestDto) {
+    @PutMapping("/update")
+    public RsData<MemberResponseDto> updateMember(@RequestHeader(value = "Authorization", required = false) String token, @RequestBody MemberUpdateRequestDto memberUpdateRequestDto) {
 
-        MemberResponseDto response = memberService.updateMember(id, memberUpdateRequestDto);
+        Member loggedInMember = authService.getLoggedInMember(token);
+
+        MemberResponseDto response = memberService.updateMember(loggedInMember.getId(), memberUpdateRequestDto);
         return new RsData<>("200-1", "회원 정보가 수정되었습니다.", response);
     }
 
