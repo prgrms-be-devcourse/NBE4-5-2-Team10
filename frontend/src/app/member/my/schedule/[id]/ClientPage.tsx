@@ -61,6 +61,7 @@ export default function ClientPage() {
             credentials: "include", // 쿠키 포함
             headers: {
               Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
             },
           }
         );
