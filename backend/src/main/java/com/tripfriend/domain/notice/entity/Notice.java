@@ -28,10 +28,6 @@ public class Notice {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    @ManyToOne
-    @JoinColumn(name = "member_id", nullable = false)
-    private Member member;
-
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -41,7 +37,6 @@ public class Notice {
     public Notice(String title, String content, Member member, LocalDateTime createdAt) {
         this.title = title;
         this.content = content;
-        this.member = member;
         this.createdAt = createdAt;
         this.updatedAt = LocalDateTime.now();
     }
