@@ -1,5 +1,7 @@
 "use client";
 
+import type React from "react";
+
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -25,6 +27,13 @@ interface AuthResponse {
   accessToken: string;
   refreshToken?: string;
   message?: string;
+}
+
+// RsData 응답 타입 정의
+interface RsData<T> {
+  resultCode: string;
+  msg: string;
+  data: T;
 }
 
 export default function ClientPage() {
@@ -182,45 +191,37 @@ export default function ClientPage() {
         throw new Error("서버에서 유효하지 않은 응답을 반환했습니다.");
       }
 
-      // 유효한 JSON이면 파싱
-      let authData: AuthResponse;
+      // JSON 파싱 부분을 RsData 구조에 맞게 수정
+      let rsData;
       try {
-        authData = JSON.parse(responseText);
+        rsData = JSON.parse(responseText);
       } catch (e) {
         console.error("JSON 파싱 오류:", e);
         throw new Error("서버 응답을 처리할 수 없습니다.");
       }
 
-      if (!response.ok) {
-        throw new Error(authData.message || "로그인에 실패했습니다.");
+      // 응답 검증
+      // code 필드가 "200-"으로 시작하는지 확인
+      if (!response.ok || !rsData.code || !rsData.code.startsWith("200")) {
+        throw new Error(rsData.msg || "로그인에 실패했습니다.");
       }
 
-      console.log("인증 응답 데이터:", authData);
+      console.log("인증 응답 데이터:", rsData);
 
-      // 토큰이 응답에 있는 경우 처리
-      if (authData.accessToken) {
-        // 로컬 스토리지에 저장 (선택적)
-        if (formData.rememberMe) {
-          localStorage.setItem("accessToken", authData.accessToken);
-          if (authData.refreshToken) {
-            localStorage.setItem("refreshToken", authData.refreshToken);
-          }
-        }
+      // authData는 이제 rsData.data에 있음
+      const authData = rsData.data;
+
+      if (!authData || !authData.accessToken) {
+        throw new Error("인증 정보가 없습니다.");
       }
 
-      // 쿠키 확인 (HttpOnly 쿠키는 보이지 않음)
-      console.log("현재 쿠키:", document.cookie);
-
       // 토큰이 응답에 있는 경우 처리
-      if (authData.accessToken) {
-        // 로컬 스토리지에 저장 (선택적)
-        localStorage.setItem("accessToken", authData.accessToken);
-        // 사용자 정의 이벤트 발생
-        window.dispatchEvent(new Event("login"));
+      localStorage.setItem("accessToken", authData.accessToken);
+      // 사용자 정의 이벤트 발생
+      window.dispatchEvent(new Event("login"));
 
-        if (formData.rememberMe && authData.refreshToken) {
-          localStorage.setItem("refreshToken", authData.refreshToken);
-        }
+      if (formData.rememberMe && authData.refreshToken) {
+        localStorage.setItem("refreshToken", authData.refreshToken);
       }
 
       // 쿠키 확인 (HttpOnly 쿠키는 보이지 않음)

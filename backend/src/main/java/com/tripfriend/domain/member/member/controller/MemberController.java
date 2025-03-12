@@ -5,6 +5,7 @@ import com.tripfriend.domain.member.member.entity.Member;
 import com.tripfriend.domain.member.member.service.AuthService;
 import com.tripfriend.domain.member.member.service.MailService;
 import com.tripfriend.domain.member.member.service.MemberService;
+import com.tripfriend.global.annotation.CheckPermission;
 import com.tripfriend.global.dto.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -12,7 +13,10 @@ import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Tag(name = "Member API", description = "회원관련 기능을 제공합니다.")
 @RestController
@@ -101,4 +105,14 @@ public class MemberController {
         MemberResponseDto response = memberService.getMyPage(loggedInMember.getId(), loggedInMember.getUsername());
         return new RsData<>("200-1", "마이페이지 정보 조회 성공", response);
     }
+
+    //관리자 회원 조회
+    @Operation(summary = "전체 회원 목록 조회 (관리자 전용)")
+    @GetMapping("/all")
+    @CheckPermission("ADMIN") //관리자
+    public ResponseEntity<List<MemberResponseDto>> getAllMembers() {
+        List<MemberResponseDto> members = memberService.getAllMembers();
+        return ResponseEntity.ok(members);
+    }
+
 }

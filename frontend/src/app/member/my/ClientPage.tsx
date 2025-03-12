@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -102,6 +103,8 @@ export default function ClientPage() {
     },
   ]);
 
+  const router = useRouter();
+
   // 프로필 수정 모드 상태
   const [isEditing, setIsEditing] = useState(false);
   // 프로필 수정용 임시 상태
@@ -146,10 +149,7 @@ export default function ClientPage() {
     if (!accessToken) {
       console.log("로그인이 필요합니다");
       // 로그인 페이지로 리다이렉트 (Next.js의 router 사용)
-      // 아래 주석을 해제하고 원하는 로그인 페이지 경로로 변경하세요
-      // import { useRouter } from 'next/navigation'; // 컴포넌트 상단에 추가
-      // const router = useRouter(); // 컴포넌트 내부에 추가
-      // router.push('/login');
+      router.push("/member/login");
       return;
     }
 
@@ -190,14 +190,14 @@ export default function ClientPage() {
                   // refreshToken도 만료된 경우 로그인 페이지로 리다이렉트
                   localStorage.removeItem("accessToken");
                   localStorage.removeItem("refreshToken");
-                  // router.push('/login');
+                  router.push("/member/login");
                   throw new Error("로그인이 필요합니다");
                 }
               });
             } else {
               // refreshToken이 없는 경우
               localStorage.removeItem("accessToken");
-              // router.push('/login');
+              router.push("/member/login");
               throw new Error("로그인이 필요합니다");
             }
           }
@@ -226,15 +226,9 @@ export default function ClientPage() {
   // 여행 스타일 한글화
   const getTravelStyleInKorean = (style: string) => {
     const styles: { [key: string]: string } = {
-      ADVENTURE: "모험적인",
-      RELAXATION: "휴양적인",
-      CULTURE: "문화탐방",
-      FOOD: "맛집탐방",
+      TOURISM: "관광",
+      RELAXATION: "휴양",
       SHOPPING: "쇼핑",
-      NATURE: "자연",
-      CITY: "도시",
-      BUDGET: "경제적인",
-      LUXURY: "럭셔리한",
     };
     return styles[style] || style;
   };
@@ -245,9 +239,7 @@ export default function ClientPage() {
       TEENS: "10대",
       TWENTIES: "20대",
       THIRTIES: "30대",
-      FORTIES: "40대",
-      FIFTIES: "50대",
-      OVER_SIXTIES: "60대 이상",
+      FORTIES_PLUS: "40대 이상",
     };
     return ranges[ageRange] || ageRange;
   };
@@ -359,7 +351,6 @@ export default function ClientPage() {
                       >
                         <option value="MALE">남성</option>
                         <option value="FEMALE">여성</option>
-                        <option value="OTHER">기타</option>
                       </select>
                     </div>
                     <div className="mb-4">
@@ -373,9 +364,7 @@ export default function ClientPage() {
                         <option value="TEENS">10대</option>
                         <option value="TWENTIES">20대</option>
                         <option value="THIRTIES">30대</option>
-                        <option value="FORTIES">40대</option>
-                        <option value="FIFTIES">50대</option>
-                        <option value="OVER_SIXTIES">60대 이상</option>
+                        <option value="FORTIES_PLUS">40대 이상</option>
                       </select>
                     </div>
                     <div className="mb-4">
@@ -388,15 +377,9 @@ export default function ClientPage() {
                         onChange={handleProfileChange}
                         className="w-full p-2 border rounded-md"
                       >
-                        <option value="ADVENTURE">모험적인</option>
-                        <option value="RELAXATION">휴양적인</option>
-                        <option value="CULTURE">문화탐방</option>
-                        <option value="FOOD">맛집탐방</option>
+                        <option value="TOURISM">관광</option>
+                        <option value="RELAXATION">휴양</option>
                         <option value="SHOPPING">쇼핑</option>
-                        <option value="NATURE">자연</option>
-                        <option value="CITY">도시</option>
-                        <option value="BUDGET">경제적인</option>
-                        <option value="LUXURY">럭셔리한</option>
                       </select>
                     </div>
                     <div className="mb-4">

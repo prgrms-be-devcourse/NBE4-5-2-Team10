@@ -10,8 +10,21 @@ export default function Header() {
   // Check login status when component mounts and when component updates
   useEffect(() => {
     const checkLoginStatus = () => {
+      // 1. localStorage에서 토큰 확인
       const token = localStorage.getItem("accessToken");
-      setIsLoggedIn(!!token);
+
+      // 2. 쿠키에서 토큰 확인
+      const getCookieValue = (name) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(";").shift();
+        return null;
+      };
+
+      const accessTokenCookie = getCookieValue("accessToken");
+
+      // localStorage나 쿠키 중 하나라도 토큰이 있으면 로그인 상태로 설정
+      setIsLoggedIn(!!token || !!accessTokenCookie);
     };
 
     // Initial check
@@ -24,6 +37,9 @@ export default function Header() {
       }
     };
 
+    // 쿠키 변경 감지를 위한 간단한 폴링 설정 (옵션)
+    const cookieCheckInterval = setInterval(checkLoginStatus, 5000);
+
     window.addEventListener("storage", handleStorageChange);
     window.addEventListener("login", checkLoginStatus);
     window.addEventListener("logout", checkLoginStatus);
@@ -33,6 +49,7 @@ export default function Header() {
       window.removeEventListener("storage", handleStorageChange);
       window.removeEventListener("login", checkLoginStatus);
       window.removeEventListener("logout", checkLoginStatus);
+      clearInterval(cookieCheckInterval);
     };
   }, []);
 
@@ -60,6 +77,21 @@ export default function Header() {
       });
 
       console.log("로그아웃 응답 상태:", response.status);
+
+      // RsData 응답 처리
+      if (response.ok) {
+        try {
+          const rsData = await response.json();
+          console.log("로그아웃 응답:", rsData);
+
+          // resultCode가 아닌 code로 접근해야 합니다
+          if (!rsData.code.startsWith("200")) {
+            console.warn("로그아웃 처리 경고:", rsData.msg);
+          }
+        } catch (e) {
+          console.error("로그아웃 응답 파싱 오류:", e);
+        }
+      }
 
       // Dispatch a custom event for logout
       window.dispatchEvent(new Event("logout"));
