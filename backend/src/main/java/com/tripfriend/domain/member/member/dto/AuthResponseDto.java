@@ -13,6 +13,11 @@ public class AuthResponseDto {
 
     private String accessToken;
     private String refreshToken;
+    private boolean isDeletedAccount;
+
+    public AuthResponseDto(String accessToken, String refreshToken) {
+        this(accessToken, refreshToken, false);
+    }
 
     public AuthResponseDto(String accessToken) {
         this.accessToken = accessToken;

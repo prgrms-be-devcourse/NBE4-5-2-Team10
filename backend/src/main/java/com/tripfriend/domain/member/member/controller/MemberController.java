@@ -80,6 +80,16 @@ public class MemberController {
         return new RsData<>("204-1", "회원이 삭제되었습니다.", null);
     }
 
+    @Operation(summary = "회원 복구")
+    @PostMapping("/restore")
+    public ResponseEntity<?> restoreMember(@RequestHeader(value = "Authorization", required = false) String token) {
+
+        Member loggedInMember = authService.getLoggedInMember(token);
+
+        memberService.restoreMember(loggedInMember.getId());
+        return ResponseEntity.ok("계정이 성공적으로 복구되었습니다.");
+    }
+
     @Operation(summary = "이메일 인증 코드 전송")
     @GetMapping("/auth/verify-email")
     public RsData<Void> requestAuthCode(String email) throws MessagingException {
