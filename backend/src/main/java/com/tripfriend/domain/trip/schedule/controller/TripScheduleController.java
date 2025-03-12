@@ -32,12 +32,12 @@ public class TripScheduleController {
     // 개인 일정 생성
     @PostMapping
     @Operation(summary = "나의 여행 일정 등록")
-    public RsData<TripScheduleResDto> createSchedule(@RequestBody TripScheduleReqDto reqBody,
+    public RsData<TripScheduleInfoResDto> createSchedule(@RequestBody TripScheduleReqDto reqBody,
                                                      @RequestHeader(value = "Authorization", required = false) String token) {
 
 
         // 일정 생성
-        TripScheduleResDto schedule = scheduleService.createSchedule(reqBody, token);
+        TripScheduleInfoResDto schedule = scheduleService.createSchedule(reqBody, token);
         return new RsData<>(
                 "200-1",
                 "일정이 성공적으로 생성되었습니다.",
@@ -63,6 +63,23 @@ public class TripScheduleController {
     public RsData<List<TripScheduleResDto>> getMySchedules(@RequestHeader(value = "Authorization", required = false) String token) {
 
         List<TripScheduleResDto> schedules = scheduleService.getSchedulesByCreator(token);
+        return new RsData<>(
+                "200-6",
+                "'%s'님이 생성한 일정 조회가 완료되었습니다.".formatted(schedules.get(0).getMemberName()),
+                schedules
+        );
+    }
+
+    // 로그인한 회원이 자신의 여행 정보 조회
+    @GetMapping("/my-schedules/{id}")
+    @Operation(summary = "나의 여행 일정 단건 조회")
+    public RsData<List<TripScheduleInfoResDto>> getMyTripInfo(@RequestHeader(value = "Authorization", required = false) String token,
+                                                           @PathVariable Long id) {
+
+        List<TripScheduleInfoResDto> schedules = scheduleService.getTripInfo(token, id);
+
+
+
         return new RsData<>(
                 "200-6",
                 "'%s'님이 생성한 일정 조회가 완료되었습니다.".formatted(schedules.get(0).getMemberName()),

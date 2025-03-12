@@ -7,6 +7,7 @@ import com.tripfriend.domain.trip.information.service.TripInformationService;
 import com.tripfriend.global.dto.RsData;
 import jakarta.persistence.Entity;
 import jakarta.validation.Valid;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,5 +33,7 @@ public class TripInformationController {
                 resDto
         );
     }
+
+    //
 
 }

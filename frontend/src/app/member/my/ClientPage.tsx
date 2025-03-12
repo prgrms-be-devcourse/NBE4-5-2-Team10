@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import Schedule from "./schedule/ClientPage";
 
 // Backend DTO에 맞춘 사용자 정보 타입 정의
 interface MemberResponseDto {
@@ -542,75 +543,7 @@ export default function ClientPage() {
         {/* 내가 만든 여행 섹션 */}
         {activeTab === "myTrips" && (
           <div>
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold">내가 만든 여행</h3>
-              <Link
-                href="/trips/create"
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-              >
-                새 여행 만들기
-              </Link>
-            </div>
-
-            {myTrips.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {myTrips.map((trip) => (
-                  <div
-                    key={trip.id}
-                    className="bg-white rounded-lg shadow-md p-6"
-                  >
-                    <h4 className="text-lg font-semibold mb-2">{trip.title}</h4>
-                    <div className="mb-4">
-                      <p className="text-gray-600 mb-1">
-                        여행지: {trip.destination}
-                      </p>
-                      <p className="text-gray-600 mb-1">날짜: {trip.date}</p>
-                      <p className="text-gray-600 mb-1">
-                        상태:{" "}
-                        <span
-                          className={`font-medium ${
-                            trip.status === "준비중"
-                              ? "text-blue-600"
-                              : trip.status === "여행중"
-                              ? "text-green-600"
-                              : "text-gray-600"
-                          }`}
-                        >
-                          {trip.status}
-                        </span>
-                      </p>
-                      <p className="text-gray-600">
-                        모집인원: {trip.companions}명
-                      </p>
-                    </div>
-                    <div className="flex space-x-2">
-                      <Link
-                        href={`/trip/${trip.id}`}
-                        className="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 text-sm"
-                      >
-                        상세 보기
-                      </Link>
-                      <Link
-                        href={`/trip/edit/${trip.id}`}
-                        className="bg-gray-200 text-gray-800 px-3 py-1 rounded-md hover:bg-gray-300 text-sm"
-                      >
-                        수정하기
-                      </Link>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="bg-white rounded-lg shadow-md p-6 text-center">
-                <p className="text-gray-500 mb-4">아직 만든 여행이 없습니다.</p>
-                <Link
-                  href="/trips/create"
-                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-                >
-                  첫 여행 만들기
-                </Link>
-              </div>
-            )}
+            <Schedule />
           </div>
         )}
 
