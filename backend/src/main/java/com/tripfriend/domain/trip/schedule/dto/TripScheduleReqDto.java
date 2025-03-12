@@ -16,6 +16,7 @@ import java.util.List;
 public class TripScheduleReqDto {
     private Long memberId;
     private String title;
+    private String cityName;
     private String description;
     private LocalDate startDate;
     private LocalDate endDate;

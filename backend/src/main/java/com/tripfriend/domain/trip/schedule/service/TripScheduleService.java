@@ -56,10 +56,16 @@ public class TripScheduleService {
     // 여행 일정 생성
     @Transactional
     public TripScheduleInfoResDto createSchedule(TripScheduleReqDto req, String token) {
-        // 로그인 한 회원 객체 가져오기
+        // 로그인한 회원 객체 가져오기
         Member member = getLoggedInMember(token);
 
-        // 여행 일정 생성 및 저장
+        // cityName 검증
+        String selectedCity = req.getCityName();
+        if (selectedCity == null || selectedCity.isEmpty()) {
+            throw new ServiceException("400-2", "여행지(도시명) 선택은 필수입니다.");
+        }
+
+        // 여행 일정 생성
         TripSchedule newSchedule = TripSchedule.builder()
                 .member(member)
                 .title(req.getTitle())
@@ -69,19 +75,27 @@ public class TripScheduleService {
                 .build();
         tripScheduleRepository.save(newSchedule);
 
-        // 여행 정보 저장 (Service 메서드 활용)
+        // 세부일정 검증 & 저장
         if (req.getTripInformations() != null && !req.getTripInformations().isEmpty()) {
+            req.getTripInformations().forEach(tripInfo -> {
+                // Place 검증
+                Place place = placeRepository.findById(tripInfo.getPlaceId())
+                        .orElseThrow(() -> new ServiceException("404-2", "해당 장소가 존재하지 않습니다."));
+                if (!place.getCityName().equals(selectedCity)) {
+                    throw new ServiceException("400-1", "선택한 도시와 일치하지 않는 장소가 포함되어 있습니다.");
+                }
+            });
+            // 실제 DB 저장 (TripInformationService)
             tripInformationService.addTripInformations(newSchedule, req.getTripInformations());
         }
 
-        // TripInformation을 TripInformationResDto로 변환
+        // 세부일정을 응답 DTO로 변환
         List<TripInformationResDto> tripInfoDtos = Optional.ofNullable(req.getTripInformations())
                 .orElse(List.of())
                 .stream()
                 .map(tripInfo -> {
                     Place place = placeRepository.findById(tripInfo.getPlaceId())
                             .orElseThrow(() -> new ServiceException("404-2", "해당 장소가 존재하지 않습니다."));
-
                     return new TripInformationResDto(
                             tripInfo.getPlaceId(),
                             place.getCityName(),
