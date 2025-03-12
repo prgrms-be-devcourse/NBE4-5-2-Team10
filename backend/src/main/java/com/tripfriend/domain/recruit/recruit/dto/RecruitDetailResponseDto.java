@@ -68,9 +68,9 @@ public class RecruitDetailResponseDto {
         this.createdAt = recruit.getCreatedAt();
         this.updatedAt = recruit.getUpdatedAt();
         // 성별 제한 설정
-        this.genderRestriction = recruit.isSameGender()
+        this.genderRestriction = recruit.isSameGender() && recruit.getMember().getGender() != Gender.UNKNOWN
                 ? (recruit.getMember().getGender() == Gender.MALE ? "남자만" : "여자만")
-                : "모든 성별";
+                : (recruit.getMember().getGender() == Gender.UNKNOWN ? "알 수 없음" : "모든 성별");
 
         // 나이대 제한 설정
         this.ageRestriction = recruit.isSameAge()
@@ -79,6 +79,7 @@ public class RecruitDetailResponseDto {
             case TWENTIES -> "20대만";
             case THIRTIES -> "30대만";
             case FORTIES_PLUS -> "40대 이상만";
+            default -> "알 수 없음";
         }
                 : "모든 연령대";
     }
