@@ -42,11 +42,12 @@ public class TripScheduleService {
      * @throws ServiceException 로그인하지 않은 경우 예외 발생
      */
     public Member getLoggedInMember(String token) {
+
         // 로그인 여부 확인 및 회원 정보 가져오기
         Member member = authService.getLoggedInMember(token);
 
         if (member == null) {
-            throw new ServiceException("401-1", "로그인이 필요합니다.");
+            throw new ServiceException("401-2", "로그인이 필요합니다.");
         }
 
         return member;
