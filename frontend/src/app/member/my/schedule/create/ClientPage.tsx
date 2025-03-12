@@ -1,24 +1,26 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-
-interface Place {
-  placeId: number;
-  cityName: string;
-  placeName: string;
-  // 필요하다면 category, description 필드도 추가
-}
 
 interface TripInformation {
   placeId: number;
-  visitTime: string; // 예: '2025-07-02T10:00'
-  duration: number; // 분 단위
-  transportation: string; // 'WALK', 'BUS', 'SUBWAY', etc.
+  visitTime: string;
+  duration: number;
+  transportation: string;
   cost: number;
   notes: string;
   priority: number;
-  isVisited: boolean;
+  visited: boolean;
+}
+
+interface TripSchedule {
+  title: string;
+  description: string;
+  cityName: string;
+  startDate: string;
+  endDate: string;
+  tripInformations: TripInformation[];
 }
 
 export default function ClientPage() {
@@ -27,62 +29,22 @@ export default function ClientPage() {
   // 여행 일정 기본 필드
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [cityName, setCityName] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  // 도시, 장소 선택 관련
-  const [cities, setCities] = useState<string[]>([]); // 도시 목록
-  const [cityName, setCityName] = useState<string>(""); // 선택한 도시
-  const [placeList, setPlaceList] = useState<Place[]>([]);
-
-  // 세부일정(TripInformation) 배열
+  // 세부 일정 배열 (동적 추가)
   const [tripInformations, setTripInformations] = useState<TripInformation[]>(
     []
   );
 
-  // 교통수단(enum)
+  // 임의의 교통수단 옵션 (필요에 따라 확장 가능)
   const transportationOptions = ["WALK", "BUS", "SUBWAY", "CAR", "TAXI", "ETC"];
 
-  // 마운트 시 도시 목록 불러오기
-  useEffect(() => {
-    fetch("http://localhost:8080/place/cities")
-      .then((res) => res.json())
-      .then((data) => {
-        // data.data가 ["서울", "부산", "제주도", ...] 형태라고 가정
-        setCities(data.data || []);
-      })
-      .catch((err) => console.error("도시 목록 조회 실패:", err));
-  }, []);
-
-  // 도시 선택 시 해당 도시의 place 목록 불러오기
-  useEffect(() => {
-    if (cityName) {
-      fetch(
-        `http://localhost:8080/place?cityName=${encodeURIComponent(cityName)}`
-      )
-        .then((res) => res.json())
-        .then((data) => {
-          // data.data가 [{ placeId, cityName, placeName }, ...] 형태
-          setPlaceList(data.data || []);
-          // 만약 기존에 선택한 placeId가 새 도시에 없으면 0으로 초기화
-          setTripInformations((prev) =>
-            prev.map((info) =>
-              data.data.some((p: Place) => p.placeId === info.placeId)
-                ? info
-                : { ...info, placeId: 0 }
-            )
-          );
-        })
-        .catch((err) => console.error("도시별 place 목록 조회 실패:", err));
-    } else {
-      setPlaceList([]);
-    }
-  }, [cityName]);
-
-  // 세부일정 추가
+  // 세부 일정 추가 핸들러
   const addTripInformation = () => {
-    setTripInformations((prev) => [
-      ...prev,
+    setTripInformations([
+      ...tripInformations,
       {
         placeId: 0,
         visitTime: "",
@@ -91,81 +53,74 @@ export default function ClientPage() {
         cost: 0,
         notes: "",
         priority: 0,
-        isVisited: false,
+        visited: false,
       },
     ]);
   };
 
-  // 세부일정 제거
-  const removeTripInformation = (index: number) => {
-    setTripInformations((prev) => {
-      const updated = [...prev];
-      updated.splice(index, 1);
-      return updated;
-    });
-  };
-
-  // 세부일정 변경
-  const handleTripInformationChange = (
+  // 세부 일정 변경 핸들러
+  const updateTripInformation = (
     index: number,
     field: keyof TripInformation,
     value: string | number | boolean
   ) => {
-    setTripInformations((prev) => {
-      const updated = [...prev];
-      updated[index] = { ...updated[index], [field]: value };
-      return updated;
-    });
+    const updated = [...tripInformations];
+    updated[index] = { ...updated[index], [field]: value };
+    setTripInformations(updated);
   };
 
-  // 폼 전송
+  // 세부 일정 제거 핸들러
+  const removeTripInformation = (index: number) => {
+    setTripInformations(tripInformations.filter((_, idx) => idx !== index));
+  };
+
+  // 등록 API 호출
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const scheduleRequest = {
+    // 등록할 여행 일정 객체 생성
+    const schedule: TripSchedule = {
       title,
       description,
+      cityName,
       startDate,
       endDate,
-      cityName, // 도시명
-      tripInformations, // 세부일정(각 항목에 placeId, visitTime 등)
+      tripInformations,
     };
 
     try {
       const token = localStorage.getItem("accessToken") || "";
-      const response = await fetch("/trip/schedule", {
+      const response = await fetch("http://localhost:8080/trip/schedule", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(scheduleRequest),
+        body: JSON.stringify(schedule),
       });
 
       if (!response.ok) {
-        console.error("일정 등록 API 호출 실패");
-        return;
+        throw new Error("등록에 실패했습니다.");
       }
-      const result = await response.json();
-      console.log("일정 등록 성공:", result);
+      // 등록 성공 후, 목록 페이지나 상세 페이지로 이동
       router.push("/member/my");
-    } catch (error) {
-      console.error("일정 등록 중 에러 발생:", error);
+    } catch (error: any) {
+      alert(error.message || "알 수 없는 오류가 발생했습니다.");
     }
   };
 
   return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">여행 일정 등록</h1>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* 기본 여행 일정 정보 */}
+    <div className="max-w-3xl mx-auto p-6">
+      <h1 className="text-3xl font-bold mb-6">여행 일정 등록</h1>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* 기본 일정 정보 */}
         <div>
           <label className="block mb-1">제목</label>
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full border p-2 rounded"
+            className="w-full border rounded p-2"
             required
           />
         </div>
@@ -175,225 +130,205 @@ export default function ClientPage() {
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full border p-2 rounded"
+            className="w-full border rounded p-2"
             rows={3}
           />
         </div>
 
         <div>
-          <label className="block mb-1">시작일</label>
+          <label className="block mb-1">도시</label>
           <input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="w-full border p-2 rounded"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block mb-1">종료일</label>
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            className="w-full border p-2 rounded"
-            required
-          />
-        </div>
-
-        {/* 도시 Select Box */}
-        <div>
-          <label className="block mb-1">도시 선택</label>
-          <select
+            type="text"
             value={cityName}
             onChange={(e) => setCityName(e.target.value)}
-            className="w-full border p-2 rounded"
+            className="w-full border rounded p-2"
             required
-          >
-            <option value="">-- 도시 선택 --</option>
-            {cities.map((city) => (
-              <option key={city} value={city}>
-                {city}
-              </option>
-            ))}
-          </select>
+          />
         </div>
 
-        {/* 세부 일정 목록 */}
+        <div className="flex space-x-4">
+          <div className="flex-1">
+            <label className="block mb-1">시작일</label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="w-full border rounded p-2"
+              required
+            />
+          </div>
+          <div className="flex-1">
+            <label className="block mb-1">종료일</label>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="w-full border rounded p-2"
+              required
+            />
+          </div>
+        </div>
+
+        {/* 세부 일정 */}
         <div className="border p-4 rounded">
-          <h2 className="text-xl font-semibold mb-3">여행 세부일정</h2>
-          {tripInformations.map((info, index) => (
-            <div key={index} className="mb-4 border-b pb-4">
-              {/* 장소 Select Box */}
-              <div>
-                <label className="block mb-1">장소 선택</label>
-                <select
-                  // value를 문자열로 유지
-                  value={info.placeId === 0 ? "0" : String(info.placeId)}
-                  onChange={(e) => {
-                    const val = parseInt(e.target.value, 10);
-                    handleTripInformationChange(
-                      index,
-                      "placeId",
-                      isNaN(val) ? 0 : val
-                    );
-                  }}
-                  className="w-full border p-2 rounded"
-                  required
-                >
-                  <option key="default" value="0">
-                    -- 장소 선택 --
-                  </option>
-                  {placeList.map((place, idx) => (
-                    <option
-                      key={`${place.placeId}-${idx}`}
-                      value={String(place.placeId)}
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-semibold">세부 일정</h2>
+            <button
+              type="button"
+              onClick={addTripInformation}
+              className="px-3 py-1 bg-green-500 text-white rounded"
+            >
+              추가
+            </button>
+          </div>
+
+          {tripInformations.length === 0 ? (
+            <p className="text-gray-600">세부 일정이 없습니다.</p>
+          ) : (
+            tripInformations.map((info, index) => (
+              <div key={index} className="mb-4 border-b pb-4">
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => removeTripInformation(index)}
+                    className="text-red-500 text-sm"
+                  >
+                    삭제
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block mb-1">장소 ID</label>
+                    <input
+                      type="number"
+                      value={info.placeId || ""}
+                      onChange={(e) =>
+                        updateTripInformation(
+                          index,
+                          "placeId",
+                          parseInt(e.target.value, 10) || 0
+                        )
+                      }
+                      className="w-full border rounded p-2"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-1">방문 시간</label>
+                    <input
+                      type="datetime-local"
+                      value={info.visitTime}
+                      onChange={(e) =>
+                        updateTripInformation(
+                          index,
+                          "visitTime",
+                          e.target.value
+                        )
+                      }
+                      className="w-full border rounded p-2"
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-1">소요 시간 (분)</label>
+                    <input
+                      type="number"
+                      value={info.duration || ""}
+                      onChange={(e) =>
+                        updateTripInformation(
+                          index,
+                          "duration",
+                          parseInt(e.target.value, 10) || 0
+                        )
+                      }
+                      className="w-full border rounded p-2"
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-1">교통수단</label>
+                    <select
+                      value={info.transportation}
+                      onChange={(e) =>
+                        updateTripInformation(
+                          index,
+                          "transportation",
+                          e.target.value
+                        )
+                      }
+                      className="w-full border rounded p-2"
                     >
-                      {place.placeName}
-                    </option>
-                  ))}
-                </select>
+                      <option value="">선택하세요</option>
+                      {transportationOptions.map((opt) => (
+                        <option key={opt} value={opt}>
+                          {opt}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block mb-1">비용</label>
+                    <input
+                      type="number"
+                      value={info.cost || ""}
+                      onChange={(e) =>
+                        updateTripInformation(
+                          index,
+                          "cost",
+                          parseInt(e.target.value, 10) || 0
+                        )
+                      }
+                      className="w-full border rounded p-2"
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-1">메모</label>
+                    <textarea
+                      value={info.notes}
+                      onChange={(e) =>
+                        updateTripInformation(index, "notes", e.target.value)
+                      }
+                      className="w-full border rounded p-2"
+                      rows={2}
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-1">우선순위</label>
+                    <input
+                      type="number"
+                      value={info.priority || ""}
+                      onChange={(e) =>
+                        updateTripInformation(
+                          index,
+                          "priority",
+                          parseInt(e.target.value, 10) || 0
+                        )
+                      }
+                      className="w-full border rounded p-2"
+                    />
+                  </div>
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={info.visited}
+                      onChange={(e) =>
+                        updateTripInformation(
+                          index,
+                          "visited",
+                          e.target.checked
+                        )
+                      }
+                      className="mr-2"
+                    />
+                    <span>방문 여부</span>
+                  </div>
+                </div>
               </div>
-
-              <div>
-                <label className="block mb-1">방문 시간</label>
-                <input
-                  type="datetime-local" // 또는 type="time" + date
-                  value={info.visitTime}
-                  onChange={(e) =>
-                    handleTripInformationChange(
-                      index,
-                      "visitTime",
-                      e.target.value
-                    )
-                  }
-                  className="w-full border p-2 rounded"
-                />
-              </div>
-
-              <div>
-                <label className="block mb-1">소요 시간(분)</label>
-                <input
-                  type="number"
-                  value={info.duration}
-                  onChange={(e) => {
-                    const num = parseInt(e.target.value, 10);
-                    handleTripInformationChange(
-                      index,
-                      "duration",
-                      isNaN(num) ? 0 : num
-                    );
-                  }}
-                  className="w-full border p-2 rounded"
-                />
-              </div>
-
-              <div>
-                <label className="block mb-1">교통수단</label>
-                <select
-                  value={info.transportation}
-                  onChange={(e) =>
-                    handleTripInformationChange(
-                      index,
-                      "transportation",
-                      e.target.value
-                    )
-                  }
-                  className="w-full border p-2 rounded"
-                >
-                  <option value="">-- 교통수단 선택 --</option>
-                  {transportationOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block mb-1">비용</label>
-                <input
-                  type="number"
-                  value={info.cost}
-                  onChange={(e) => {
-                    const num = parseInt(e.target.value, 10);
-                    handleTripInformationChange(
-                      index,
-                      "cost",
-                      isNaN(num) ? 0 : num
-                    );
-                  }}
-                  className="w-full border p-2 rounded"
-                />
-              </div>
-
-              <div>
-                <label className="block mb-1">메모</label>
-                <textarea
-                  value={info.notes}
-                  onChange={(e) =>
-                    handleTripInformationChange(index, "notes", e.target.value)
-                  }
-                  className="w-full border p-2 rounded"
-                  rows={2}
-                />
-              </div>
-
-              <div>
-                <label className="block mb-1">우선순위</label>
-                <input
-                  type="number"
-                  value={info.priority}
-                  onChange={(e) => {
-                    const num = parseInt(e.target.value, 10);
-                    handleTripInformationChange(
-                      index,
-                      "priority",
-                      isNaN(num) ? 0 : num
-                    );
-                  }}
-                  className="w-full border p-2 rounded"
-                />
-              </div>
-
-              <div className="flex items-center mt-2">
-                <input
-                  type="checkbox"
-                  checked={info.isVisited}
-                  onChange={(e) =>
-                    handleTripInformationChange(
-                      index,
-                      "isVisited",
-                      e.target.checked
-                    )
-                  }
-                  className="mr-2"
-                />
-                <label>방문 여부</label>
-              </div>
-
-              <button
-                type="button"
-                className="bg-red-500 text-white px-3 py-1 rounded mt-2"
-                onClick={() => removeTripInformation(index)}
-              >
-                삭제
-              </button>
-            </div>
-          ))}
-          <button
-            type="button"
-            onClick={addTripInformation}
-            className="bg-green-500 text-white px-3 py-2 rounded"
-          >
-            세부일정 추가
-          </button>
+            ))
+          )}
         </div>
 
         <button
           type="submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded"
+          className="w-full bg-blue-500 text-white py-3 rounded text-xl"
         >
           등록하기
         </button>
