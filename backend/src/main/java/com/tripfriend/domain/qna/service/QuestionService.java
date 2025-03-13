@@ -16,10 +16,7 @@ public class QuestionService {
     private final MemberRepository memberRepository;
 
     //질문 생성
-    public Question createQuestion(String title, String content, Long memberId) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
-
+    public Question createQuestion(String title, String content, Member member) {
         Question question = Question.builder()
                 .title(title)
                 .content(content)

@@ -1,5 +1,7 @@
 package com.tripfriend.domain.qna.controller;
 
+import com.tripfriend.domain.member.member.entity.Member;
+import com.tripfriend.domain.member.member.service.AuthService;
 import com.tripfriend.domain.qna.dto.QuestionDto;
 import com.tripfriend.domain.qna.entity.Question;
 import com.tripfriend.domain.qna.repository.QuestionRepository;
@@ -11,22 +13,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/qna/question")
+@RequestMapping("/qna")
 @RequiredArgsConstructor
 public class QuestionController {
     private final QuestionService questionService;
+    private final AuthService authService;
 
-    //질문 생성
-    @PostMapping
-    public ResponseEntity<Question> createQuestion(@RequestBody QuestionDto requestDto) {
-
-        Question question = questionService.createQuestion(
-                requestDto.getTitle(),
-                requestDto.getContent(),
-                requestDto.getMemberId()
-        );
-        return ResponseEntity.ok(question);
-    }
 
     //전체 질문 조회
     @GetMapping
@@ -51,5 +43,17 @@ public class QuestionController {
         questionService.deleteQuestionById(id);
         return ResponseEntity.noContent().build();
     }
+
+    //질문생성
+    @PostMapping("/question")
+    public ResponseEntity<Void> createQuestion(
+            @RequestBody QuestionDto requestDto,
+            @RequestHeader("Authorization") String token
+    ) {
+        Member member = authService.getLoggedInMember(token);
+        questionService.createQuestion(requestDto.getTitle(), requestDto.getContent(), member);
+        return ResponseEntity.ok().build();
+    }
+
 
 }
