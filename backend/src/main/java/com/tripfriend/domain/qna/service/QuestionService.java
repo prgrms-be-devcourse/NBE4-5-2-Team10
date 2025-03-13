@@ -32,8 +32,8 @@ public class QuestionService {
 
     //특정 질문 조회
     public Question getQuestionById(Long id) {
-        return questionRepository.findById(id)
-                .orElseThrow(()-> new RuntimeException("해당 질문을 찾을 수 없습니다."));
+        return questionRepository.findByIdWithMember(id)
+                .orElseThrow(() -> new RuntimeException("해당 질문을 찾을 수 없습니다."));
     }
 
     //질문 삭제

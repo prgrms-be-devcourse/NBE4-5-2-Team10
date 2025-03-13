@@ -33,13 +33,14 @@ public class QuestionController {
 
     // 질문 검색
     @GetMapping("/{id}")
-    public ResponseEntity<Question> getQuestionById(@PathVariable Long id) {
-        return ResponseEntity.ok(questionService.getQuestionById(id));
+    public ResponseEntity<QuestionDto> getQuestionById(@PathVariable("id") Long id) {
+        Question question = questionService.getQuestionById(id);
+        return ResponseEntity.ok(new QuestionDto(question));
     }
 
     //질문 삭제
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteQuestionById(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteQuestionById(@PathVariable("id") Long id) {
         questionService.deleteQuestionById(id);
         return ResponseEntity.noContent().build();
     }

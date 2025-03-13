@@ -9,6 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class QuestionDto {
+    private Long id;
     private String title;
     private String content;
     private String createdAt;
@@ -16,6 +17,7 @@ public class QuestionDto {
     private String memberUsername;
 
     public QuestionDto(Question question) {
+        this.id = question.getId();
         this.title = question.getTitle();
         this.content = question.getContent();
         this.createdAt = question.getCreatedAt().toString();
