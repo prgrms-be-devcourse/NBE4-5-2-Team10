@@ -98,13 +98,19 @@ export default function RecruitDetailPage(/*{
     }
 
     const fetchMyInfo = async () => {
+      const token = localStorage.getItem("accessToken"); // 🔹 로컬스토리지에서 토큰 확인
+
+      // ✅ 로그인하지 않은 경우 요청 안 함
+      if (!token) {
+        console.warn("🚫 로그인하지 않은 사용자입니다.");
+        return;
+      }
+
       try {
         const response = await fetchWithAuth(USER_INFO_URL);
         if (!response.ok) throw new Error("유저 정보를 가져오지 못했습니다.");
         const data = await response.json();
-        console.log("Fetched myMemberId:", data.id); // ✅ 디버깅용 로그
-        // console.log("Fetched myMemberId:", data.data); // ✅ 디버깅용 로그
-        // console.log("Fetched myMemberId:", data.data.memberId); // ✅ 디버깅용 로그
+        console.log("Fetched myMemberId:", data.id);
         setMyMemberId(data.id);
       } catch (error) {
         console.error("❌ 유저 정보 조회 오류:", error);
