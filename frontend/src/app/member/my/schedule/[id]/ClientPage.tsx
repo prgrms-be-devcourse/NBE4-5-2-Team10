@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface TripInformation {
   placeId: number;
@@ -95,12 +96,22 @@ export default function ClientPage() {
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      <button
-        className="mb-4 px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition"
-        onClick={() => router.push("/member/my")}
-      >
-        ← 뒤로 가기
-      </button>
+      <div className="flex justify-between items-center mb-4">
+        <button
+          className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition"
+          onClick={() => router.push("/member/my")}
+        >
+          ← 뒤로 가기
+        </button>
+        <Link href={`/member/my/schedule/update/${id}`}>
+          <button
+            type="button"
+            className="px-4 py-2 bg-blue-500 text-white rounded"
+          >
+            여행 일정 수정
+          </button>
+        </Link>
+      </div>
 
       {schedule.map((sch) => (
         <div
