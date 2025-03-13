@@ -37,8 +37,14 @@ public class QuestionService {
     }
 
     //질문 삭제
-    public void deleteQuestionById(Long id) {
+    public void deleteQuestionById(Long id, Member member) {
         Question question = getQuestionById(id);
+
+        // 작성자인지 확인
+        if (!question.getMember().getId().equals(member.getId())) {
+            throw new IllegalArgumentException("작성자만 질문을 삭제할 수 있습니다.");
+        }
+
         questionRepository.delete(question);
     }
 

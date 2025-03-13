@@ -39,9 +39,13 @@ public class QuestionController {
     }
 
     //질문 삭제
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteQuestionById(@PathVariable("id") Long id) {
-        questionService.deleteQuestionById(id);
+    @DeleteMapping("/{questionId}")
+    public ResponseEntity<Void> deleteQuestion(
+            @PathVariable("questionId") Long questionId,
+            @RequestHeader("Authorization") String token
+    ) {
+        Member member = authService.getLoggedInMember(token);
+        questionService.deleteQuestionById(questionId, member);
         return ResponseEntity.noContent().build();
     }
 
