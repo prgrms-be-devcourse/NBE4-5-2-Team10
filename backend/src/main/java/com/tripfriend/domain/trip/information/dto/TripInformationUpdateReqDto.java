@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class TripInformationUpdateReqDto {
 
-    @NotNull
     private Long tripInformationId; // 여행 정보 ID
 
     private Long placeId; // 장소 ID
@@ -28,5 +27,5 @@ public class TripInformationUpdateReqDto {
 
     private String notes;
 
-    private Boolean isVisited;
+    private Boolean isVisited = false;
 }

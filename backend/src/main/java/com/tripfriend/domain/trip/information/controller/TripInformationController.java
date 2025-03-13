@@ -40,6 +40,7 @@ public class TripInformationController {
 
     // 특정 여행 정보를 수정
     @PutMapping("/{tripInfoId}")
+    @Transactional
     public RsData<TripInformationResDto> updateTripInformation(
             @PathVariable Long tripInfoId,
             @RequestBody @Valid TripInformationUpdateReqDto request) {
