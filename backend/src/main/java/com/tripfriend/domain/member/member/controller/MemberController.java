@@ -13,9 +13,12 @@ import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @Tag(name = "Member API", description = "회원관련 기능을 제공합니다.")
@@ -129,4 +132,29 @@ public class MemberController {
         return ResponseEntity.ok(members);
     }
 
+    @Operation(summary = "프로필 이미지 등록")
+    @PostMapping(value = "/profile-image/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public RsData<String> uploadProfileImage(@RequestHeader(value = "Authorization", required = false) String token,
+                                             @RequestPart("image") MultipartFile imageFile) throws IOException {
+
+        Member loggedInMember = authService.getLoggedInMember(token);
+        String imageUrl = memberService.uploadProfileImage(loggedInMember.getId(), imageFile);
+
+        return new RsData<>("200-1", "이미지 업로드 성공", imageUrl);
+    }
+
+    @Operation(summary = "프로필 이미지 삭제")
+    @DeleteMapping("/profile-image/delete")
+    public RsData<String> deleteProfileImage(@RequestHeader(value = "Authorization", required = false) String token) throws IOException {
+
+        Member loggedInMember = authService.getLoggedInMember(token);
+
+        if (loggedInMember.getProfileImage() == null) {
+            return new RsData<>("400-1", "삭제할 이미지가 없습니다.", null);
+        }
+
+        memberService.deleteProfileImage(loggedInMember.getId());
+
+        return new RsData<>("200-1", "이미지 삭제 성공", null);
+    }
 }
