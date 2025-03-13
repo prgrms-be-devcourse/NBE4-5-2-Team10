@@ -191,7 +191,7 @@ export default function Home() {
       {/* 서비스 특징 섹션 */}
       <div className="container mx-auto px-4 py-12">
         <h3 className="text-2xl font-bold text-center mb-12">
-          트래블메이트의 특별한 점
+          TripFriend의 특별한 점
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="text-center">
@@ -268,7 +268,7 @@ export default function Home() {
       <div className="bg-blue-600 text-white py-16">
         <div className="container mx-auto px-4 text-center">
           <h3 className="text-3xl font-bold mb-6">
-            지금 트래블메이트와 함께 특별한 여행을 시작하세요
+            지금 TripFriend와 함께 특별한 여행을 시작하세요
           </h3>
           <p className="text-xl mb-8 max-w-2xl mx-auto">
             전 세계 여행자들과 함께하는 새로운 경험, 지금 바로 무료로

@@ -6,7 +6,10 @@ import com.tripfriend.domain.member.member.dto.MemberUpdateRequestDto;
 import com.tripfriend.domain.member.member.entity.Member;
 import com.tripfriend.domain.member.member.repository.MemberRepository;
 import jakarta.mail.MessagingException;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,7 +25,7 @@ import java.util.stream.Collectors;
 public class MemberService {
 
     private final MemberRepository memberRepository;
-
+    private final AuthService authService;
     private final MailService mailService;
     private final PasswordEncoder passwordEncoder;
 
@@ -104,13 +107,31 @@ public class MemberService {
     }
 
     @Transactional
-    public void deleteMember(Long id) {
+    public void deleteMember(Long id, HttpServletResponse response) {
 
-        if (!memberRepository.existsById(id)) {
-            throw new RuntimeException("존재하지 않는 회원입니다.");
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("존재하지 않는 회원입니다."));
+
+        authService.logout(response);
+
+        member.setDeleted(true);
+        member.setDeletedAt(LocalDateTime.now());
+        memberRepository.save(member);
+    }
+
+    @Transactional
+    public void restoreMember(Long id) {
+        Member member = memberRepository.findByIdAndDeletedTrue(id)
+                .orElseThrow(() -> new RuntimeException("존재하지 않거나 이미 활성화된 회원입니다."));
+
+        // 복구 가능 기간 확인
+        if (!member.canBeRestored()) {
+            throw new RuntimeException("계정 복구 기간이 만료되었습니다.");
         }
 
-        memberRepository.deleteById(id);
+        member.setDeleted(false);
+        member.setDeletedAt(null);
+        memberRepository.save(member);
     }
 
     public MemberResponseDto getMyPage(Long id, String username) {
@@ -125,8 +146,8 @@ public class MemberService {
 
         return MemberResponseDto.fromEntity(member);
     }
-
     //회원 조회
+
     public List<MemberResponseDto> getAllMembers() {
         List<Member> members = memberRepository.findAll();
         return members.stream()
@@ -134,4 +155,18 @@ public class MemberService {
                 .collect(Collectors.toList());
     }
 
+    @Scheduled(cron = "0 0 0 * * ?") // 매일 자정에 실행
+    public void purgeExpiredDeletedMembers() {
+
+        LocalDateTime cutoffDate = LocalDateTime.now().minusDays(30);
+        List<Member> expiredMembers = memberRepository.findByDeletedTrueAndDeletedAtBefore(cutoffDate);
+        memberRepository.deleteAll(expiredMembers); // 실제 DB에서 삭제
+    }
+
+    public boolean isSoftDeleted(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다."));
+        // deleted 필드가 있다고 가정
+        return member.isDeleted();
+    }
 }

@@ -1,5 +1,6 @@
 package com.tripfriend.global.security;
 
+import com.tripfriend.global.filter.DeletedMemberFilter;
 import com.tripfriend.global.filter.JwtAuthenticationFilter;
 import com.tripfriend.global.handler.OAuth2AuthenticationSuccessHandler;
 import com.tripfriend.global.util.JwtUtil;
@@ -26,6 +27,7 @@ public class SecurityConfig {
     private final CustomUserDetailsService customUserDetailsService;
     private final CustomOauth2UserService customOauth2UserService;
     private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
+    private final DeletedMemberFilter deletedMemberFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -40,6 +42,7 @@ public class SecurityConfig {
                         .anyRequest().permitAll()
                 )
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(deletedMemberFilter, UsernamePasswordAuthenticationFilter.class)
                 // oauth2 로그인 활성화
                 .oauth2Login(oauth2 -> oauth2
                                 .userInfoEndpoint(userInfo -> userInfo

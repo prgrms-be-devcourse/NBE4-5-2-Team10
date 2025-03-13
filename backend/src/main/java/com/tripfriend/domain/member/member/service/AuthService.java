@@ -32,6 +32,24 @@ public class AuthService {
             throw new RuntimeException("비밀번호를 확인하세요.");
         }
 
+        // 계정이 삭제된 상태인 경우
+        if (member.isDeleted()) {
+            // 복구 가능한 경우
+            if (member.canBeRestored()) {
+                // 복구 가능한 경우에만 특별한 토큰 발급
+                String accessToken = jwtUtil.generateAccessToken(member.getUsername(), member.getAuthority(), member.isVerified(), true);
+                String refreshToken = jwtUtil.generateRefreshToken(member.getUsername(), member.getAuthority(), member.isVerified(), true);
+
+                // 복구용 토큰은 짧은 시간만 유효하게 설정
+                addCookie(response, "accessToken", accessToken, 10 * 60); // 10분
+                addCookie(response, "refreshToken", refreshToken, 10 * 60); // 10분
+
+                return new AuthResponseDto(accessToken, refreshToken, true);
+            } else {
+                throw new RuntimeException("영구 삭제된 계정입니다. 새로운 계정으로 가입해주세요.");
+            }
+        }
+
         // 토큰 생성
         String accessToken = jwtUtil.generateAccessToken(member.getUsername(), member.getAuthority(), member.isVerified());
         String refreshToken = jwtUtil.generateRefreshToken(member.getUsername(), member.getAuthority(), member.isVerified());

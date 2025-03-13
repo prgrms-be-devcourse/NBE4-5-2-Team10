@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 @Component
@@ -28,9 +29,19 @@ public class JwtUtil {
         return generateToken(username, authority, verified, accessTokenExpiration);
     }
 
+    // 삭제된 계정용 액세스 토큰 생성 메서드 추가
+    public String generateAccessToken(String username, String authority, boolean verified, boolean deleted) {
+        return generateToken(username, authority, verified, deleted, accessTokenExpiration);
+    }
+
     // 리프레시 토큰 생성
     public String generateRefreshToken(String username, String authority, boolean verified) {
         return generateToken(username, authority, verified, refreshTokenExpiration);
+    }
+
+    // 삭제된 계정용 리프레시 토큰 생성 메서드 추가
+    public String generateRefreshToken(String username, String authority, boolean verified, boolean deleted) {
+        return generateToken(username, authority, verified, deleted, refreshTokenExpiration);
     }
 
     // 공통 토큰 생성 메서드
@@ -38,14 +49,34 @@ public class JwtUtil {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expirationTime);
 
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("authority", authority);
+        claims.put("verified", verified);
+
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
-                .addClaims(Map.of(
-                        "authority", authority,
-                        "verified", verified
-                ))
+                .addClaims(claims)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS512)
+                .compact();
+    }
+
+    // 소프트딜리트 정보가 포함된 토큰 생성 메서드 추가
+    private String generateToken(String username, String authority, boolean verified, boolean deleted, long expirationTime) {
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + expirationTime);
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("authority", authority);
+        claims.put("verified", verified);
+        claims.put("deleted", deleted); // 삭제 여부 추가
+
+        return Jwts.builder()
+                .setSubject(username)
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
+                .addClaims(claims)
                 .signWith(getSigningKey(), SignatureAlgorithm.HS512)
                 .compact();
     }
@@ -87,5 +118,16 @@ public class JwtUtil {
     // SecretKey 가져오기
     private SecretKey getSigningKey() {
         return new SecretKeySpec(secretKey.getBytes(), SignatureAlgorithm.HS512.getJcaName());
+    }
+
+    // 토큰에서 삭제 상태 확인
+    public boolean isDeletedAccount(String token) {
+        try {
+            Claims claims = getClaims(token);
+            Object deletedClaim = claims.get("deleted");
+            return deletedClaim != null && Boolean.TRUE.equals(deletedClaim);
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

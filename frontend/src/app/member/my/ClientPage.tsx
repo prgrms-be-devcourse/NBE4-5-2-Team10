@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -20,6 +21,13 @@ interface MemberResponseDto {
   createdAt: string;
   updatedAt: string;
   authority: string;
+}
+
+// RsData 응답 형식 정의
+interface RsData<T> {
+  code: string;
+  msg: string;
+  data: T;
 }
 
 // 사용자 여행 정보 타입 정의
@@ -103,6 +111,8 @@ export default function ClientPage() {
     },
   ]);
 
+  const router = useRouter();
+
   // 프로필 수정 모드 상태
   const [isEditing, setIsEditing] = useState(false);
   // 프로필 수정용 임시 상태
@@ -111,12 +121,82 @@ export default function ClientPage() {
   // 탭 상태 관리
   const [activeTab, setActiveTab] = useState("profile");
 
+  // 회원 탈퇴 확인 모달 상태
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  // 프로필 수정 모드 진입 핸들러
+  const handleEditProfile = () => {
+    // 수정 모드로 들어갈 때 현재 프로필 데이터로 초기화하되, null/undefined 값을 빈 문자열로 처리
+    const sanitizedProfile = {
+      ...userProfile,
+      nickname: userProfile.nickname || "",
+      email: userProfile.email || "",
+      gender: userProfile.gender || "",
+      ageRange: userProfile.ageRange || "",
+      travelStyle: userProfile.travelStyle || "",
+      aboutMe: userProfile.aboutMe || "",
+    };
+    setEditedProfile(sanitizedProfile);
+    setIsEditing(true);
+  };
+
   // 프로필 수정 저장 핸들러
   const handleSaveProfile = () => {
-    setUserProfile(editedProfile);
-    setIsEditing(false);
-    // API 호출 추가 가능
-    // updateMemberProfile(editedProfile).then(...)
+    // accessToken 가져오기
+    const accessToken = localStorage.getItem("accessToken");
+
+    if (!accessToken) {
+      console.error("로그인이 필요합니다");
+      router.push("/member/login");
+      return;
+    }
+
+    // MemberUpdateRequestDto 형식으로 데이터 구성
+    const memberUpdateRequestDto = {
+      email: editedProfile.email,
+      nickname: editedProfile.nickname,
+      gender: editedProfile.gender,
+      ageRange: editedProfile.ageRange,
+      travelStyle: editedProfile.travelStyle,
+      aboutMe: editedProfile.aboutMe,
+      // 필요한 경우 프로필 이미지 정보 추가
+    };
+
+    // 회원정보 수정 API 호출
+    fetch("http://localhost:8080/member/update", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(memberUpdateRequestDto),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          if (response.status === 401) {
+            throw new Error("인증이 만료되었습니다");
+          }
+          throw new Error(`회원정보 수정 실패: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((responseData: RsData<MemberResponseDto>) => {
+        // API 응답 처리
+        if (responseData.code.startsWith("200")) {
+          // 성공적으로 업데이트된 경우
+          setUserProfile(responseData.data);
+          setIsEditing(false);
+          // 성공 메시지 표시 (옵션)
+          alert(responseData.msg || "회원 정보가 수정되었습니다.");
+        } else {
+          // 서버에서 오류 응답을 보낸 경우
+          throw new Error(responseData.msg || "회원정보 수정 실패");
+        }
+      })
+      .catch((error) => {
+        console.error("회원정보 수정 오류:", error);
+        alert(error.message || "회원정보 수정 중 오류가 발생했습니다.");
+      });
   };
 
   // 프로필 수정 취소 핸들러
@@ -134,8 +214,98 @@ export default function ClientPage() {
     const { name, value } = e.target;
     setEditedProfile({
       ...editedProfile,
-      [name]: value,
+      [name]: value || "", // 값이 null이나 undefined면 빈 문자열 사용
     });
+  };
+
+  // 회원 탈퇴 모달 열기 핸들러
+  const handleOpenDeleteModal = () => {
+    setShowDeleteModal(true);
+  };
+
+  // 회원 탈퇴 모달 닫기 핸들러
+  const handleCloseDeleteModal = () => {
+    setShowDeleteModal(false);
+  };
+
+  // 회원 탈퇴 실행 핸들러
+  const handleDeleteAccount = async () => {
+    try {
+      // accessToken 가져오기
+      const accessToken = localStorage.getItem("accessToken");
+
+      if (!accessToken) {
+        console.error("로그인이 필요합니다");
+        router.push("/member/login");
+        return;
+      }
+
+      // 회원 탈퇴 API 호출
+      const response = await fetch("http://localhost:8080/member/delete", {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        credentials: "include", // 쿠키를 포함하도록 설정
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error("인증이 만료되었습니다");
+        }
+        throw new Error(`회원 탈퇴 실패: ${response.status}`);
+      }
+
+      // 회원 탈퇴 성공 처리
+      let responseData;
+
+      // 204 상태 코드인 경우 (No Content)
+      if (response.status === 204) {
+        responseData = { success: true, msg: "회원이 삭제되었습니다." };
+      } else {
+        // 응답 본문이 있는 경우 JSON으로 파싱
+        try {
+          responseData = await response.json();
+        } catch (e) {
+          // JSON 파싱 실패 시 성공으로 처리 (204이지만 본문이 없는 경우)
+          responseData = { success: true, msg: "회원이 삭제되었습니다." };
+        }
+      }
+
+      // 로컬 스토리지의 토큰 제거
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+
+      // 추가: 로그아웃 API 호출하여 쿠키의 토큰도 제거
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+      const logoutUrl = `${apiUrl}/member/logout`;
+
+      try {
+        await fetch(logoutUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include", // 쿠키를 포함하도록 설정
+        });
+      } catch (logoutError) {
+        console.error("로그아웃 처리 중 오류:", logoutError);
+        // 로그아웃 실패해도 페이지 이동은 계속 진행
+      }
+
+      // 커스텀 이벤트 발생 (Header 컴포넌트의 상태 업데이트를 위함)
+      window.dispatchEvent(new Event("logout"));
+
+      // 성공 메시지 표시
+      alert(responseData.msg || "회원 탈퇴가 완료되었습니다.");
+
+      // 홈페이지로 리다이렉트
+      router.push("/");
+    } catch (error) {
+      console.error("회원 탈퇴 오류:", error);
+      alert(error.message || "회원 탈퇴 중 오류가 발생했습니다.");
+      setShowDeleteModal(false);
+    }
   };
 
   // 백엔드 API 호출
@@ -147,10 +317,7 @@ export default function ClientPage() {
     if (!accessToken) {
       console.log("로그인이 필요합니다");
       // 로그인 페이지로 리다이렉트 (Next.js의 router 사용)
-      // 아래 주석을 해제하고 원하는 로그인 페이지 경로로 변경하세요
-      // import { useRouter } from 'next/navigation'; // 컴포넌트 상단에 추가
-      // const router = useRouter(); // 컴포넌트 내부에 추가
-      // router.push('/login');
+      router.push("/member/login");
       return;
     }
 
@@ -191,14 +358,14 @@ export default function ClientPage() {
                   // refreshToken도 만료된 경우 로그인 페이지로 리다이렉트
                   localStorage.removeItem("accessToken");
                   localStorage.removeItem("refreshToken");
-                  // router.push('/login');
+                  router.push("/member/login");
                   throw new Error("로그인이 필요합니다");
                 }
               });
             } else {
               // refreshToken이 없는 경우
               localStorage.removeItem("accessToken");
-              // router.push('/login');
+              router.push("/login");
               throw new Error("로그인이 필요합니다");
             }
           }
@@ -206,11 +373,14 @@ export default function ClientPage() {
         }
         return response.json();
       })
-      .then((data) => {
-        if (data) {
-          // null 체크 추가
-          setUserProfile(data);
-          setEditedProfile(data);
+      .then((responseData: RsData<MemberResponseDto>) => {
+        if (responseData && responseData.data) {
+          // RsData 형식에서 실제 데이터 추출
+          setUserProfile(responseData.data);
+          setEditedProfile(responseData.data);
+
+          // 성공 메시지 확인 (필요시 사용)
+          console.log(`마이페이지 로딩 성공: ${responseData.msg}`);
         }
       })
       .catch((error) => {
@@ -227,15 +397,9 @@ export default function ClientPage() {
   // 여행 스타일 한글화
   const getTravelStyleInKorean = (style: string) => {
     const styles: { [key: string]: string } = {
-      ADVENTURE: "모험적인",
-      RELAXATION: "휴양적인",
-      CULTURE: "문화탐방",
-      FOOD: "맛집탐방",
+      TOURISM: "관광",
+      RELAXATION: "휴양",
       SHOPPING: "쇼핑",
-      NATURE: "자연",
-      CITY: "도시",
-      BUDGET: "경제적인",
-      LUXURY: "럭셔리한",
     };
     return styles[style] || style;
   };
@@ -246,9 +410,7 @@ export default function ClientPage() {
       TEENS: "10대",
       TWENTIES: "20대",
       THIRTIES: "30대",
-      FORTIES: "40대",
-      FIFTIES: "50대",
-      OVER_SIXTIES: "60대 이상",
+      FORTIES_PLUS: "40대 이상",
     };
     return ranges[ageRange] || ageRange;
   };
@@ -316,12 +478,20 @@ export default function ClientPage() {
                   className="w-48 h-48 rounded-full object-cover mb-4"
                 />
                 {!isEditing && (
-                  <button
-                    onClick={() => setIsEditing(true)}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 w-full max-w-xs"
-                  >
-                    프로필 수정
-                  </button>
+                  <div className="space-y-2 w-full max-w-xs">
+                    <button
+                      onClick={handleEditProfile}
+                      className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 w-full"
+                    >
+                      프로필 수정
+                    </button>
+                    <button
+                      onClick={handleOpenDeleteModal}
+                      className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 w-full"
+                    >
+                      회원 탈퇴
+                    </button>
+                  </div>
                 )}
               </div>
 
@@ -360,7 +530,6 @@ export default function ClientPage() {
                       >
                         <option value="MALE">남성</option>
                         <option value="FEMALE">여성</option>
-                        <option value="OTHER">기타</option>
                       </select>
                     </div>
                     <div className="mb-4">
@@ -374,9 +543,7 @@ export default function ClientPage() {
                         <option value="TEENS">10대</option>
                         <option value="TWENTIES">20대</option>
                         <option value="THIRTIES">30대</option>
-                        <option value="FORTIES">40대</option>
-                        <option value="FIFTIES">50대</option>
-                        <option value="OVER_SIXTIES">60대 이상</option>
+                        <option value="FORTIES_PLUS">40대 이상</option>
                       </select>
                     </div>
                     <div className="mb-4">
@@ -389,15 +556,9 @@ export default function ClientPage() {
                         onChange={handleProfileChange}
                         className="w-full p-2 border rounded-md"
                       >
-                        <option value="ADVENTURE">모험적인</option>
-                        <option value="RELAXATION">휴양적인</option>
-                        <option value="CULTURE">문화탐방</option>
-                        <option value="FOOD">맛집탐방</option>
+                        <option value="TOURISM">관광</option>
+                        <option value="RELAXATION">휴양</option>
                         <option value="SHOPPING">쇼핑</option>
-                        <option value="NATURE">자연</option>
-                        <option value="CITY">도시</option>
-                        <option value="BUDGET">경제적인</option>
-                        <option value="LUXURY">럭셔리한</option>
                       </select>
                     </div>
                     <div className="mb-4">
@@ -593,6 +754,33 @@ export default function ClientPage() {
           </div>
         )}
       </div>
+
+      {/* 회원 탈퇴 확인 모달 */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-xl font-bold mb-4">회원 탈퇴</h3>
+            <p className="text-gray-700 mb-6">
+              정말로 탈퇴하시겠습니까? 모든 회원 정보와 여행 데이터가 삭제되며
+              이 작업은 되돌릴 수 없습니다.
+            </p>
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={handleCloseDeleteModal}
+                className="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+              >
+                탈퇴하기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>

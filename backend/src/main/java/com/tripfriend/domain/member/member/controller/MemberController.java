@@ -6,13 +6,13 @@ import com.tripfriend.domain.member.member.service.AuthService;
 import com.tripfriend.domain.member.member.service.MailService;
 import com.tripfriend.domain.member.member.service.MemberService;
 import com.tripfriend.global.annotation.CheckPermission;
+import com.tripfriend.global.dto.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,77 +30,94 @@ public class MemberController {
 
     @Operation(summary = "회원가입")
     @PostMapping("/join")
-    public ResponseEntity<MemberResponseDto> join(@Valid @RequestBody JoinRequestDto joinRequestDto) throws MessagingException {
+    public RsData<MemberResponseDto> join(@Valid @RequestBody JoinRequestDto joinRequestDto) throws MessagingException {
 
         MemberResponseDto savedMember = memberService.join(joinRequestDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedMember);
+        return new RsData<>("201-1", "회원가입이 완료되었습니다.", savedMember);
     }
 
     @Operation(summary = "로그인")
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequestDto loginRequestDto, HttpServletResponse response) {
+    public RsData<AuthResponseDto> login(@RequestBody LoginRequestDto loginRequestDto, HttpServletResponse response) {
+
         AuthResponseDto authResponse = authService.login(loginRequestDto, response);
-        return ResponseEntity.ok(authResponse);
+        return new RsData<>("200-1", "로그인 성공", authResponse);
     }
 
     @Operation(summary = "로그아웃")
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletResponse response) {
+    public RsData<Void> logout(HttpServletResponse response) {
+
         authService.logout(response);
-        return ResponseEntity.ok("로그아웃이 실행되었습니다.");
+        return new RsData<>("200-1", "로그아웃이 완료되었습니다.", null);
     }
 
     @Operation(summary = "액세스 토큰 재발급")
     @PostMapping("/refresh")
-    public ResponseEntity<?> refresh(@CookieValue(name = "refreshToken") String refreshToken, HttpServletResponse response) {
+    public RsData<AuthResponseDto> refresh(@CookieValue(name = "refreshToken") String refreshToken, HttpServletResponse response) {
+
         String newAccessToken = authService.refreshToken(refreshToken, response);
-        return ResponseEntity.ok(new AuthResponseDto(newAccessToken));
+        return new RsData<>("200-1", "토큰이 재발급되었습니다.", new AuthResponseDto(newAccessToken));
     }
 
     @Operation(summary = "회원정보 수정")
-    @PutMapping("/{id}")
-    public ResponseEntity<MemberResponseDto> updateMember(@PathVariable Long id, @RequestBody MemberUpdateRequestDto memberUpdateRequestDto) {
+    @PutMapping("/update")
+    public RsData<MemberResponseDto> updateMember(@RequestHeader(value = "Authorization", required = false) String token, @RequestBody MemberUpdateRequestDto memberUpdateRequestDto) {
 
-        MemberResponseDto response = memberService.updateMember(id, memberUpdateRequestDto);
-        return ResponseEntity.ok(response);
+        Member loggedInMember = authService.getLoggedInMember(token);
+
+        MemberResponseDto response = memberService.updateMember(loggedInMember.getId(), memberUpdateRequestDto);
+        return new RsData<>("200-1", "회원 정보가 수정되었습니다.", response);
     }
 
     @Operation(summary = "회원 삭제")
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteMember(@PathVariable Long id) {
+    @DeleteMapping("/delete")
+    public RsData<Void> deleteMember(@RequestHeader(value = "Authorization", required = false) String token, HttpServletResponse response) {
 
-        memberService.deleteMember(id);
-        return ResponseEntity.noContent().build();
+        Member loggedInMember = authService.getLoggedInMember(token);
+
+        memberService.deleteMember(loggedInMember.getId(), response);
+        return new RsData<>("204-1", "회원이 삭제되었습니다.", null);
+    }
+
+    @Operation(summary = "회원 복구")
+    @PostMapping("/restore")
+    public RsData<Void> restoreMember(@RequestHeader(value = "Authorization", required = false) String token) {
+
+        Member loggedInMember = authService.getLoggedInMember(token);
+        memberService.restoreMember(loggedInMember.getId());
+
+        return new RsData<>("200-1", "계정이 성공적으로 복구되었습니다.", null);
     }
 
     @Operation(summary = "이메일 인증 코드 전송")
     @GetMapping("/auth/verify-email")
-    public ResponseEntity<String> requestAuthCode(String email) throws MessagingException {
+    public RsData<Void> requestAuthCode(String email) throws MessagingException {
 
         boolean isSend = mailService.sendAuthCode(email);
-        return isSend ? ResponseEntity.status(HttpStatus.OK).body("인증 코드가 전송되었습니다.") :
-                ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("인증 코드 전송이 실패하였습니다.");
+        return isSend
+                ? new RsData<>("200-1", "인증 코드가 전송되었습니다.", null)
+                : new RsData<>("500-1", "인증 코드 전송이 실패하였습니다.", null);
     }
 
     @Operation(summary = "이메일 인증")
     @PostMapping("/auth/email")
-    public ResponseEntity<String> validateAuthCode(@RequestBody @Valid EmailVerificationRequestDto emailVerificationRequestDto) {
+    public RsData<Void> validateAuthCode(@RequestBody @Valid EmailVerificationRequestDto emailVerificationRequestDto) {
 
         boolean isSuccess = mailService.validationAuthCode(emailVerificationRequestDto);
-        return isSuccess ? ResponseEntity.status(HttpStatus.OK).body("이메일 인증에 성공하였습니다.") :
-                ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이메일 인증에 실패하였습니다.");
+        return isSuccess
+                ? new RsData<>("200-1", "이메일 인증에 성공하였습니다.", null)
+                : new RsData<>("400-1", "이메일 인증에 실패하였습니다.", null);
     }
 
     @Operation(summary = "마이페이지")
     @GetMapping("/mypage")
-    public ResponseEntity<MemberResponseDto> getMyPage(@RequestHeader(value = "Authorization", required = false) String token) {
+    public RsData<MemberResponseDto> getMyPage(@RequestHeader(value = "Authorization", required = false) String token) {
 
-        // 토큰에서 현재 로그인한 회원 정보 추출
         Member loggedInMember = authService.getLoggedInMember(token);
 
-        // 사용자 페이지 정보 가져오기
         MemberResponseDto response = memberService.getMyPage(loggedInMember.getId(), loggedInMember.getUsername());
-        return ResponseEntity.ok(response);
+        return new RsData<>("200-1", "마이페이지 정보 조회 성공", response);
     }
 
     //관리자 회원 조회
