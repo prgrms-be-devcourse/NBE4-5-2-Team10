@@ -27,11 +27,13 @@ interface AuthResponse {
   accessToken: string;
   refreshToken?: string;
   message?: string;
+  deletedAccount?: boolean; // 계정이 삭제 상태인지 여부 - 이름 수정
 }
 
 // RsData 응답 타입 정의
 interface RsData<T> {
   resultCode: string;
+  code: string;
   msg: string;
   data: T;
 }
@@ -51,6 +53,8 @@ export default function ClientPage() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [showRegisteredMessage, setShowRegisteredMessage] = useState(false);
+  const [showRestoreModal, setShowRestoreModal] = useState(false);
+  const [restoringAccount, setRestoringAccount] = useState(false);
 
   useEffect(() => {
     // Check if user just registered
@@ -145,6 +149,71 @@ export default function ClientPage() {
     return isValid;
   };
 
+  const handleRestoreAccount = async () => {
+    setRestoringAccount(true);
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+      const restoreUrl = `${apiUrl}/member/restore`;
+
+      // 액세스 토큰 가져오기 (로컬 스토리지 또는 쿠키에서)
+      const accessToken = localStorage.getItem("accessToken");
+
+      const response = await fetch(restoreUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        credentials: "include", // Include cookies
+      });
+
+      const responseText = await response.text();
+      let responseData;
+
+      try {
+        responseData = JSON.parse(responseText);
+      } catch (e) {
+        throw new Error("서버 응답을 처리할 수 없습니다.");
+      }
+
+      if (
+        !response.ok ||
+        !responseData.code ||
+        !responseData.code.startsWith("200")
+      ) {
+        throw new Error(responseData.msg || "계정 복구에 실패했습니다.");
+      }
+
+      // 복구 성공 후 로컬 스토리지에서 토큰 제거
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+
+      // 성공 메시지를 표시하기 위한 상태 설정
+      setErrors({
+        ...errors,
+        general: "계정이 성공적으로 복구되었습니다. 다시 로그인해 주세요.",
+      });
+
+      // 모달 닫기
+      setShowRestoreModal(false);
+
+      // 로그인 페이지에 머무름 (리디렉션 없음)
+      // 토큰을 제거했으므로 사용자는 다시 로그인해야 합니다
+    } catch (error) {
+      console.error("계정 복구 오류:", error);
+      setErrors({
+        ...errors,
+        general:
+          error instanceof Error
+            ? error.message
+            : "계정 복구 처리 중 오류가 발생했습니다.",
+      });
+    } finally {
+      setRestoringAccount(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -215,7 +284,23 @@ export default function ClientPage() {
         throw new Error("인증 정보가 없습니다.");
       }
 
-      // 토큰이 응답에 있는 경우 처리
+      // 소프트 딜리트된 계정인 경우 복구 모달 표시 - deletedAccount 체크로 수정
+      if (authData.deletedAccount) {
+        console.log("삭제된 계정으로 로그인 시도:", authData.deletedAccount);
+
+        // 토큰 저장
+        localStorage.setItem("accessToken", authData.accessToken);
+        if (authData.refreshToken) {
+          localStorage.setItem("refreshToken", authData.refreshToken);
+        }
+
+        // 복구 모달 표시
+        setShowRestoreModal(true);
+        setIsLoading(false);
+        return;
+      }
+
+      // 정상 계정인 경우 일반 로그인 처리
       localStorage.setItem("accessToken", authData.accessToken);
       // 사용자 정의 이벤트 발생
       window.dispatchEvent(new Event("login"));
@@ -446,6 +531,38 @@ export default function ClientPage() {
           </div>
         </div>
       </div>
+
+      {/* 계정 복구 모달 */}
+      {showRestoreModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-xl font-bold mb-4">계정 복구</h3>
+            <p className="text-gray-700 mb-6">
+              해당 계정은 이전에 삭제 요청되었습니다. 계정을 복구하시겠습니까?
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowRestoreModal(false)}
+                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100"
+                disabled={restoringAccount}
+              >
+                취소
+              </button>
+              <button
+                onClick={handleRestoreAccount}
+                className={`px-4 py-2 bg-blue-600 text-white rounded-lg ${
+                  restoringAccount
+                    ? "opacity-70 cursor-not-allowed"
+                    : "hover:bg-blue-700"
+                }`}
+                disabled={restoringAccount}
+              >
+                {restoringAccount ? "처리 중..." : "계정 복구하기"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>
