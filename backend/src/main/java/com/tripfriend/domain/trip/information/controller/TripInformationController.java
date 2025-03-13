@@ -21,6 +21,22 @@ public class TripInformationController {
     private final TripInformationService tripInformationService;
 
 
+    // 세부 일정 조회
+    @GetMapping("/{id}")
+    public RsData<TripInformationResDto> getTripInformation(@PathVariable Long tripInfoId,
+                                                            @RequestHeader("Authorization") String token) {
+
+        TripInformation tripInformation = tripInformationService.getTripInformation(tripInfoId,token);
+        TripInformationResDto infoDto = new TripInformationResDto(tripInformation);
+        return new RsData<>(
+                "200-1",
+                "여행 정보 조회 성공",
+                infoDto
+
+        );
+
+    }
+
     // 특정 여행 정보를 수정
     @PutMapping("/{tripInfoId}")
     public RsData<TripInformationResDto> updateTripInformation(
@@ -30,7 +46,7 @@ public class TripInformationController {
         TripInformation updatedTripInfo = tripInformationService.updateTripInformation(tripInfoId, request);
         TripInformationResDto resDto = new TripInformationResDto(updatedTripInfo);// 반환 DTO
         return new RsData<>(
-                "200-1",
+                "200-2",
                 "여행 정보가 성공적으로 수정되었습니다.",
                 resDto
         );
@@ -40,8 +56,7 @@ public class TripInformationController {
     @PostMapping
     public RsData<TripInformationResDto> createTripInformation(
             @Valid @RequestBody TripInformationReqDto reqDto,
-            @RequestHeader("Authorization") String authHeader) {
-        String token = authHeader.replace("Bearer ", "").trim();
+            @RequestHeader("Authorization") String token) {
         TripInformationResDto resDto = tripInformationService.addTripInformation(reqDto, token);
         return new RsData<>(
                 "200",
@@ -54,8 +69,7 @@ public class TripInformationController {
     @DeleteMapping("/{tripInformationId}")
     public RsData<Void> deleteTripInformation(
             @PathVariable Long tripInformationId,
-            @RequestHeader("Authorization") String authHeader) {
-        String token = authHeader.replace("Bearer ", "").trim();
+            @RequestHeader("Authorization") String token) {
         tripInformationService.deleteTripInformation(tripInformationId, token);
         return new RsData<>(
                 "200",
@@ -67,8 +81,7 @@ public class TripInformationController {
     @PutMapping("/update-visited")
     public RsData<Void> updateVisited(
             @Valid @RequestBody VisitedReqDto reqDto,
-            @RequestHeader("Authorization") String authHeader) {
-        String token = authHeader.replace("Bearer ", "").trim();
+            @RequestHeader("Authorization") String token) {
         tripInformationService.updateVisited(reqDto, token);
         return new RsData<>("200",
                 "방문 여부 업데이트 성공"

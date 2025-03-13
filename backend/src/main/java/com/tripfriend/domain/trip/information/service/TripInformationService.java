@@ -60,6 +60,22 @@ public class TripInformationService {
         );
     }
 
+    // 세부일정 검증
+    public TripInformation checkInfo(Long tripInfoId, String token){
+        // 회원 확인
+        Member member = getLoggedInMember(token);
+
+        // 여행 정보 확인
+        TripInformation tripInformation = tripInformationRepository.findById(tripInfoId)
+                .orElseThrow(() -> new ServiceException("404-2", "해당 여행 정보가 존재하지 않습니다."));
+
+        // 본인 확인
+        if (!tripInformation.getTripSchedule().getMember().getId().equals(member.getId())) {
+            throw new ServiceException("403-1", "본인이 생성한 일정의 여행 정보만 수정할 수 있습니다.");
+        }
+        return tripInformation;
+    }
+
     // 여행 정보 등록
     @Transactional
     public TripInformationResDto addTripInformation(TripInformationReqDto reqDto, String token) {
@@ -150,38 +166,21 @@ public class TripInformationService {
     // 여행 정보 삭제
     @Transactional
     public void deleteTripInformation(Long tripInformationId, String token) {
-
-        // 회원 확인
-        Member member = getLoggedInMember(token);
-
-        // 여행 정보 확인
-        TripInformation tripInformation = tripInformationRepository.findById(tripInformationId)
-                .orElseThrow(() -> new ServiceException("404-4", "해당 여행 정보가 존재하지 않습니다."));
-
-        // 본인 확인
-        if (!tripInformation.getTripSchedule().getMember().getId().equals(member.getId())) {
-            throw new ServiceException("403-1", "본인이 생성한 일정의 여행 정보만 삭제할 수 있습니다.");
-        }
+        TripInformation tripInformation = checkInfo(tripInformationId, token);
         tripInformationRepository.delete(tripInformation);
     }
 
     // 방문 여부 업데이트
     @Transactional
     public void updateVisited(VisitedReqDto req, String token) {
-
-        // 회원 확인
-        Member member = getLoggedInMember(token);
-
-        // 여행 정보 확인
-        TripInformation tripInformation = tripInformationRepository.findById(req.getTripInformationId())
-                .orElseThrow(() -> new ServiceException("404-2", "해당 여행 정보가 존재하지 않습니다."));
-
-        // 본인 확인
-        if (!tripInformation.getTripSchedule().getMember().getId().equals(member.getId())) {
-            throw new ServiceException("403-1", "본인이 생성한 일정의 여행 정보만 수정할 수 있습니다.");
-        }
-
+        TripInformation tripInformation = checkInfo(req.getTripInformationId(), token);
         tripInformation.setVisited(req.getIsVisited());
         tripInformationRepository.save(tripInformation);
+    }
+
+    // 세부 일정 조회
+    public TripInformation getTripInformation(Long tripInfoId, String token) {
+        TripInformation tripInformation = checkInfo(tripInfoId, token);
+        return tripInformation;
     }
 }
