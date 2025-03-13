@@ -31,6 +31,13 @@ public class MemberController {
     private final AuthService authService;
     private final MailService mailService;
 
+    //회원정보 조회
+    @GetMapping("/me")
+    public ResponseEntity<MemberDto> getCurrentUser(@RequestHeader("Authorization") String token) {
+        Member member = authService.getLoggedInMember(token);
+        return ResponseEntity.ok(new MemberDto(member));
+    }
+
     @Operation(summary = "회원가입")
     @PostMapping("/join")
     public RsData<MemberResponseDto> join(@Valid @RequestBody JoinRequestDto joinRequestDto) throws MessagingException {
@@ -38,6 +45,8 @@ public class MemberController {
         MemberResponseDto savedMember = memberService.join(joinRequestDto);
         return new RsData<>("201-1", "회원가입이 완료되었습니다.", savedMember);
     }
+
+
 
     @Operation(summary = "로그인")
     @PostMapping("/login")
