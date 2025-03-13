@@ -35,7 +35,7 @@ public class RecruitDetailResponseDto {
     private boolean isClosed;
     private LocalDate startDate;
     private LocalDate endDate;
-    private TravelStyle travelStyle;
+    private String travelStyle;
     //    private boolean sameGender;
 //    private boolean sameAge;
     private Integer budget = 0;
@@ -60,7 +60,7 @@ public class RecruitDetailResponseDto {
         this.isClosed = recruit.isClosed();
         this.startDate = recruit.getStartDate();
         this.endDate = recruit.getEndDate();
-        this.travelStyle = recruit.getTravelStyle();
+        this.travelStyle = recruit.getTravelStyle().getKoreanName();
 //        this.sameGender = recruit.isSameGender();
 //        this.sameAge = recruit.isSameAge();
         this.budget = recruit.getBudget();
