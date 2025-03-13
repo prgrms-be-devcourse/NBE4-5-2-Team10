@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 
 interface TripInformation {
+  tripInformationId: number; // 추가: 고유 식별자
   placeId: number;
   cityName: string;
   placeName: string;
@@ -86,6 +87,36 @@ export default function ClientPage() {
     fetchSchedule();
   }, [id]);
 
+  // 세부 일정 삭제 함수
+  const handleDeleteTripInfo = async (tripInformationId: number) => {
+    const token = localStorage.getItem("accessToken");
+    try {
+      const res = await fetch(
+        `http://localhost:8080/trip/information/${tripInformationId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (!res.ok) throw new Error("세부 일정 삭제 실패");
+      alert("세부 일정 삭제 성공");
+      // 삭제된 항목 제거 후 상태 갱신
+      setSchedule((prev) =>
+        prev.map((sch) => ({
+          ...sch,
+          tripInformations: sch.tripInformations?.filter(
+            (info) => info.tripInformationId !== tripInformationId
+          ),
+        }))
+      );
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "알 수 없는 오류");
+    }
+  };
+
   if (loading) return <p className="p-6 text-xl text-center">로딩 중...</p>;
   if (error)
     return <p className="p-6 text-xl text-center text-red-600">{error}</p>;
@@ -103,14 +134,6 @@ export default function ClientPage() {
         >
           ← 뒤로 가기
         </button>
-        <Link href={`/member/my/schedule/update/${id}`}>
-          <button
-            type="button"
-            className="px-4 py-2 bg-blue-500 text-white rounded"
-          >
-            여행 일정 수정
-          </button>
-        </Link>
       </div>
 
       {schedule.map((sch) => (
@@ -140,7 +163,7 @@ export default function ClientPage() {
               {sch.tripInformations && sch.tripInformations.length > 0 ? (
                 sch.tripInformations.map((info) => (
                   <div
-                    key={info.placeId}
+                    key={info.tripInformationId}
                     className="p-4 bg-gray-50 border border-gray-200 rounded-lg shadow-sm"
                   >
                     <h3 className="text-xl font-bold text-gray-800">
@@ -174,6 +197,26 @@ export default function ClientPage() {
                     >
                       {info.visited ? "✅ 방문 완료" : "❌ 방문 예정"}
                     </p>
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        onClick={() =>
+                          router.push(
+                            `/member/my/schedule/update/${info.tripInformationId}`
+                          )
+                        }
+                        className="px-4 py-2 bg-yellow-500 text-white rounded"
+                      >
+                        수정
+                      </button>
+                      <button
+                        onClick={() =>
+                          handleDeleteTripInfo(info.tripInformationId)
+                        }
+                        className="px-4 py-2 bg-red-500 text-white rounded"
+                      >
+                        삭제
+                      </button>
+                    </div>
                   </div>
                 ))
               ) : (
