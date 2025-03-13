@@ -29,7 +29,7 @@ public class ReviewResponseDto {
         this.rating = review.getRating();
         this.memberId = review.getMember().getId();
         this.memberName = memberName;
-        this.placeId = review.getPlaceId();
+        this.placeId = review.getPlace().getId();
         this.viewCount = 0;
         this.createdAt = review.getCreatedAt();
         this.updatedAt = review.getUpdatedAt();

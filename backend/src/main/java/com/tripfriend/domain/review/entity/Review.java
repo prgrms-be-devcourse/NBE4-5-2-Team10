@@ -1,6 +1,7 @@
 package com.tripfriend.domain.review.entity;
 
 import com.tripfriend.domain.member.member.entity.Member;
+import com.tripfriend.domain.place.place.entity.Place;  // 추가
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -29,11 +30,12 @@ public class Review {
     private double rating;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "place_id")
+    private Place place;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
-
-    @Column(name = "place_id")
-    private Long placeId;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
@@ -41,12 +43,12 @@ public class Review {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    public Review(String title, String content, double rating, Member member, Long placeId) {
+    public Review(String title, String content, double rating, Member member, Place place) {
         this.title = title;
         this.content = content;
         this.rating = rating;
         this.member = member;
-        this.placeId = placeId;
+        this.place = place;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = this.createdAt;
     }
