@@ -1,4 +1,3 @@
-// app/member/my/schedule/update/[id]/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -6,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 
 interface TripInformation {
   tripInformationId: number;
+  placeId?: number; // 추가: API로부터 조회된 placeId
   placeName: string;
   cityName: string;
   visitTime: string;
@@ -33,16 +33,41 @@ export default function CombinedUpdatePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // API 호출: 일정 데이터 가져오기
   useEffect(() => {
     if (!id) return;
-    // 여행 일정과 세부 일정 데이터를 함께 불러오기
-    fetch(`http://localhost:8080/trip/schedule/${id}`, {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      setError("로그인이 필요합니다.");
+      setLoading(false);
+      return;
+    }
+
+    fetch(`http://localhost:8080/trip/schedule/my-schedules/${id}`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
     })
       .then((res) => res.json())
-      .then((data) => {
-        setFormData(data);
+      // 기존 GET 응답 처리 부분 수정
+      .then((result) => {
+        if (result.data && result.data.length > 0) {
+          // 백엔드 응답에서 세부 일정에 tripInformationId가 없으면, 대신 id를 사용하도록 매핑
+          const scheduleData = result.data[0];
+          if (scheduleData.tripInformations) {
+            scheduleData.tripInformations = scheduleData.tripInformations.map(
+              (info: any) => ({
+                tripInformationId: info.id ?? info.tripInformationId, // id가 있다면 사용, 없으면 원래 값
+                ...info,
+              })
+            );
+          }
+          setFormData(scheduleData);
+        } else {
+          setError("일정 데이터를 찾을 수 없습니다.");
+        }
         setLoading(false);
       })
       .catch((err) => {
@@ -51,6 +76,7 @@ export default function CombinedUpdatePage() {
       });
   }, [id]);
 
+  // 기본 필드 변경 처리
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -58,7 +84,7 @@ export default function CombinedUpdatePage() {
     setFormData((prev) => (prev ? { ...prev, [name]: value } : prev));
   };
 
-  // 세부 일정의 변경사항을 처리하는 함수
+  // 세부 일정 변경 처리
   const handleTripInfoChange = (
     index: number,
     field: keyof TripInformation,
@@ -76,15 +102,63 @@ export default function CombinedUpdatePage() {
     setFormData({ ...formData, tripInformations: updatedTripInformations });
   };
 
+  // 장소명 입력 후 onBlur 이벤트를 통해 API 호출하여 placeId를 업데이트
+  const handlePlaceNameBlur = async (index: number, placeName: string) => {
+    try {
+      const res = await fetch(
+        `http://localhost:8080/trip/place/search?cityName=${encodeURIComponent(
+          placeName
+        )}`
+      );
+      const result = await res.json();
+      // result.data에 검색 결과 배열이 있다고 가정
+      if (result.data && result.data.length > 0) {
+        const placeId = result.data[0].placeId; // 첫 번째 결과 사용
+        handleTripInfoChange(index, "placeId", placeId);
+      } else {
+        // 결과가 없으면 별도 처리
+      }
+    } catch (err) {
+      console.error("장소 검색 실패", err);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const token = localStorage.getItem("accessToken");
+    if (!formData) return;
+    // TripUpdateReqDto 형식에 맞게 페이로드 재구성
+    const payload = {
+      tripScheduleId: formData.id,
+      scheduleUpdate: {
+        title: formData.title,
+        cityName: formData.cityName,
+        description: formData.description,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+      },
+      tripInformationUpdates: formData.tripInformations.map((info) => ({
+        tripInformationId: info.tripInformationId,
+        placeId: info.placeId,
+        visitTime: info.visitTime,
+        duration: info.duration,
+        transportation: info.transportation,
+        cost: info.cost,
+        notes: info.notes,
+        isVisited: info.visited,
+      })),
+    };
+
     try {
-      // 통합 업데이트 API (백엔드에서 한 번에 처리할 수 있다면)
       const res = await fetch(`http://localhost:8080/trip/schedule/update`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
       });
+      console.log("반환값:", payload);
       if (!res.ok) throw new Error("수정에 실패했습니다.");
       router.push(`/member/my/schedule/${id}`);
     } catch (err) {
@@ -165,6 +239,7 @@ export default function CombinedUpdatePage() {
                 onChange={(e) =>
                   handleTripInfoChange(index, "placeName", e.target.value)
                 }
+                onBlur={() => handlePlaceNameBlur(index, info.placeName)}
                 className="border p-2 w-full"
               />
             </label>
