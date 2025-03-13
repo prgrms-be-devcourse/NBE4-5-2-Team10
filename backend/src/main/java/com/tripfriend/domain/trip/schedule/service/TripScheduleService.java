@@ -5,6 +5,7 @@ import com.tripfriend.domain.member.member.repository.MemberRepository;
 import com.tripfriend.domain.member.member.service.AuthService;
 import com.tripfriend.domain.place.place.entity.Place;
 import com.tripfriend.domain.place.place.repository.PlaceRepository;
+import com.tripfriend.domain.trip.information.dto.TripInformationReqDto;
 import com.tripfriend.domain.trip.information.dto.TripInformationResDto;
 import com.tripfriend.domain.trip.information.dto.TripInformationUpdateReqDto;
 import com.tripfriend.domain.trip.information.entity.TripInformation;
@@ -56,32 +57,65 @@ public class TripScheduleService {
     // 여행 일정 생성
     @Transactional
     public TripScheduleInfoResDto createSchedule(TripScheduleReqDto req, String token) {
-        // 로그인 한 회원 객체 가져오기
+        // 로그인한 회원 정보 및 도시 유효성 검증
         Member member = getLoggedInMember(token);
+        String selectedCity = validateCity(req.getCityName());
 
         // 여행 일정 생성 및 저장
-        TripSchedule newSchedule = TripSchedule.builder()
+        TripSchedule newSchedule = createAndSaveSchedule(member, req);
+
+        // 세부일정 검증 및 저장
+        if (req.getTripInformations() != null && !req.getTripInformations().isEmpty()) {
+            validateTripInformations(req.getTripInformations(), selectedCity);
+            tripInformationService.addTripInformations(newSchedule, req.getTripInformations());
+        }
+
+        // 응답 DTO 생성
+        List<TripInformationResDto> tripInfoDtos = buildTripInformationResDtos(req.getTripInformations());
+        return new TripScheduleInfoResDto(newSchedule, tripInfoDtos);
+    }
+
+    // 도시명 유효성 검증
+    private String validateCity(String cityName) {
+        if (cityName == null || cityName.isEmpty()) {
+            throw new ServiceException("400-2", "여행지(도시명) 선택은 필수입니다.");
+        }
+        return cityName;
+    }
+
+
+    // 여행 일정을 생성하고 DB에 저장
+    private TripSchedule createAndSaveSchedule(Member member, TripScheduleReqDto req) {
+        TripSchedule schedule = TripSchedule.builder()
                 .member(member)
                 .title(req.getTitle())
                 .description(req.getDescription())
                 .startDate(req.getStartDate())
                 .endDate(req.getEndDate())
                 .build();
-        tripScheduleRepository.save(newSchedule);
+        tripScheduleRepository.save(schedule);
+        return schedule;
+    }
 
-        // 여행 정보 저장 (Service 메서드 활용)
-        if (req.getTripInformations() != null && !req.getTripInformations().isEmpty()) {
-            tripInformationService.addTripInformations(newSchedule, req.getTripInformations());
-        }
+    // 각 세부일정의 장소가 선택한 도시와 일치하는지 검증
+    private void validateTripInformations(List<TripInformationReqDto> tripInfos, String selectedCity) {
+        tripInfos.forEach(tripInfo -> {
+            Place place = placeRepository.findById(tripInfo.getPlaceId())
+                    .orElseThrow(() -> new ServiceException("404-2", "해당 장소가 존재하지 않습니다."));
+            if (!place.getCityName().equals(selectedCity)) {
+                throw new ServiceException("400-1", "선택한 도시와 일치하지 않는 장소가 포함되어 있습니다.");
+            }
+        });
+    }
 
-        // TripInformation을 TripInformationResDto로 변환
-        List<TripInformationResDto> tripInfoDtos = Optional.ofNullable(req.getTripInformations())
+    // TripInformation 응답 DTO 리스트 생성
+    private List<TripInformationResDto> buildTripInformationResDtos(List<TripInformationReqDto> tripInfos) {
+        return Optional.ofNullable(tripInfos)
                 .orElse(List.of())
                 .stream()
                 .map(tripInfo -> {
                     Place place = placeRepository.findById(tripInfo.getPlaceId())
                             .orElseThrow(() -> new ServiceException("404-2", "해당 장소가 존재하지 않습니다."));
-
                     return new TripInformationResDto(
                             tripInfo.getPlaceId(),
                             place.getCityName(),
@@ -96,8 +130,6 @@ public class TripScheduleService {
                     );
                 })
                 .collect(Collectors.toList());
-
-        return new TripScheduleInfoResDto(newSchedule, tripInfoDtos);
     }
 
     // 전체 일정 조회(필요없을듯)

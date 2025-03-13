@@ -53,7 +53,6 @@ public class TripInformationService {
                             .cost(infoReq.getCost())
                             .notes(infoReq.getNotes())
                             .priority(infoReq.getPriority())
-                            .isVisited(infoReq.isVisited())
                             .build();
                 }).collect(Collectors.toList());
 
