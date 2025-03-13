@@ -336,4 +336,32 @@ public class ReviewService {
             this.viewCount = viewCount;
         }
     }
+
+    // 특정 회원의 리뷰 목록 조회
+    @Transactional(readOnly = true)
+    public List<ReviewResponseDto> getReviewsByMember(Long memberId) {
+        if (memberId == null) {
+            throw new ServiceException("400-5", "회원 ID는 필수입니다.");
+        }
+
+        // 해당 회원이 작성한 리뷰 목록 조회
+        List<Review> reviews = reviewRepository.findByMemberIdOrderByCreatedAtDesc(memberId);
+
+        // 리뷰 목록을 DTO로 변환
+        return reviews.stream()
+                .map(review -> {
+                    // 각 리뷰의 댓글 수 조회
+                    int commentCount = commentRepository.findByReviewReviewIdOrderByCreatedAtAsc(review.getReviewId()).size();
+
+                    // 리뷰 DTO 생성
+                    ReviewResponseDto dto = new ReviewResponseDto(review, review.getMember().getNickname(), commentCount);
+
+                    // 조회수 설정
+                    viewCountRepository.findById(review.getReviewId())
+                            .ifPresent(viewCount -> dto.setViewCount(viewCount.getCount()));
+
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
 }
