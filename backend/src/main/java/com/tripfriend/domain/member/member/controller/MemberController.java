@@ -82,12 +82,12 @@ public class MemberController {
 
     @Operation(summary = "회원 복구")
     @PostMapping("/restore")
-    public ResponseEntity<?> restoreMember(@RequestHeader(value = "Authorization", required = false) String token) {
+    public RsData<Void> restoreMember(@RequestHeader(value = "Authorization", required = false) String token) {
 
         Member loggedInMember = authService.getLoggedInMember(token);
-
         memberService.restoreMember(loggedInMember.getId());
-        return ResponseEntity.ok("계정이 성공적으로 복구되었습니다.");
+
+        return new RsData<>("200-1", "계정이 성공적으로 복구되었습니다.", null);
     }
 
     @Operation(summary = "이메일 인증 코드 전송")

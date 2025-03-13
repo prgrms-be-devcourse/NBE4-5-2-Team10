@@ -37,6 +37,16 @@ public class PlaceService {
         return places;
     }
 
+    // 특정 도시의 여행 장소 리스트 조회
+    public List<Place> getPlacesByCity(String cityName) {
+        return placeRepository.findByCityName(cityName);
+    }
+
+    // 도시 목록 중복 제거
+    public List<String> getDistinctCities() {
+        return placeRepository.findDistinctCityNames();
+    }
+
     // 여행 장소 단건 조회
     public Place getPlace(Long id) {
         return placeRepository.findById(id)

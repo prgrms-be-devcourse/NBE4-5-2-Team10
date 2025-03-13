@@ -41,8 +41,8 @@ public class AuthService {
                 String refreshToken = jwtUtil.generateRefreshToken(member.getUsername(), member.getAuthority(), member.isVerified(), true);
 
                 // 복구용 토큰은 짧은 시간만 유효하게 설정
-                addCookie(response, "accessToken", accessToken, 30 * 60); // 30분
-                addCookie(response, "refreshToken", refreshToken, 30 * 60); // 30분
+                addCookie(response, "accessToken", accessToken, 10 * 60); // 10분
+                addCookie(response, "refreshToken", refreshToken, 10 * 60); // 10분
 
                 return new AuthResponseDto(accessToken, refreshToken, true);
             } else {

@@ -20,5 +20,4 @@ public class TripInformationReqDto {
     private int cost;
     private String notes;
     private int priority;
-    private boolean isVisited;
 }

@@ -6,6 +6,7 @@ import com.tripfriend.domain.member.member.dto.MemberUpdateRequestDto;
 import com.tripfriend.domain.member.member.entity.Member;
 import com.tripfriend.domain.member.member.repository.MemberRepository;
 import jakarta.mail.MessagingException;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -160,5 +161,12 @@ public class MemberService {
         LocalDateTime cutoffDate = LocalDateTime.now().minusDays(30);
         List<Member> expiredMembers = memberRepository.findByDeletedTrueAndDeletedAtBefore(cutoffDate);
         memberRepository.deleteAll(expiredMembers); // 실제 DB에서 삭제
+    }
+
+    public boolean isSoftDeleted(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다."));
+        // deleted 필드가 있다고 가정
+        return member.isDeleted();
     }
 }
