@@ -1,9 +1,6 @@
 package com.tripfriend.domain.trip.information.controller;
 
-import com.tripfriend.domain.trip.information.dto.TripInformationReqDto;
-import com.tripfriend.domain.trip.information.dto.TripInformationResDto;
-import com.tripfriend.domain.trip.information.dto.TripInformationUpdateReqDto;
-import com.tripfriend.domain.trip.information.dto.VisitedReqDto;
+import com.tripfriend.domain.trip.information.dto.*;
 import com.tripfriend.domain.trip.information.entity.TripInformation;
 import com.tripfriend.domain.trip.information.service.TripInformationService;
 import com.tripfriend.global.dto.RsData;
@@ -57,6 +54,7 @@ public class TripInformationController {
 
     // 세부 일정 등록
     @PostMapping
+    @Transactional
     public RsData<TripInformationResDto> createTripInformation(
             @Valid @RequestBody TripInformationReqDto reqDto,
             @RequestHeader("Authorization") String token) {

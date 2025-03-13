@@ -123,7 +123,7 @@ export default function TripInfoUpdatePage() {
       </div>
       <div className="mb-4">
         <label className="block mb-2">
-          소요 시간 (시간):
+          소요 시간 (분):
           <input
             type="number"
             name="duration"

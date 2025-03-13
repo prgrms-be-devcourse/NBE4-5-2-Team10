@@ -77,14 +77,13 @@ public class TripInformationService {
     }
 
     // 여행 정보 등록
-    @Transactional
     public TripInformationResDto addTripInformation(TripInformationReqDto reqDto, String token) {
 
         // 회원 확인
         Member member = getLoggedInMember(token);
 
         // 상위 일정 조회
-        TripSchedule schedule = tripScheduleRepository.findById(reqDto.getTripInformationId())
+        TripSchedule schedule = tripScheduleRepository.findById(reqDto.getTripScheduleId())
                 .orElseThrow(() -> new ServiceException("404", "여행 일정이 존재하지 않습니다."));
         if (!schedule.getMember().getId().equals(member.getId())) {
             throw new ServiceException("403", "본인이 생성한 일정만 수정할 수 있습니다.");
@@ -94,7 +93,6 @@ public class TripInformationService {
         Place place = getPlcae(reqDto);
 
         TripInformation information = TripInformation.builder()
-                .id(reqDto.getTripInformationId())
                 .place(place)
                 .visitTime(reqDto.getVisitTime())
                 .duration(reqDto.getDuration())

@@ -1,8 +1,14 @@
 "use client";
 
-import { useEffect, useState, ChangeEvent } from "react";
+import { useEffect, useState, ChangeEvent, FormEvent } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+
+interface Place {
+  id: number;
+  placeName: string;
+  cityName: string;
+}
 
 interface TripInformation {
   tripInformationId: number; // 고유 식별자
@@ -42,18 +48,31 @@ export default function ClientPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // 신규 세부 일정 등록 관련 상태
+  const [showNewTripForm, setShowNewTripForm] = useState(false);
+  const [newTripInfo, setNewTripInfo] = useState({
+    placeId: 0,
+    visitTime: "",
+    duration: 0,
+    transportation: "",
+    cost: 0,
+    notes: "",
+    priority: 0,
+  });
+  const [newTripPlaces, setNewTripPlaces] = useState<Place[]>([]);
+
+  // 교통수단 옵션
+  const transportationOptions = ["WALK", "BUS", "SUBWAY", "CAR", "TAXI", "ETC"];
+
+  // 여행 일정 조회
   useEffect(() => {
     if (!id) return;
-
-    // accessToken 가져오기
     const token = localStorage.getItem("accessToken");
-
     if (!token) {
       setError("로그인이 필요합니다.");
       setLoading(false);
       return;
     }
-
     const fetchSchedule = async () => {
       try {
         const response = await fetch(
@@ -67,11 +86,9 @@ export default function ClientPage() {
             },
           }
         );
-
         if (!response.ok) {
           throw new Error("일정 정보를 불러오는데 실패했습니다.");
         }
-
         const result: ApiResponse = await response.json();
         if (!result.data) {
           throw new Error("해당 ID의 여행 일정이 존재하지 않습니다.");
@@ -83,51 +100,107 @@ export default function ClientPage() {
         setLoading(false);
       }
     };
-
     fetchSchedule();
   }, [id]);
 
-  // 방문 여부 업데이트 함수 (백엔드 /trip/information/update-visited 호출)
-  const updateVisitedStatus = async (
-    tripInformationId: number,
-    newStatus: boolean
-  ) => {
-    const token = localStorage.getItem("accessToken");
-    try {
-      const res = await fetch(
-        `http://localhost:8080/trip/information/update-visited`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            tripInformationId,
-            isVisited: newStatus,
-          }),
+  // 신규 세부 일정 등록 시, 해당 여행 일정의 cityName에 맞는 장소 목록 조회
+  useEffect(() => {
+    // schedule는 배열이지만 조회되는 일정은 하나라고 가정
+    if (schedule.length > 0 && schedule[0].cityName) {
+      const token = localStorage.getItem("accessToken");
+      const fetchPlaces = async () => {
+        try {
+          const response = await fetch(
+            `http://localhost:8080/place?cityName=${encodeURIComponent(
+              schedule[0].cityName
+            )}`,
+            {
+              method: "GET",
+              headers: { "Content-Type": "application/json" },
+            }
+          );
+          if (!response.ok) {
+            throw new Error("장소 목록을 불러오는데 실패했습니다.");
+          }
+          const data = await response.json();
+          if (data && data.data) {
+            setNewTripPlaces(data.data);
+          }
+        } catch (err) {
+          console.error(err);
         }
-      );
-      if (!res.ok) {
-        throw new Error("방문 여부 업데이트에 실패했습니다.");
-      }
-      // 업데이트 성공하면 로컬 상태 갱신
-      setSchedule((prevSchedules) =>
-        prevSchedules.map((sch) => ({
+      };
+      fetchPlaces();
+    }
+  }, [schedule]);
+
+  // 신규 세부 일정 등록 폼 핸들러
+  const handleNewTripInfoChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setNewTripInfo({
+      ...newTripInfo,
+      [name]:
+        name === "duration" || name === "cost" || name === "priority"
+          ? Number(value)
+          : value,
+    });
+  };
+
+  const handleRegisterTripInfo = async (e: FormEvent) => {
+    e.preventDefault();
+    const token = localStorage.getItem("accessToken");
+    if (!schedule || schedule.length === 0 || !token) return;
+    const payload = {
+      tripScheduleId: schedule[0].id,
+      placeId: newTripInfo.placeId,
+      visitTime: newTripInfo.visitTime,
+      duration: newTripInfo.duration,
+      transportation: newTripInfo.transportation,
+      cost: newTripInfo.cost,
+      notes: newTripInfo.notes,
+      priority: newTripInfo.priority,
+    };
+    try {
+      const res = await fetch("http://localhost:8080/trip/information", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+      console.log("세빙일정 등록 : ", payload);
+      if (!res.ok) throw new Error("세부 일정 등록 실패");
+      alert("세부 일정 등록 성공");
+      const result = await res.json();
+      // result.data는 새로 등록된 세부 일정
+      setSchedule((prev) =>
+        prev.map((sch) => ({
           ...sch,
-          tripInformations: sch.tripInformations?.map((info) =>
-            info.tripInformationId === tripInformationId
-              ? { ...info, visited: newStatus }
-              : info
-          ),
+          tripInformations: sch.tripInformations
+            ? [...sch.tripInformations, result.data]
+            : [result.data],
         }))
       );
+      // 초기화
+      setNewTripInfo({
+        placeId: 0,
+        visitTime: "",
+        duration: 0,
+        transportation: "",
+        cost: 0,
+        notes: "",
+        priority: 0,
+      });
+      setShowNewTripForm(false);
     } catch (err) {
       alert(err instanceof Error ? err.message : "알 수 없는 오류");
     }
   };
 
-  // 세부 일정 삭제 함수 (DELETE /trip/information/{tripInformationId})
+  // 기존 세부 일정 삭제
   const handleDeleteTripInfo = async (tripInformationId: number) => {
     const token = localStorage.getItem("accessToken");
     try {
@@ -143,12 +216,50 @@ export default function ClientPage() {
       );
       if (!res.ok) throw new Error("세부 일정 삭제 실패");
       alert("세부 일정 삭제 성공");
-      // 상태 업데이트: 삭제된 항목 제거
       setSchedule((prev) =>
         prev.map((sch) => ({
           ...sch,
           tripInformations: sch.tripInformations?.filter(
             (info) => info.tripInformationId !== tripInformationId
+          ),
+        }))
+      );
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "알 수 없는 오류");
+    }
+  };
+
+  // 방문 여부 업데이트 (기존 로직 그대로)
+  const updateVisitedStatus = async (
+    tripInformationId: number,
+    newStatus: boolean
+  ) => {
+    const token = localStorage.getItem("accessToken");
+    try {
+      const res = await fetch(
+        "http://localhost:8080/trip/information/update-visited",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            tripInformationId,
+            isVisited: newStatus,
+          }),
+        }
+      );
+      if (!res.ok) {
+        throw new Error("방문 여부 업데이트에 실패했습니다.");
+      }
+      setSchedule((prev) =>
+        prev.map((sch) => ({
+          ...sch,
+          tripInformations: sch.tripInformations?.map((info) =>
+            info.tripInformationId === tripInformationId
+              ? { ...info, visited: newStatus }
+              : info
           ),
         }))
       );
@@ -195,10 +306,131 @@ export default function ClientPage() {
               <span className="font-semibold">여행 기간:</span> {sch.startDate}{" "}
               ~ {sch.endDate}
             </p>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-semibold text-gray-800">
+                세부 일정
+              </h2>
+              <button
+                type="button"
+                onClick={() => setShowNewTripForm(!showNewTripForm)}
+                className="px-4 py-2 bg-green-500 text-white rounded"
+              >
+                세부 일정 등록
+              </button>
+            </div>
 
-            <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-              세부 일정
-            </h2>
+            {showNewTripForm && (
+              <form
+                onSubmit={handleRegisterTripInfo}
+                className="border p-4 mb-4 rounded"
+              >
+                <h3 className="text-xl font-semibold mb-2">
+                  새 세부 일정 등록
+                </h3>
+                <div className="mb-2">
+                  <label className="block mb-1">장소 선택</label>
+                  <select
+                    name="placeId"
+                    value={newTripInfo.placeId || ""}
+                    onChange={handleNewTripInfoChange}
+                    className="w-full border rounded p-2"
+                    required
+                  >
+                    <option value="">선택하세요</option>
+                    {newTripPlaces.map((place) => (
+                      <option key={place.id} value={place.id}>
+                        {place.placeName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="mb-2">
+                  <label className="block mb-1">방문 시간</label>
+                  <input
+                    type="datetime-local"
+                    name="visitTime"
+                    value={newTripInfo.visitTime}
+                    onChange={handleNewTripInfoChange}
+                    className="w-full border rounded p-2"
+                    required
+                  />
+                </div>
+                <div className="mb-2">
+                  <label className="block mb-1">소요 시간 (분)</label>
+                  <input
+                    type="number"
+                    name="duration"
+                    value={newTripInfo.duration || ""}
+                    onChange={handleNewTripInfoChange}
+                    className="w-full border rounded p-2"
+                    required
+                  />
+                </div>
+                <div className="mb-2">
+                  <label className="block mb-1">교통수단</label>
+                  <select
+                    name="transportation"
+                    value={newTripInfo.transportation}
+                    onChange={handleNewTripInfoChange}
+                    className="w-full border rounded p-2"
+                    required
+                  >
+                    <option value="">선택하세요</option>
+                    {transportationOptions.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="mb-2">
+                  <label className="block mb-1">비용</label>
+                  <input
+                    type="number"
+                    name="cost"
+                    value={newTripInfo.cost || ""}
+                    onChange={handleNewTripInfoChange}
+                    className="w-full border rounded p-2"
+                  />
+                </div>
+                <div className="mb-2">
+                  <label className="block mb-1">메모</label>
+                  <textarea
+                    name="notes"
+                    value={newTripInfo.notes}
+                    onChange={handleNewTripInfoChange}
+                    className="w-full border rounded p-2"
+                    rows={2}
+                  />
+                </div>
+                <div className="mb-2">
+                  <label className="block mb-1">우선순위</label>
+                  <input
+                    type="number"
+                    name="priority"
+                    value={newTripInfo.priority || ""}
+                    onChange={handleNewTripInfoChange}
+                    className="w-full border rounded p-2"
+                  />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-green-500 text-white rounded"
+                  >
+                    등록
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowNewTripForm(false)}
+                    className="px-4 py-2 bg-gray-500 text-white rounded"
+                  >
+                    취소
+                  </button>
+                </div>
+              </form>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {sch.tripInformations && sch.tripInformations.length > 0 ? (
                 sch.tripInformations.map((info) => (
@@ -218,7 +450,7 @@ export default function ClientPage() {
                     </p>
                     <p className="text-md text-gray-600">
                       <span className="font-semibold">소요 시간:</span>{" "}
-                      {info.duration}시간
+                      {info.duration}분
                     </p>
                     <p className="text-md text-gray-600">
                       <span className="font-semibold">이동 수단:</span>{" "}
