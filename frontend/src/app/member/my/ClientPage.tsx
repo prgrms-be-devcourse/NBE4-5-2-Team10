@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/Header";
@@ -47,7 +47,7 @@ export default function ClientPage() {
     username: "honggildong",
     email: "user@example.com",
     nickname: "홍길동",
-    profileImage: "/placeholder.jpg",
+    profileImage: "/defaultUser.png",
     gender: "MALE",
     ageRange: "TWENTIES",
     travelStyle: "ADVENTURE",
@@ -123,6 +123,36 @@ export default function ClientPage() {
 
   // 회원 탈퇴 확인 모달 상태
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  // 프로필 이미지 부분 수정
+  const [imageUrl, setImageUrl] = useState("/defaultUser.png"); // 기본 이미지 설정
+
+  // 이미지 관련 상태 추가
+
+  const [imageLoading, setImageLoading] = useState(false);
+  const [imageFile, setImageFile] = useState(null);
+  const fileInputRef = useRef(null);
+
+  // 이미지 URL 설정 함수
+  const getProfileImageUrl = (imagePath) => {
+    if (!imagePath) return "/defaultUser.png";
+
+    // 백엔드 서버 URL
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+
+    // 이미 완전한 URL인 경우 그대로 사용
+    if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+      return imagePath;
+    }
+
+    // 이미지 경로가 /images/로 시작하면 API URL과 결합
+    if (imagePath.startsWith("/images/")) {
+      return `${apiUrl}${imagePath}`;
+    }
+
+    // 그 외의 경우 images 디렉토리에 있다고 가정
+    return `${apiUrl}/images/${imagePath}`;
+  };
 
   // 프로필 수정 모드 진입 핸들러
   const handleEditProfile = () => {
@@ -375,11 +405,14 @@ export default function ClientPage() {
       })
       .then((responseData: RsData<MemberResponseDto>) => {
         if (responseData && responseData.data) {
-          // RsData 형식에서 실제 데이터 추출
           setUserProfile(responseData.data);
           setEditedProfile(responseData.data);
 
-          // 성공 메시지 확인 (필요시 사용)
+          // 프로필 이미지 URL 설정
+          if (responseData.data.profileImage) {
+            setImageUrl(getProfileImageUrl(responseData.data.profileImage));
+          }
+
           console.log(`마이페이지 로딩 성공: ${responseData.msg}`);
         }
       })
@@ -387,6 +420,138 @@ export default function ClientPage() {
         console.error("마이페이지 로딩 실패:", error);
       });
   }, []);
+
+  // 이미지 파일 선택 핸들러
+  const handleImageSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+
+      // 이미지 미리보기 생성
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (e.target?.result) {
+          setImageUrl(e.target.result.toString());
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // 이미지 업로드 핸들러
+  const handleImageUpload = async () => {
+    if (!imageFile) return;
+
+    setImageLoading(true);
+    const accessToken = localStorage.getItem("accessToken");
+
+    if (!accessToken) {
+      alert("로그인이 필요합니다");
+      setImageLoading(false);
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("image", imageFile);
+
+    try {
+      const response = await fetch(
+        "http://localhost:8080/member/profile-image/upload",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`이미지 업로드 실패: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.code.startsWith("200")) {
+        // 새 이미지 URL 설정
+        setUserProfile({
+          ...userProfile,
+          profileImage: data.data,
+        });
+        setImageUrl(getProfileImageUrl(data.data));
+        setImageFile(null);
+        alert("이미지가 업로드되었습니다.");
+      } else {
+        throw new Error(data.msg || "이미지 업로드 실패");
+      }
+    } catch (error) {
+      console.error("이미지 업로드 오류:", error);
+      alert(error.message || "이미지 업로드 중 오류가 발생했습니다.");
+    } finally {
+      setImageLoading(false);
+    }
+  };
+
+  // 이미지 삭제 핸들러
+  const handleImageDelete = async () => {
+    const accessToken = localStorage.getItem("accessToken");
+
+    if (!accessToken) {
+      alert("로그인이 필요합니다");
+      return;
+    }
+
+    if (!userProfile.profileImage) {
+      alert("삭제할 이미지가 없습니다.");
+      return;
+    }
+
+    if (!confirm("프로필 이미지를 삭제하시겠습니까?")) return;
+
+    setImageLoading(true);
+
+    try {
+      const response = await fetch(
+        "http://localhost:8080/member/profile-image/delete",
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`이미지 삭제 실패: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.code.startsWith("200")) {
+        // 기본 이미지로 변경
+        setUserProfile({
+          ...userProfile,
+          profileImage: null,
+        });
+        setImageUrl("/defaultUser.png");
+        setImageFile(null);
+
+        // 파일 입력 초기화
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+
+        alert("이미지가 삭제되었습니다.");
+      } else {
+        throw new Error(data.msg || "이미지 삭제 실패");
+      }
+    } catch (error) {
+      console.error("이미지 삭제 오류:", error);
+      alert(error.message || "이미지 삭제 중 오류가 발생했습니다.");
+    } finally {
+      setImageLoading(false);
+    }
+  };
 
   // 생성일자 포맷팅 함수
   const formatDate = (dateString: string) => {
@@ -416,7 +581,7 @@ export default function ClientPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header />
 
       <div className="container mx-auto px-4 py-8">
@@ -471,12 +636,63 @@ export default function ClientPage() {
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex flex-col md:flex-row">
               {/* 프로필 이미지 */}
-              <div className="md:w-1/3 mb-6 md:mb-0 flex flex-col items-center">
-                <img
-                  src={userProfile.profileImage}
-                  alt="프로필 이미지"
-                  className="w-48 h-48 rounded-full object-cover mb-4"
-                />
+              <div className="md:w-1/3 mb-6 md:mb-0 flex flex-col items-center justify-center">
+                <div className="relative w-48 h-48 mb-4">
+                  <img
+                    src={imageUrl}
+                    alt="프로필 이미지"
+                    className="w-full h-full rounded-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src = "/defaultUser.png";
+                    }}
+                  />
+                  {imageLoading && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 rounded-full">
+                      <div className="animate-spin h-8 w-8 border-4 border-blue-500 rounded-full border-t-transparent"></div>
+                    </div>
+                  )}
+                </div>
+                {isEditing && (
+                  <div className="space-y-2 w-full max-w-xs">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageSelect}
+                      className="hidden"
+                      ref={fileInputRef}
+                      id="profile-image-input"
+                    />
+
+                    <div className="flex space-x-2">
+                      <label
+                        htmlFor="profile-image-input"
+                        className="bg-gray-200 text-gray-800 px-3 py-1 rounded-md hover:bg-gray-300 cursor-pointer text-sm flex-1 text-center"
+                      >
+                        이미지 선택
+                      </label>
+
+                      {imageFile && (
+                        <button
+                          onClick={handleImageUpload}
+                          className="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 text-sm flex-1"
+                          disabled={imageLoading}
+                        >
+                          업로드
+                        </button>
+                      )}
+                    </div>
+
+                    {userProfile.profileImage && (
+                      <button
+                        onClick={handleImageDelete}
+                        className="bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 text-sm w-full"
+                        disabled={imageLoading}
+                      >
+                        이미지 삭제
+                      </button>
+                    )}
+                  </div>
+                )}
                 {!isEditing && (
                   <div className="space-y-2 w-full max-w-xs">
                     <button

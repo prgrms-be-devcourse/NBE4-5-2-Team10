@@ -57,3 +57,6 @@ custom:
     secret-key: ${CUSTOM_JWT_SECRET_KEY}
     access-token-expiration: ${CUSTOM_JWT_ACCESS_TOKEN_EXPIRATION}
     refresh-token-expiration: ${CUSTOM_JWT_REFRESH_TOKEN_EXPIRATION}
+
+file:
+  upload-dir: src/main/resources/static/images

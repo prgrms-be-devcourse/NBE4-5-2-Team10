@@ -5,6 +5,7 @@ import com.tripfriend.domain.member.member.dto.MemberResponseDto;
 import com.tripfriend.domain.member.member.dto.MemberUpdateRequestDto;
 import com.tripfriend.domain.member.member.entity.Member;
 import com.tripfriend.domain.member.member.repository.MemberRepository;
+import com.tripfriend.global.util.ImageUtil;
 import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletResponse;
@@ -15,7 +16,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,6 +30,7 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final AuthService authService;
     private final MailService mailService;
+    private final ImageUtil imageUtil;
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
@@ -168,5 +172,37 @@ public class MemberService {
                 .orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다."));
         // deleted 필드가 있다고 가정
         return member.isDeleted();
+    }
+
+    @Transactional
+    public String uploadProfileImage(Long memberId, MultipartFile profileImage) throws IOException {
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다."));
+
+        // 기존 프로필 이미지 삭제 (선택 사항)
+        if (member.getProfileImage() != null) {
+            imageUtil.deleteImage(member.getProfileImage());
+        }
+
+        // 새 이미지 저장
+        String profileImageUrl = imageUtil.saveImage(profileImage);
+        member.setProfileImage(profileImageUrl);
+        memberRepository.save(member);
+
+        return profileImageUrl; // 저장된 이미지 경로 반환
+    }
+
+    @Transactional
+    public void deleteProfileImage(Long memberId) throws IOException {
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new EntityNotFoundException("회원을 찾을 수 없습니다."));
+
+        if (member.getProfileImage() != null) {
+            imageUtil.deleteImage(member.getProfileImage());
+            member.setProfileImage(null);
+            memberRepository.save(member);
+        }
     }
 }
