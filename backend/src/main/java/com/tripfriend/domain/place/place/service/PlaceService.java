@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -68,5 +69,24 @@ public class PlaceService {
         place.setCategory(req.getCategory());
 
         return placeRepository.save(place);
+    }
+
+    public List<Place> searchPlace(String name, String city) {
+
+        // 두 파라미터 모두 제공된 경우
+        if (name != null && !name.isEmpty() && city != null && !city.isEmpty()) {
+            return placeRepository.findByPlaceNameContainingIgnoreCaseAndCityNameContainingIgnoreCase(name, city);
+        }
+        // name만 제공된 경우
+        else if (name != null && !name.isEmpty()) {
+            return placeRepository.findByPlaceNameContainingIgnoreCase(name);
+        }
+        // city만 제공된 경우
+        else if (city != null && !city.isEmpty()) {
+            return placeRepository.findByCityNameContainingIgnoreCase(city);
+        }
+        // 둘 다 없으면 전체 조회 또는 빈 리스트 반환
+        return new ArrayList<>();
+
     }
 }

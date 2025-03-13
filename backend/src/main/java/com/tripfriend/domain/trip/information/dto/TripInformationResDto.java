@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class TripInformationResDto {
+    private Long tripInformationId;
     private Long placeId;
     private String cityName;
     private String placeName;
@@ -24,6 +25,7 @@ public class TripInformationResDto {
     private boolean isVisited;
 
     public TripInformationResDto(TripInformation tripInformation) {
+        this.tripInformationId = tripInformation.getId();
         this.placeId = tripInformation.getPlace().getId();
         this.cityName = tripInformation.getPlace().getCityName();
         this.placeName = tripInformation.getPlace().getPlaceName();

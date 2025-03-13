@@ -62,17 +62,18 @@ public class PlaceController {
         return new RsData<>("200", "도시 목록 조회 성공", cities);
     }
 
-    // 특정 여행지 조회 - 단건 조회
-    @GetMapping("/{id}")
-    @Operation(summary = "여행지 조회")
-    public RsData<PlaceResDto> getPlace(@Parameter(description = "여행지 ID", required = true, example = "1")
-                                        @PathVariable Long id) {
-        Place place = placeService.getPlace(id);
-        PlaceResDto placeResDto = new PlaceResDto(place);
+    // 여행지 검색
+    @GetMapping("/search")
+    @Operation(summary = "여행지 검색", description = "사용자 입력한 장소명과/또는 도시명으로 검색하여 일치하는 여행지 정보를 반환합니다.")
+    public RsData<List<PlaceResDto>> searchPlace(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String city) {
+        List<Place> places = placeService.searchPlace(name, city);
+        List<PlaceResDto> placeResDtos = places.stream().map(PlaceResDto::new).toList();
         return new RsData<>(
-                "200-3",
-                "여행지가 성공적으로 조회되었습니다.",
-                placeResDto
+                "200-6",
+                "여행지 검색 성공",
+                placeResDtos
         );
     }
 

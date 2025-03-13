@@ -117,6 +117,7 @@ public class TripScheduleService {
                     Place place = placeRepository.findById(tripInfo.getPlaceId())
                             .orElseThrow(() -> new ServiceException("404-2", "해당 장소가 존재하지 않습니다."));
                     return new TripInformationResDto(
+                            tripInfo.getTripInformationId(),
                             tripInfo.getPlaceId(),
                             place.getCityName(),
                             place.getPlaceName(),
