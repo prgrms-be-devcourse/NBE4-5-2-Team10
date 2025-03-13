@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, ChangeEvent } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 
 interface TripInformation {
-  tripInformationId: number; // 추가: 고유 식별자
+  tripInformationId: number; // 고유 식별자
   placeId: number;
   cityName: string;
   placeName: string;
@@ -60,7 +60,7 @@ export default function ClientPage() {
           `http://localhost:8080/trip/schedule/my-schedules/${id}`,
           {
             method: "GET",
-            credentials: "include", // 쿠키 포함
+            credentials: "include",
             headers: {
               Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
@@ -87,7 +87,47 @@ export default function ClientPage() {
     fetchSchedule();
   }, [id]);
 
-  // 세부 일정 삭제 함수
+  // 방문 여부 업데이트 함수 (백엔드 /trip/information/update-visited 호출)
+  const updateVisitedStatus = async (
+    tripInformationId: number,
+    newStatus: boolean
+  ) => {
+    const token = localStorage.getItem("accessToken");
+    try {
+      const res = await fetch(
+        `http://localhost:8080/trip/information/update-visited`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            tripInformationId,
+            isVisited: newStatus,
+          }),
+        }
+      );
+      if (!res.ok) {
+        throw new Error("방문 여부 업데이트에 실패했습니다.");
+      }
+      // 업데이트 성공하면 로컬 상태 갱신
+      setSchedule((prevSchedules) =>
+        prevSchedules.map((sch) => ({
+          ...sch,
+          tripInformations: sch.tripInformations?.map((info) =>
+            info.tripInformationId === tripInformationId
+              ? { ...info, visited: newStatus }
+              : info
+          ),
+        }))
+      );
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "알 수 없는 오류");
+    }
+  };
+
+  // 세부 일정 삭제 함수 (DELETE /trip/information/{tripInformationId})
   const handleDeleteTripInfo = async (tripInformationId: number) => {
     const token = localStorage.getItem("accessToken");
     try {
@@ -103,7 +143,7 @@ export default function ClientPage() {
       );
       if (!res.ok) throw new Error("세부 일정 삭제 실패");
       alert("세부 일정 삭제 성공");
-      // 삭제된 항목 제거 후 상태 갱신
+      // 상태 업데이트: 삭제된 항목 제거
       setSchedule((prev) =>
         prev.map((sch) => ({
           ...sch,
@@ -190,13 +230,19 @@ export default function ClientPage() {
                     <p className="text-md text-gray-600">
                       <span className="font-semibold">메모:</span> {info.notes}
                     </p>
-                    <p
-                      className={`text-md font-bold ${
-                        info.visited ? "text-green-600" : "text-red-600"
-                      }`}
-                    >
+                    <label className="flex items-center gap-2 mt-2">
+                      <input
+                        type="checkbox"
+                        checked={info.visited}
+                        onChange={(e) =>
+                          updateVisitedStatus(
+                            info.tripInformationId,
+                            e.target.checked
+                          )
+                        }
+                      />
                       {info.visited ? "✅ 방문 완료" : "❌ 방문 예정"}
-                    </p>
+                    </label>
                     <div className="flex gap-2 mt-2">
                       <button
                         onClick={() =>
