@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -23,18 +24,18 @@ public class TripInformationController {
 
     // 세부 일정 조회
     @GetMapping("/{id}")
-    public RsData<TripInformationResDto> getTripInformation(@PathVariable Long tripInfoId,
-                                                            @RequestHeader("Authorization") String token) {
+    @Transactional
+    public RsData<TripInformationResDto> getTripInformation(
+            @PathVariable Long id,
+            @RequestHeader("Authorization") String token) {
 
-        TripInformation tripInformation = tripInformationService.getTripInformation(tripInfoId,token);
+        TripInformation tripInformation = tripInformationService.getTripInformation(id, token);
         TripInformationResDto infoDto = new TripInformationResDto(tripInformation);
         return new RsData<>(
                 "200-1",
                 "여행 정보 조회 성공",
                 infoDto
-
         );
-
     }
 
     // 특정 여행 정보를 수정
@@ -43,10 +44,11 @@ public class TripInformationController {
             @PathVariable Long tripInfoId,
             @RequestBody @Valid TripInformationUpdateReqDto request) {
 
+        request.setTripInformationId(tripInfoId);
         TripInformation updatedTripInfo = tripInformationService.updateTripInformation(tripInfoId, request);
         TripInformationResDto resDto = new TripInformationResDto(updatedTripInfo);// 반환 DTO
         return new RsData<>(
-                "200-2",
+                "200-3",
                 "여행 정보가 성공적으로 수정되었습니다.",
                 resDto
         );
@@ -59,7 +61,7 @@ public class TripInformationController {
             @RequestHeader("Authorization") String token) {
         TripInformationResDto resDto = tripInformationService.addTripInformation(reqDto, token);
         return new RsData<>(
-                "200",
+                "200-2",
                 "세부 일정 등록 성공",
                 resDto
         );
@@ -72,7 +74,7 @@ public class TripInformationController {
             @RequestHeader("Authorization") String token) {
         tripInformationService.deleteTripInformation(tripInformationId, token);
         return new RsData<>(
-                "200",
+                "200-4",
                 "세부 일정 삭제 성공"
         );
     }
@@ -83,7 +85,7 @@ public class TripInformationController {
             @Valid @RequestBody VisitedReqDto reqDto,
             @RequestHeader("Authorization") String token) {
         tripInformationService.updateVisited(reqDto, token);
-        return new RsData<>("200",
+        return new RsData<>("200-5",
                 "방문 여부 업데이트 성공"
         );
     }

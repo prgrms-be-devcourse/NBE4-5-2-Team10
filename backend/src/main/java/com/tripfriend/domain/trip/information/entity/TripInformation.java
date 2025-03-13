@@ -65,7 +65,6 @@ public class TripInformation {
 
     public void setVisited(boolean isVisited){this.isVisited = isVisited;}
 
-
     // 여행 정보 수정 메서드
     public void updateTripInformation(TripInformationUpdateReqDto updateDto){
         this.visitTime = updateDto.getVisitTime();

@@ -179,8 +179,8 @@ public class TripInformationService {
     }
 
     // 세부 일정 조회
-    public TripInformation getTripInformation(Long tripInfoId, String token) {
-        TripInformation tripInformation = checkInfo(tripInfoId, token);
+    public TripInformation getTripInformation(Long id, String token) {
+        TripInformation tripInformation = checkInfo(id, token);
         return tripInformation;
     }
 }
