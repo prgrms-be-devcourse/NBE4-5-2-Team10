@@ -1,22 +1,36 @@
 export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
   let token = localStorage.getItem("accessToken");
 
-  const response = await fetch(url, {
+  // 기본 요청 옵션 설정
+  const fetchOptions: RequestInit = {
     ...options,
     headers: {
       ...options.headers,
-      Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
-  });
+  };
 
-  // 액세스 토큰 만료 시 자동 갱신
-  if (response.status === 401) {
+  // 토큰이 존재하면 Authorization 헤더 추가
+  if (token) {
+    fetchOptions.headers = {
+      ...fetchOptions.headers,
+      Authorization: `Bearer ${token}`,
+    };
+  }
+
+  const response = await fetch(url, fetchOptions);
+
+  // 액세스 토큰 만료 시 자동 갱신 처리
+  if (response.status === 401 && token) {
     console.warn("🔄 액세스 토큰 만료됨, 리프레시 시도 중...");
     token = await refreshAccessToken();
 
-    if (!token) throw new Error("로그인이 필요합니다.");
+    if (!token) {
+      console.warn("🚫 리프레시 실패, 로그인 필요.");
+      return response; // 로그인 필요 시 기존 응답 그대로 반환
+    }
 
+    // 새로운 토큰으로 재시도
     return fetch(url, {
       ...options,
       headers: {
