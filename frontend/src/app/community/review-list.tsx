@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { reviewAPI, placeAPI } from "./utils/api"
 
 interface Review {
   reviewId: number
@@ -17,11 +18,17 @@ interface Review {
   content: string
   rating: number
   createdAt: string
+  updatedAt?: string
   nickname: string
   commentCount: number
   viewCount: number
   placeId: number
   placeName?: string
+}
+
+interface Place {
+  id: number
+  name: string
 }
 
 export default function ReviewList() {
@@ -34,140 +41,102 @@ export default function ReviewList() {
 
   const [sortOption, setSortOption] = useState(searchParams.get("sort") || "newest")
   const [searchQuery, setSearchQuery] = useState(searchParams.get("query") || "")
-  const [destinationFilter, setDestinationFilter] = useState(searchParams.get("destination") || "")
-  const [destinations, setDestinations] = useState<{ id: number; name: string }[]>([])
+  const [destinationFilter, setDestinationFilter] = useState(searchParams.get("destination") || "all")
+  const [destinations, setDestinations] = useState<Place[]>([])
 
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const itemsPerPage = 6
 
-  // Fetch reviews based on filters
+  // 장소 목록 가져오기
+  useEffect(() => {
+    const fetchPlaces = async () => {
+      try {
+        const places = await placeAPI.getPlaces()
+        setDestinations(places)
+      } catch (err) {
+        console.error("Error fetching places:", err)
+      }
+    }
+
+    fetchPlaces()
+  }, [])
+
+  // 리뷰 목록 가져오기
   useEffect(() => {
     const fetchReviews = async () => {
       setLoading(true)
       try {
-        // In a real app, you would use these parameters in your API call
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"
-        const url = new URL(`${apiUrl}/review`)
+        const params: any = { sort: sortOption }
 
-        if (sortOption) url.searchParams.append("sort", sortOption)
-        if (searchQuery) url.searchParams.append("keyword", searchQuery)
-        if (destinationFilter) url.searchParams.append("placeId", destinationFilter)
+        if (searchQuery) {
+          params.keyword = searchQuery
+        }
 
-        // For demo purposes, we'll use mock data
-        // const response = await fetch(url.toString());
-        // const data = await response.json();
+        if (destinationFilter && destinationFilter !== "all") {
+          params.placeId = Number.parseInt(destinationFilter)
+        }
 
-        // Mock data for demonstration
-        const mockReviews = Array.from({ length: 15 }, (_, i) => ({
-          reviewId: i + 1,
-          title: `${i % 3 === 0 ? "제주도" : i % 3 === 1 ? "방콕" : "오사카"} 여행 후기 ${i + 1}`,
-          content: `${i % 3 === 0 ? "제주도" : i % 3 === 1 ? "방콕" : "오사카"}에서의 멋진 여행 경험을 공유합니다. 현지 음식과 문화, 그리고 아름다운 풍경까지 모든 것이 완벽했습니다.`,
-          rating: Math.floor(Math.random() * 3) + 3, // 3-5 rating
-          createdAt: new Date(Date.now() - i * 86400000).toISOString(), // Past dates
-          nickname: `여행자${i + 1}`,
-          commentCount: Math.floor(Math.random() * 10),
-          viewCount: Math.floor(Math.random() * 100) + 50,
-          placeId: (i % 3) + 1,
-          placeName: i % 3 === 0 ? "제주도" : i % 3 === 1 ? "방콕" : "오사카",
-        }))
+        const reviewsData = await reviewAPI.getReviews(params)
 
-        // Sort the mock data based on the sort option
-        const sortedReviews = sortMockReviews(mockReviews, sortOption)
+        // 장소 이름 매핑
+        const reviewsWithPlaceNames = reviewsData.map((review: any) => {
+          const place = destinations.find((d) => d.id === review.placeId)
+          return {
+            ...review,
+            placeName: place ? place.name : "알 수 없는 장소",
+          }
+        })
 
-        // Filter by search query if provided
-        const filteredReviews = searchQuery
-          ? sortedReviews.filter(
-              (review) =>
-                review.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                review.content.toLowerCase().includes(searchQuery.toLowerCase()),
-            )
-          : sortedReviews
-
-        // 여행지 필터링 부분 
-        const destinationFilteredReviews = destinationFilter && destinationFilter !== "all"
-          ? filteredReviews.filter((review) => review.placeId.toString() === destinationFilter)
-          : filteredReviews;
-
-
-        setReviews(destinationFilteredReviews)
-        setTotalPages(Math.ceil(destinationFilteredReviews.length / itemsPerPage))
-
-        // Mock destinations for the filter dropdown
-        setDestinations([
-          { id: 1, name: "제주도" },
-          { id: 2, name: "방콕" },
-          { id: 3, name: "오사카" },
-          { id: 4, name: "파리" },
-          { id: 5, name: "뉴욕" },
-        ])
-      } catch (err) {
+        setReviews(reviewsWithPlaceNames)
+        setTotalPages(Math.ceil(reviewsWithPlaceNames.length / itemsPerPage))
+      } catch (err: any) {
         console.error("Error fetching reviews:", err)
-        setError("리뷰를 불러오는 중 오류가 발생했습니다.")
+        setError(err.message || "리뷰를 불러오는 중 오류가 발생했습니다.")
       } finally {
         setLoading(false)
       }
     }
 
     fetchReviews()
-  }, [sortOption, searchQuery, destinationFilter])
+  }, [sortOption, searchQuery, destinationFilter, destinations])
 
-  // Helper function to sort mock reviews
-  const sortMockReviews = (reviews: Review[], sortOption: string) => {
-    switch (sortOption) {
-      case "oldest":
-        return [...reviews].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-      case "highest_rating":
-        return [...reviews].sort((a, b) => b.rating - a.rating)
-      case "lowest_rating":
-        return [...reviews].sort((a, b) => a.rating - b.rating)
-      case "most_comments":
-        return [...reviews].sort((a, b) => b.commentCount - a.commentCount)
-      case "most_viewed":
-        return [...reviews].sort((a, b) => b.viewCount - a.viewCount)
-      case "newest":
-      default:
-        return [...reviews].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    }
-  }
-
-  // Handle search submission
+  // 검색 제출 처리
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     updateUrlParams()
   }
 
-  // Update URL parameters for bookmarking and sharing
+  // URL 파라미터 업데이트
   const updateUrlParams = () => {
     const params = new URLSearchParams()
     if (sortOption) params.set("sort", sortOption)
     if (searchQuery) params.set("query", searchQuery)
-    if (destinationFilter) params.set("destination", destinationFilter)
-
+    if (destinationFilter && destinationFilter !== "all") params.set("destination", destinationFilter)
     router.push(`/community?${params.toString()}`)
   }
 
-  // Get paginated reviews
+  // 페이지네이션된 리뷰 가져오기
   const getPaginatedReviews = () => {
     const startIndex = (currentPage - 1) * itemsPerPage
     const endIndex = startIndex + itemsPerPage
     return reviews.slice(startIndex, endIndex)
   }
 
-  // Handle pagination
+  // 페이지 변경 처리
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
-  // Render star rating
+  // 별점 렌더링
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }).map((_, i) => (
       <Star key={i} className={`h-4 w-4 ${i < rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`} />
     ))
   }
 
-  // Format date
+  // 날짜 포맷팅
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}`
@@ -183,7 +152,7 @@ export default function ReviewList() {
 
   return (
     <div>
-      {/* Filter and Search Section */}
+      {/* 필터 및 검색 섹션 */}
       <div className="bg-white rounded-lg shadow-md p-4 mb-6">
         <div className="flex flex-col md:flex-row gap-4 mb-4">
           <div className="flex-1">
@@ -202,7 +171,7 @@ export default function ReviewList() {
                 <SelectItem value="oldest">오래된순</SelectItem>
                 <SelectItem value="highest_rating">평점 높은순</SelectItem>
                 <SelectItem value="lowest_rating">평점 낮은순</SelectItem>
-                <SelectItem value="most_comments">댓글 많은순</SelectItem>
+                <SelectItem value="comments">댓글 많은순</SelectItem>
                 <SelectItem value="most_viewed">조회수 높은순</SelectItem>
               </SelectContent>
             </Select>
@@ -246,7 +215,7 @@ export default function ReviewList() {
         </form>
       </div>
 
-      {/* Review List */}
+      {/* 리뷰 목록 */}
       {reviews.length === 0 ? (
         <div className="text-center py-10 bg-white rounded-lg shadow-md">
           <p className="text-gray-500">검색 결과가 없습니다.</p>
@@ -288,7 +257,7 @@ export default function ReviewList() {
             ))}
           </div>
 
-          {/* Pagination */}
+          {/* 페이지네이션 */}
           {totalPages > 1 && (
             <div className="flex justify-center items-center gap-2 my-8">
               <Button
@@ -324,7 +293,7 @@ export default function ReviewList() {
         </>
       )}
 
-      {/* Write Review Button */}
+      {/* 리뷰 작성 버튼 */}
       <div className="fixed bottom-8 right-8">
         <Button onClick={() => router.push("/community/write")} className="rounded-full h-14 w-14 shadow-lg">
           <PenSquare className="h-6 w-6" />
