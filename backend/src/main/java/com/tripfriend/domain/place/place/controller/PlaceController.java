@@ -25,8 +25,8 @@ public class PlaceController {
 
     // 여행지 등록
     @PostMapping
-    @Operation(summary = "여행지 등록")
-    public RsData<PlaceResDto> createPlace(@RequestBody PlaceCreateReqDto req) {
+    @Operation(summary = "여행지 등록", description = "새로운 여행지를 등록합니다.")
+    public RsData<PlaceResDto> createPlace(@RequestBody(required = false) PlaceCreateReqDto req) {
 
         Place savePlace = placeService.createPlace(req);
         PlaceResDto placeResDto = new PlaceResDto(savePlace);
@@ -39,7 +39,7 @@ public class PlaceController {
 
     // 전체 여행지 조회
     @GetMapping
-    @Operation(summary = "전체 여행지 조회")
+    @Operation(summary = "전체 여행지 조회", description = "모든 여행지를 조회합니다.")
     public RsData<List<PlaceResDto>> getAllPlaces(@RequestParam(required = false) String cityName) {
         List<Place> places;
         if (cityName != null && !cityName.isEmpty()) {
@@ -55,20 +55,25 @@ public class PlaceController {
         );
     }
 
-    // 도시 목록(distinct cityName) 조회
+    // 등록된 도시 목록 조회
     @GetMapping("/cities")
+    @Operation(summary = "도시 목록 조회", description = "현재 등록된 도시 목록을 반환합니다.")
     public RsData<List<String>> getDistinctCities() {
         List<String> cities = placeService.getDistinctCities();
-        return new RsData<>("200", "도시 목록 조회 성공", cities);
+        return new RsData<>(
+                "200-7",
+                "도시 목록 조회 성공",
+                cities
+        );
     }
 
     // 여행지 검색
     @GetMapping("/search")
-    @Operation(summary = "여행지 검색", description = "사용자 입력한 장소명과/또는 도시명으로 검색하여 일치하는 여행지 정보를 반환합니다.")
+    @Operation(summary = "여행지 검색", description = "장소명 또는 도시명으로 검색하여 일치하는 여행지 정보를 반환합니다.")
     public RsData<List<PlaceResDto>> searchPlace(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String city) {
-        List<Place> places = placeService.searchPlace(name, city);
+            @RequestParam(required = false) String cityName,
+            @RequestParam(required = false) String placeName) {
+        List<Place> places = placeService.searchPlace(placeName, cityName);
         List<PlaceResDto> placeResDtos = places.stream().map(PlaceResDto::new).toList();
         return new RsData<>(
                 "200-6",
@@ -79,7 +84,7 @@ public class PlaceController {
 
     // 특정 여행지 삭제
     @DeleteMapping("/{id}")
-    @Operation(summary = "여행지 삭제")
+    @Operation(summary = "여행지 삭제", description = "특정 여행지를 삭제합니다.")
     public RsData<Void> deletePlace(@Parameter(description = "여행지 ID", required = true, example = "1")
                                     @PathVariable Long id) {
         Place place = placeService.getPlace(id);
@@ -92,7 +97,7 @@ public class PlaceController {
 
     // 특정 여행지 정보 수정
     @PutMapping("/{id}")
-    @Operation(summary = "여행지 정보 수정")
+    @Operation(summary = "여행지 정보 수정", description = "특정 여행지의 정보를 수정할 수 있습니다.")
     public RsData<PlaceResDto> updatePlace(@Parameter(description = "여행지 ID", required = true, example = "1")
                                            @PathVariable Long id,
                                            @RequestBody PlaceUpdateReqDto placeUpdateReqDto) {
