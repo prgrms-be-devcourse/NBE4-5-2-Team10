@@ -135,8 +135,8 @@ export default function Header() {
           <Link href="/community" className="text-gray-700 hover:text-blue-600">
             커뮤니티
           </Link>
-          <Link href="/about" className="text-gray-700 hover:text-blue-600">
-            서비스 소개
+          <Link href="/notice" className="text-gray-700 hover:text-blue-600">
+            공지사항
           </Link>
           <Link href="/qna" className="text-gray-700 hover:text-blue-600">
             Q&A
