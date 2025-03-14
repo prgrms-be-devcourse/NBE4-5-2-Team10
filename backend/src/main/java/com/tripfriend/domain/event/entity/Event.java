@@ -35,4 +35,17 @@ public class Event {
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setEventDate(LocalDate eventDate) {
+        this.eventDate = eventDate;
+    }
+
+
 }

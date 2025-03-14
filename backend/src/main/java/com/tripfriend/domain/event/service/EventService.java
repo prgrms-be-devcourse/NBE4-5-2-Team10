@@ -49,4 +49,25 @@ public class EventService {
     public void delete(Long id) {
         eventRepository.deleteById(id);
     }
+
+    public EventResponse update(Long id, EventRequest request) {
+        Event event = eventRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("이벤트를 찾을 수 없습니다."));
+
+        event.setTitle(request.getTitle());
+        event.setDescription(request.getDescription());
+        event.setEventDate(request.getEventDate());
+        // 수정 시간 자동 업데이트
+
+        Event updated = eventRepository.save(event);
+
+        return EventResponse.builder()
+                .id(updated.getId())
+                .title(updated.getTitle())
+                .description(updated.getDescription())
+                .eventDate(updated.getEventDate())
+                .createdAt(updated.getCreatedAt())
+                .build();
+    }
+
 }
