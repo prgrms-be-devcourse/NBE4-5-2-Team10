@@ -157,6 +157,12 @@ export default function ClientPage() {
 
   return (
     <div className="max-w-3xl mx-auto p-6">
+      <button
+        className="mb-4 px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition"
+        onClick={() => router.push("/member/my")}
+      >
+        ← 뒤로 가기
+      </button>
       <h1 className="text-3xl font-bold mb-6">여행 일정 등록</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* 기본 일정 정보 */}

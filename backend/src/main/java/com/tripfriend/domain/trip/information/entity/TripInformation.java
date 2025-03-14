@@ -63,6 +63,7 @@ public class TripInformation {
         this.place = place;
     }
 
+    public void setVisited(boolean isVisited){this.isVisited = isVisited;}
 
     // 여행 정보 수정 메서드
     public void updateTripInformation(TripInformationUpdateReqDto updateDto){

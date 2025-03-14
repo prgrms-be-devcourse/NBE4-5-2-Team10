@@ -69,6 +69,33 @@ const ClientPage = () => {
     fetchSchedules();
   }, []);
 
+  // 여행 일정 및 세부일정 삭제
+  const handleDelete = async (scheduleId: number) => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+    if (!confirm("정말 삭제하시겠습니까?")) return;
+    try {
+      const response = await fetch(
+        `http://localhost:8080/trip/schedule/my-schedules/${scheduleId}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (!response.ok) {
+        const errorResult = await response.json();
+        throw new Error(errorResult.msg || "삭제 실패");
+      }
+      setSchedules(schedules.filter((s) => s.id !== scheduleId));
+      alert("일정이 삭제되었습니다.");
+    } catch (error: any) {
+      alert("삭제 중 오류 발생: " + error.message);
+    }
+  };
+
   if (loading) return <p>Loading schedules...</p>;
   if (error) return <p>Error: {error}</p>;
 
@@ -106,8 +133,11 @@ const ClientPage = () => {
                 >
                   상세 보기
                 </button>
-                <button className="bg-gray-500 text-white px-3 py-2 rounded">
-                  일정 수정
+                <button
+                  className="bg-gray-500 text-white px-3 py-2 rounded"
+                  onClick={() => handleDelete(schedule.id)}
+                >
+                  일정 삭제
                 </button>
               </div>
             </div>

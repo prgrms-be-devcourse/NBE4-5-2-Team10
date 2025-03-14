@@ -16,4 +16,10 @@ public interface PlaceRepository extends JpaRepository<Place, Long> {
     // 도시 목록 중복 제거
     @Query("SELECT DISTINCT p.cityName FROM Place p")
     List<String> findDistinctCityNames();
+
+    List<Place> findByPlaceNameContainingIgnoreCaseAndCityNameContainingIgnoreCase(String name, String city);
+
+    List<Place> findByPlaceNameContainingIgnoreCase(String name);
+
+    List<Place> findByCityNameContainingIgnoreCase(String city);
 }
