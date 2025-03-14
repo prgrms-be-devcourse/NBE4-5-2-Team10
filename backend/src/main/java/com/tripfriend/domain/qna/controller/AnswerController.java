@@ -4,6 +4,7 @@ import com.tripfriend.domain.member.member.entity.Member;
 import com.tripfriend.domain.member.member.service.AuthService;
 import com.tripfriend.domain.qna.dto.AnswerDto;
 import com.tripfriend.domain.qna.entity.Answer;
+import com.tripfriend.domain.qna.repository.AnswerRepository;
 import com.tripfriend.domain.qna.service.AnswerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -61,4 +62,8 @@ public class AnswerController {
         answerService.deleteAnswer(answerId, member);
         return ResponseEntity.noContent().build();
     }
+
+
+
+
 }

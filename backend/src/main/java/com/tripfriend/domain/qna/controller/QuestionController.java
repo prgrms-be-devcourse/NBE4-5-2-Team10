@@ -6,6 +6,7 @@ import com.tripfriend.domain.qna.dto.QuestionDto;
 import com.tripfriend.domain.qna.entity.Question;
 import com.tripfriend.domain.qna.repository.QuestionRepository;
 import com.tripfriend.domain.qna.service.QuestionService;
+import com.tripfriend.global.annotation.CheckPermission;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -48,6 +49,7 @@ public class QuestionController {
         questionService.deleteQuestionById(questionId, member);
         return ResponseEntity.noContent().build();
     }
+
 
     //질문생성
     @PostMapping("/question")

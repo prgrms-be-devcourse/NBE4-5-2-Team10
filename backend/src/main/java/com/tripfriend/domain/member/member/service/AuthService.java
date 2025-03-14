@@ -129,4 +129,8 @@ public class AuthService {
         cookie.setSecure(true); // HTTPS 환경에서만 사용 가능
         response.addCookie(cookie);
     }
+    //관리자 여부
+    public boolean isAdmin(Member member) {
+        return member.isAdmin(); //
+    }
 }

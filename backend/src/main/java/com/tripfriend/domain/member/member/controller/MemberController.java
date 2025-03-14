@@ -19,7 +19,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Tag(name = "Member API", description = "회원관련 기능을 제공합니다.")
 @RestController
@@ -33,9 +35,15 @@ public class MemberController {
 
     //회원정보 조회
     @GetMapping("/me")
-    public ResponseEntity<MemberDto> getCurrentUser(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<Map<String, Object>> getCurrentUser(@RequestHeader("Authorization") String token) {
         Member member = authService.getLoggedInMember(token);
-        return ResponseEntity.ok(new MemberDto(member));
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("id", member.getId());
+        response.put("username", member.getUsername());
+        response.put("isAdmin", member.isAdmin()); // 관리자 여부
+
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "회원가입")
