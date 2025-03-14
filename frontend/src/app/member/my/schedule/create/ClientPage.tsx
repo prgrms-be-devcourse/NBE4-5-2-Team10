@@ -15,7 +15,7 @@ interface TripInformation {
   transportation: string;
   cost: number;
   notes: string;
-  priority: number;
+  //priority: number;
 }
 
 interface TripSchedule {
@@ -101,7 +101,7 @@ export default function ClientPage() {
         transportation: "",
         cost: 0,
         notes: "",
-        priority: 0,
+        //priority: 0,
       },
     ]);
   };
@@ -354,7 +354,7 @@ export default function ClientPage() {
                       rows={2}
                     />
                   </div>
-                  <div>
+                  {/* <div>
                     <label className="block mb-1">우선순위</label>
                     <input
                       type="number"
@@ -368,7 +368,7 @@ export default function ClientPage() {
                       }
                       className="w-full border rounded p-2"
                     />
-                  </div>
+                  </div> */}
                 </div>
               </div>
             ))

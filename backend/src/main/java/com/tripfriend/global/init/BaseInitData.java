@@ -387,9 +387,9 @@ public class BaseInitData implements CommandLineRunner {
             tripScheduleRepository.save(tripSchedule1);
 
             List<TripInformation> tripInformations1 = List.of(
-                    createTripInformation(tripSchedule1, 1L, LocalDateTime.of(2025, 4, 10, 9, 0), Transportation.SUBWAY, 3000, 1, "경복궁에서 한복 체험"),
-                    createTripInformation(tripSchedule1, 4L, LocalDateTime.of(2025, 4, 10, 12, 0), Transportation.WALK, 0, 2, "명동교자에서 점심"),
-                    createTripInformation(tripSchedule1, 3L, LocalDateTime.of(2025, 4, 10, 16, 0), Transportation.BUS, 2000, 3, "스타벅스 더종로점에서 카페 타임")
+                    createTripInformation(tripSchedule1, 1L, LocalDateTime.of(2025, 4, 10, 9, 0), Transportation.SUBWAY, 3000, "경복궁에서 한복 체험"),
+                    createTripInformation(tripSchedule1, 4L, LocalDateTime.of(2025, 4, 10, 12, 0), Transportation.WALK, 0,"명동교자에서 점심"),
+                    createTripInformation(tripSchedule1, 3L, LocalDateTime.of(2025, 4, 10, 16, 0), Transportation.BUS, 2000, "스타벅스 더종로점에서 카페 타임")
             );
             tripInformationRepository.saveAll(tripInformations1);
             tripInformations1.forEach(tripSchedule1::addTripInfromation);
@@ -405,9 +405,9 @@ public class BaseInitData implements CommandLineRunner {
             tripScheduleRepository.save(tripSchedule2);
 
             List<TripInformation> tripInformations2 = List.of(
-                    createTripInformation(tripSchedule2, 5L, LocalDateTime.of(2025, 5, 15, 10, 0), Transportation.WALK, 0, 1, "해운대 해수욕장에서 바다 산책"),
-                    createTripInformation(tripSchedule2, 6L, LocalDateTime.of(2025, 5, 15, 19, 0), Transportation.TAXI, 10000, 2, "광안대교 야경 감상"),
-                    createTripInformation(tripSchedule2, 8L, LocalDateTime.of(2025, 5, 16, 12, 0), Transportation.BUS, 2500, 3, "초량밀면에서 부산 밀면 맛보기")
+                    createTripInformation(tripSchedule2, 5L, LocalDateTime.of(2025, 5, 15, 10, 0), Transportation.WALK, 0, "해운대 해수욕장에서 바다 산책"),
+                    createTripInformation(tripSchedule2, 6L, LocalDateTime.of(2025, 5, 15, 19, 0), Transportation.TAXI, 10000, "광안대교 야경 감상"),
+                    createTripInformation(tripSchedule2, 8L, LocalDateTime.of(2025, 5, 16, 12, 0), Transportation.BUS, 2500, "초량밀면에서 부산 밀면 맛보기")
             );
             tripInformationRepository.saveAll(tripInformations2);
             tripInformations2.forEach(tripSchedule2::addTripInfromation);
@@ -423,9 +423,9 @@ public class BaseInitData implements CommandLineRunner {
             tripScheduleRepository.save(tripSchedule3);
 
             List<TripInformation> tripInformations3 = List.of(
-                    createTripInformation(tripSchedule3, 9L, LocalDateTime.of(2025, 6, 20, 8, 30), Transportation.CAR, 20000, 1, "성산일출봉에서 일출 보기"),
-                    createTripInformation(tripSchedule3, 10L, LocalDateTime.of(2025, 6, 21, 10, 0), Transportation.BUS, 5000, 2, "우도에서 자전거 타기"),
-                    createTripInformation(tripSchedule3, 11L, LocalDateTime.of(2025, 6, 21, 18, 30), Transportation.TAXI, 15000, 3, "제주 흑돼지 거리에서 저녁 식사")
+                    createTripInformation(tripSchedule3, 9L, LocalDateTime.of(2025, 6, 20, 8, 30), Transportation.CAR, 20000, "성산일출봉에서 일출 보기"),
+                    createTripInformation(tripSchedule3, 10L, LocalDateTime.of(2025, 6, 21, 10, 0), Transportation.BUS, 5000, "우도에서 자전거 타기"),
+                    createTripInformation(tripSchedule3, 11L, LocalDateTime.of(2025, 6, 21, 18, 30), Transportation.TAXI, 15000, "제주 흑돼지 거리에서 저녁 식사")
             );
             tripInformationRepository.saveAll(tripInformations3);
             tripInformations3.forEach(tripSchedule3::addTripInfromation);
@@ -441,9 +441,9 @@ public class BaseInitData implements CommandLineRunner {
             tripScheduleRepository.save(tripSchedule4);
 
             List<TripInformation> tripInformations4 = List.of(
-                    createTripInformation(tripSchedule4, 12L, LocalDateTime.of(2025, 7, 5, 11, 0), Transportation.WALK, 0, 1, "속초 중앙시장에서 다양한 먹거리 탐방"),
-                    createTripInformation(tripSchedule4, 13L, LocalDateTime.of(2025, 7, 6, 9, 0), Transportation.BUS, 4000, 2, "설악산 국립공원 등산"),
-                    createTripInformation(tripSchedule4, 14L, LocalDateTime.of(2025, 7, 6, 18, 0), Transportation.TAXI, 8000, 3, "봉포머구리집에서 신선한 해산물 맛보기")
+                    createTripInformation(tripSchedule4, 12L, LocalDateTime.of(2025, 7, 5, 11, 0), Transportation.WALK, 0, "속초 중앙시장에서 다양한 먹거리 탐방"),
+                    createTripInformation(tripSchedule4, 13L, LocalDateTime.of(2025, 7, 6, 9, 0), Transportation.BUS, 4000, "설악산 국립공원 등산"),
+                    createTripInformation(tripSchedule4, 14L, LocalDateTime.of(2025, 7, 6, 18, 0), Transportation.TAXI, 8000, "봉포머구리집에서 신선한 해산물 맛보기")
             );
             tripInformationRepository.saveAll(tripInformations4);
             tripInformations4.forEach(tripSchedule4::addTripInfromation);
@@ -455,7 +455,7 @@ public class BaseInitData implements CommandLineRunner {
     }
 
     // 여행 정보 생성
-    private TripInformation createTripInformation(TripSchedule tripSchedule, Long placeId, LocalDateTime visitTime, Transportation transportation, int cost, int priority, String notes) {
+    private TripInformation createTripInformation(TripSchedule tripSchedule, Long placeId, LocalDateTime visitTime, Transportation transportation, int cost, String notes) {
         Place place = placeRepository.findById(placeId).orElseThrow(
                 () -> new ServiceException("404-2", "해당 장소가 존재하지 않습니다. ID: " + placeId)
         );
@@ -468,7 +468,7 @@ public class BaseInitData implements CommandLineRunner {
                 .transportation(transportation) // 교통 수단 설정
                 .cost(cost) // 비용 설정
                 .notes(notes) // 방문 목적 및 기타 정보 추가
-                .priority(priority) // 우선순위 설정
+                //.priority(priority) // 우선순위 설정
                 .isVisited(false) // 기본값은 방문하지 않음
                 .build();
     }

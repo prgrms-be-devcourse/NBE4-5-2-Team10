@@ -126,7 +126,7 @@ public class TripScheduleService {
                             tripInfo.getTransportation(),
                             tripInfo.getCost(),
                             tripInfo.getNotes(),
-                            tripInfo.getPriority(),
+                            //tripInfo.getPriority(),
                             false
                     );
                 })

@@ -20,7 +20,7 @@ interface TripInformation {
   transportation: string;
   cost: number;
   notes: string;
-  priority: number;
+  //priority: number;
   visited: boolean;
 }
 
@@ -57,7 +57,7 @@ export default function ClientPage() {
     transportation: "",
     cost: 0,
     notes: "",
-    priority: 0,
+    //priority: 0,
   });
   const [newTripPlaces, setNewTripPlaces] = useState<Place[]>([]);
 
@@ -160,7 +160,7 @@ export default function ClientPage() {
       transportation: newTripInfo.transportation,
       cost: newTripInfo.cost,
       notes: newTripInfo.notes,
-      priority: newTripInfo.priority,
+      //priority: newTripInfo.priority,
     };
     try {
       const res = await fetch("http://localhost:8080/trip/information", {
@@ -192,7 +192,7 @@ export default function ClientPage() {
         transportation: "",
         cost: 0,
         notes: "",
-        priority: 0,
+        //priority: 0,
       });
       setShowNewTripForm(false);
     } catch (err) {
@@ -403,7 +403,7 @@ export default function ClientPage() {
                     rows={2}
                   />
                 </div>
-                <div className="mb-2">
+                {/* <div className="mb-2">
                   <label className="block mb-1">우선순위</label>
                   <input
                     type="number"
@@ -412,7 +412,7 @@ export default function ClientPage() {
                     onChange={handleNewTripInfoChange}
                     className="w-full border rounded p-2"
                   />
-                </div>
+                </div> */}
                 <div className="flex justify-end gap-2">
                   <button
                     type="submit"

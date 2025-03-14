@@ -99,7 +99,7 @@ public class TripInformationService {
                 .transportation(reqDto.getTransportation())
                 .cost(reqDto.getCost())
                 .notes(reqDto.getNotes())
-                .priority(reqDto.getPriority())
+                //.priority(reqDto.getPriority())
                 .build();
         information.setTripSchedule(schedule);
         tripInformationRepository.save(information);
@@ -131,7 +131,7 @@ public class TripInformationService {
                             .transportation(infoReq.getTransportation())
                             .cost(infoReq.getCost())
                             .notes(infoReq.getNotes())
-                            .priority(infoReq.getPriority())
+                            //.priority(infoReq.getPriority())
                             .build();
                 }).collect(Collectors.toList());
 
