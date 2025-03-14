@@ -8,6 +8,7 @@ import com.tripfriend.domain.member.member.repository.MemberRepository;
 import com.tripfriend.global.util.ImageUtil;
 import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -111,12 +112,12 @@ public class MemberService {
     }
 
     @Transactional
-    public void deleteMember(Long id, HttpServletResponse response) {
+    public void deleteMember(Long id, HttpServletRequest request, HttpServletResponse response) {
 
         Member member = memberRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("존재하지 않는 회원입니다."));
 
-        authService.logout(response);
+        authService.logout(request, response);
 
         member.setDeleted(true);
         member.setDeletedAt(LocalDateTime.now());
