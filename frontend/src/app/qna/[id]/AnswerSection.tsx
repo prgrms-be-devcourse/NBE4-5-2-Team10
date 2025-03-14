@@ -15,12 +15,10 @@ export default function AnswerSection({ questionId }: { questionId: number }) {
   const [newAnswer, setNewAnswer] = useState("");
   const [currentUsername, setCurrentUsername] = useState("");
 
-  // 답변 목록 + 현재 로그인 사용자 정보 가져오기
   useEffect(() => {
     const fetchAnswers = async () => {
       try {
         const res = await api.get(`/qna/${questionId}/answers`);
-        console.log("✅ 답변 데이터 구조:", res.data); // 👈 꼭 확인!
         setAnswers(res.data);
       } catch (err) {
         console.error("답변 조회 실패", err);
@@ -30,7 +28,6 @@ export default function AnswerSection({ questionId }: { questionId: number }) {
     const fetchCurrentUser = async () => {
       try {
         const token = localStorage.getItem("accessToken");
-        console.log("accessToken:", token); // ✅ 이거도 찍어보기
         if (!token) return;
 
         const res = await api.get("/member/me", {
@@ -49,10 +46,15 @@ export default function AnswerSection({ questionId }: { questionId: number }) {
     fetchCurrentUser();
   }, [questionId]);
 
-  // 답변 등록 핸들러
   const handleSubmit = async () => {
+    const token = localStorage.getItem("accessToken");
+
+    if (!token) {
+      alert("답변을 작성하려면 로그인해주세요.");
+      return;
+    }
+
     try {
-      const token = localStorage.getItem("accessToken");
       await api.post(
         `/qna/${questionId}/answer`,
         { content: newAnswer },
@@ -71,9 +73,7 @@ export default function AnswerSection({ questionId }: { questionId: number }) {
     }
   };
 
-  // 답변 삭제 핸들러
   const handleDelete = async (answerId: number) => {
-    console.log("넘어온 answerId:", answerId); // ✅ 이거 꼭 찍어보기!
     try {
       const token = localStorage.getItem("accessToken");
       await api.delete(`/qna/answer/${answerId}`, {
@@ -83,7 +83,6 @@ export default function AnswerSection({ questionId }: { questionId: number }) {
       });
 
       const res = await api.get(`/qna/${questionId}/answers`);
-      console.log("답변 목록:", res.data); // ✅ id인지 answerId인지 확인!
       setAnswers(res.data);
     } catch (err) {
       console.error("답변 삭제 실패", err);
@@ -107,10 +106,8 @@ export default function AnswerSection({ questionId }: { questionId: number }) {
 
             {a.memberUsername === currentUsername && (
               <button
-              onClick={() => {
-                console.log("삭제 요청 id:", a.answerId);
-                handleDelete(a.answerId);
-              }}                className="absolute top-2 right-2 text-sm text-red-500 hover:underline"
+                onClick={() => handleDelete(a.answerId)}
+                className="absolute top-2 right-2 text-sm text-red-500 hover:underline"
               >
                 삭제
               </button>
