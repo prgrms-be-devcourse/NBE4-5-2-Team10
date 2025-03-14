@@ -21,5 +21,5 @@ public class TripInformationReqDto {
     private Transportation transportation;
     private int cost;
     private String notes;
-    private int priority;
+    //private int priority;
 }

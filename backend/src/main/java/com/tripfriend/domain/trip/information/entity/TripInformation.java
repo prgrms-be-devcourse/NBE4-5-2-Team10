@@ -48,8 +48,8 @@ public class TripInformation {
     @Column(name = "notes", columnDefinition = "TEXT")
     private String notes; // 메모
 
-    @Column(name = "priority")
-    private Integer priority; // 우선 순위
+//    @Column(name = "priority")
+//    private Integer priority; // 우선 순위
 
     @Column(name = "is_visited", nullable = false)
     @ColumnDefault("false")

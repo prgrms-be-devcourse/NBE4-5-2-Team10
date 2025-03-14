@@ -4,6 +4,9 @@ import com.tripfriend.domain.trip.information.dto.*;
 import com.tripfriend.domain.trip.information.entity.TripInformation;
 import com.tripfriend.domain.trip.information.service.TripInformationService;
 import com.tripfriend.global.dto.RsData;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.Entity;
 import jakarta.validation.Valid;
 import lombok.Getter;
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/trip/information")
+@Tag(name = "TripInformation API", description = "여행 세부 일정 관련 기능을 제공합니다.")
 public class TripInformationController {
     private final TripInformationService tripInformationService;
 
@@ -22,8 +26,12 @@ public class TripInformationController {
     // 세부 일정 조회
     @GetMapping("/{id}")
     @Transactional
+    @Operation(summary = "나의 세부일정 조회", description = "회원 토큰과 세부일정 id를 통해 해당 회원의 세부일정을 조회 할 수 있습니다.")
     public RsData<TripInformationResDto> getTripInformation(
-            @PathVariable Long id,
+            @Parameter(
+                    description = "세부 일정 id",
+                    example = "1"
+            ) @PathVariable Long id,
             @RequestHeader("Authorization") String token) {
 
         TripInformation tripInformation = tripInformationService.getTripInformation(id, token);
@@ -36,14 +44,18 @@ public class TripInformationController {
     }
 
     // 특정 여행 정보를 수정
-    @PutMapping("/{tripInfoId}")
+    @PutMapping("/{id}")
     @Transactional
+    @Operation(summary = "나의 세부일정 수정", description = "회원 토큰과 세부일정 id를 통해 해당 회원의 세부일정을 수정 할 수 있습니다.")
     public RsData<TripInformationResDto> updateTripInformation(
-            @PathVariable Long tripInfoId,
+            @Parameter(
+                    description = "세부 일정 id",
+                    example = "1"
+            ) @PathVariable Long id,
             @RequestBody @Valid TripInformationUpdateReqDto request) {
 
-        request.setTripInformationId(tripInfoId);
-        TripInformation updatedTripInfo = tripInformationService.updateTripInformation(tripInfoId, request);
+        request.setTripInformationId(id);
+        TripInformation updatedTripInfo = tripInformationService.updateTripInformation(id, request);
         TripInformationResDto resDto = new TripInformationResDto(updatedTripInfo);// 반환 DTO
         return new RsData<>(
                 "200-3",
@@ -55,6 +67,7 @@ public class TripInformationController {
     // 세부 일정 등록
     @PostMapping
     @Transactional
+    @Operation(summary = "나의 세부일정 등록", description = "회원 토큰을 확인 하고 세부일정을 등록 할 수 있습니다.")
     public RsData<TripInformationResDto> createTripInformation(
             @Valid @RequestBody TripInformationReqDto reqDto,
             @RequestHeader("Authorization") String token) {
@@ -68,6 +81,7 @@ public class TripInformationController {
 
     // 세부 일정 삭제
     @DeleteMapping("/{tripInformationId}")
+    @Operation(summary = "나의 세부일정 삭제", description = "회원 토큰과 세부일정 id를 통해 해당 회원의 세부일정을 삭제 할 수 있습니다.")
     public RsData<Void> deleteTripInformation(
             @PathVariable Long tripInformationId,
             @RequestHeader("Authorization") String token) {
@@ -80,6 +94,7 @@ public class TripInformationController {
 
     // 방문 여부 변경
     @PutMapping("/update-visited")
+    @Operation(summary = "세부일정 방문 여부 변경", description = "회원 토큰을 확인하고 세부일정의 방문 여부를 변경 할 수 있습니다.")
     public RsData<Void> updateVisited(
             @Valid @RequestBody VisitedReqDto reqDto,
             @RequestHeader("Authorization") String token) {

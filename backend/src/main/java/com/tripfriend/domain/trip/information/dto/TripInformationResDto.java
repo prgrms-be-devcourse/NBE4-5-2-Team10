@@ -21,7 +21,7 @@ public class TripInformationResDto {
     private Transportation transportation;
     private int cost;
     private String notes;
-    private int priority;
+    //private int priority;
     private boolean isVisited;
 
     public TripInformationResDto(TripInformation tripInformation) {
@@ -34,7 +34,7 @@ public class TripInformationResDto {
         this.transportation = tripInformation.getTransportation();
         this.cost = tripInformation.getCost();
         this.notes = tripInformation.getNotes();
-        this.priority = tripInformation.getPriority();
+        //this.priority = tripInformation.getPriority();
         this.isVisited = tripInformation.isVisited();
     }
 }
