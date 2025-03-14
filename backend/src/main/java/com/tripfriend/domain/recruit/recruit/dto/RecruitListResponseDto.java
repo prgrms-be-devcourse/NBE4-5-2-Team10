@@ -1,5 +1,6 @@
 package com.tripfriend.domain.recruit.recruit.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.tripfriend.domain.member.member.entity.AgeRange;
 import com.tripfriend.domain.member.member.entity.Gender;
 import com.tripfriend.domain.member.member.entity.Member;
@@ -31,6 +32,7 @@ public class RecruitListResponseDto {
     private String placePlaceName;
     private String title;
 //    private String content;
+    @JsonProperty("isClosed")
     private boolean isClosed;
     private LocalDate startDate;
     private LocalDate endDate;

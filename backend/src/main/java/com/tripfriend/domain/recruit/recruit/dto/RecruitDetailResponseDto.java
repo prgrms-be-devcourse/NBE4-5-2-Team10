@@ -1,5 +1,6 @@
 package com.tripfriend.domain.recruit.recruit.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.tripfriend.domain.member.member.entity.Gender;
 import com.tripfriend.domain.recruit.apply.dto.ApplyResponseDto;
 import com.tripfriend.domain.recruit.recruit.entity.Recruit;
@@ -32,12 +33,13 @@ public class RecruitDetailResponseDto {
     private String placePlaceName;
     private String title;
     private String content;
+    @JsonProperty("isClosed")
     private boolean isClosed;
     private LocalDate startDate;
     private LocalDate endDate;
     private String travelStyle;
-    //    private boolean sameGender;
-//    private boolean sameAge;
+    private boolean sameGender;
+    private boolean sameAge;
     private Integer budget = 0;
     private Integer groupSize = 2;
     private LocalDateTime createdAt;
@@ -61,8 +63,8 @@ public class RecruitDetailResponseDto {
         this.startDate = recruit.getStartDate();
         this.endDate = recruit.getEndDate();
         this.travelStyle = recruit.getTravelStyle().getKoreanName();
-//        this.sameGender = recruit.isSameGender();
-//        this.sameAge = recruit.isSameAge();
+        this.sameGender = recruit.isSameGender();
+        this.sameAge = recruit.isSameAge();
         this.budget = recruit.getBudget();
         this.groupSize = recruit.getGroupSize();
         this.createdAt = recruit.getCreatedAt();
