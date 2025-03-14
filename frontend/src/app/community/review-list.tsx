@@ -10,26 +10,9 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { reviewAPI, placeAPI } from "./utils/api"
-
-interface Review {
-  reviewId: number
-  title: string
-  content: string
-  rating: number
-  createdAt: string
-  updatedAt?: string
-  nickname: string
-  commentCount: number
-  viewCount: number
-  placeId: number
-  placeName?: string
-}
-
-interface Place {
-  id: number
-  name: string
-}
+import { getReviews, Review } from "./services/reviewService"
+import { getAllPlaces, getAllCities, getPlacesAsOptions } from "./services/placeService"
+import { isLoggedIn } from "./services/authService"
 
 export default function ReviewList() {
   const router = useRouter()
@@ -41,113 +24,163 @@ export default function ReviewList() {
 
   const [sortOption, setSortOption] = useState(searchParams.get("sort") || "newest")
   const [searchQuery, setSearchQuery] = useState(searchParams.get("query") || "")
-  const [destinationFilter, setDestinationFilter] = useState(searchParams.get("destination") || "all")
-  const [destinations, setDestinations] = useState<Place[]>([])
+  const [destinationFilter, setDestinationFilter] = useState(searchParams.get("destination") || "")
+  const [destinations, setDestinations] = useState<{ id: number; name: string }[]>([])
 
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+  const [userLoggedIn, setUserLoggedIn] = useState(false)
   const itemsPerPage = 6
 
-  // 장소 목록 가져오기
+  // 로그인 상태 확인
+  useEffect(() => {
+    setUserLoggedIn(isLoggedIn());
+  }, []);
+
+  // 여행지 목록 가져오기
   useEffect(() => {
     const fetchPlaces = async () => {
       try {
-        const places = await placeAPI.getPlaces()
-        setDestinations(places)
+        // 모든 여행지 가져오기
+        const places = await getAllPlaces();
+        
+        // 여행지를 드롭다운 옵션 형태로 변환
+        const placeOptions = getPlacesAsOptions(places);
+        
+        setDestinations(placeOptions);
       } catch (err) {
-        console.error("Error fetching places:", err)
+        console.error("여행지 목록을 불러오는 중 오류가 발생했습니다:", err);
       }
-    }
+    };
 
-    fetchPlaces()
-  }, [])
+    fetchPlaces();
+  }, []);
 
   // 리뷰 목록 가져오기
   useEffect(() => {
     const fetchReviews = async () => {
-      setLoading(true)
+      setLoading(true);
+      console.log('🚀 리뷰 데이터 로딩 시작');
+      
       try {
-        const params: any = { sort: sortOption }
-
-        if (searchQuery) {
-          params.keyword = searchQuery
+        // destinationFilter 처리
+        let placeId;
+        if (destinationFilter && destinationFilter !== 'all') {
+          placeId = parseInt(destinationFilter);
+          console.log('🏙️ 선택된 장소 ID:', placeId);
+        } else {
+          console.log('🌍 모든 장소 선택됨');
         }
-
-        if (destinationFilter && destinationFilter !== "all") {
-          params.placeId = Number.parseInt(destinationFilter)
+        
+        // 검색어 처리
+        const searchTerm = searchQuery && searchQuery.trim() ? searchQuery : undefined;
+        if (searchTerm) {
+          console.log('🔍 검색어:', searchTerm);
         }
-
-        const reviewsData = await reviewAPI.getReviews(params)
-
-        // 장소 이름 매핑
-        const reviewsWithPlaceNames = reviewsData.map((review: any) => {
-          const place = destinations.find((d) => d.id === review.placeId)
-          return {
-            ...review,
-            placeName: place ? place.name : "알 수 없는 장소",
-          }
-        })
-
-        setReviews(reviewsWithPlaceNames)
-        setTotalPages(Math.ceil(reviewsWithPlaceNames.length / itemsPerPage))
-      } catch (err: any) {
-        console.error("Error fetching reviews:", err)
-        setError(err.message || "리뷰를 불러오는 중 오류가 발생했습니다.")
+        
+        console.log('📊 요청 파라미터:', { 
+          sortOption, 
+          searchTerm, 
+          placeId, 
+          currentPage 
+        });
+        
+        // reviewService 호출
+        console.log('📡 getReviews 호출 시작');
+        const result = await getReviews(
+          sortOption,
+          searchTerm,
+          placeId,
+          currentPage
+        );
+        console.log('📡 getReviews 호출 완료');
+        
+        // 결과 확인
+        if (!result) {
+          console.error('⚠️ getReviews 결과가 undefined입니다');
+          setReviews([]);
+          setTotalPages(1);
+          setError("데이터를 받아오지 못했습니다");
+          return;
+        }
+        
+        console.log('📦 getReviews 결과:', result);
+        
+        // reviews 필드 확인
+        const { reviews: fetchedReviews = [], totalPages = 1 } = result;
+        
+        if (!Array.isArray(fetchedReviews)) {
+          console.error('⚠️ 리뷰 데이터가 배열이 아닙니다:', fetchedReviews);
+          setReviews([]);
+          setTotalPages(1);
+          setError("데이터 형식이 올바르지 않습니다");
+          return;
+        }
+        
+        console.log(`✅ ${fetchedReviews.length}개의 리뷰를 가져왔습니다`);
+        console.log('📄 총 페이지 수:', totalPages);
+        
+        // 상태 업데이트
+        setReviews(fetchedReviews);
+        setTotalPages(totalPages);
+        setError(null);
+      } catch (err) {
+        console.error('❌ 리뷰 목록을 불러오는 중 오류 발생:', err);
+        setError("리뷰를 불러오는 중 오류가 발생했습니다.");
+        setReviews([]);
+        setTotalPages(1);
       } finally {
-        setLoading(false)
+        setLoading(false);
+        console.log('🏁 리뷰 데이터 로딩 완료');
       }
-    }
-
-    fetchReviews()
-  }, [sortOption, searchQuery, destinationFilter, destinations])
-
+    };
+  
+    fetchReviews();
+  }, [sortOption, searchQuery, destinationFilter, currentPage]);
   // 검색 제출 처리
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    updateUrlParams()
-  }
+  const handleSearch = () => {
+    fetch(`http://localhost:8080/api/reviews?search=${searchQuery}`)
+      .then((res) => res.json())
+      .then((data) => setReviews(data.result))
+      .catch((err) => console.error("검색 오류:", err));
+  };
+  
 
   // URL 파라미터 업데이트
   const updateUrlParams = () => {
-    const params = new URLSearchParams()
-    if (sortOption) params.set("sort", sortOption)
-    if (searchQuery) params.set("query", searchQuery)
-    if (destinationFilter && destinationFilter !== "all") params.set("destination", destinationFilter)
-    router.push(`/community?${params.toString()}`)
-  }
+    const params = new URLSearchParams();
+    if (sortOption) params.set("sort", sortOption);
+    if (searchQuery) params.set("query", searchQuery);
+    if (destinationFilter) params.set("destination", destinationFilter);
 
-  // 페이지네이션된 리뷰 가져오기
-  const getPaginatedReviews = () => {
-    const startIndex = (currentPage - 1) * itemsPerPage
-    const endIndex = startIndex + itemsPerPage
-    return reviews.slice(startIndex, endIndex)
-  }
+    router.push(`/community?${params.toString()}`);
+  };
 
   // 페이지 변경 처리
   const handlePageChange = (page: number) => {
-    setCurrentPage(page)
-    window.scrollTo({ top: 0, behavior: "smooth" })
-  }
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   // 별점 렌더링
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }).map((_, i) => (
       <Star key={i} className={`h-4 w-4 ${i < rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`} />
-    ))
-  }
+    ));
+  };
 
-  // 날짜 포맷팅
+  // 날짜 형식 지정
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}`
-  }
+    const date = new Date(dateString);
+    return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}`;
+  };
 
   if (loading) {
-    return <div className="text-center py-10">리뷰를 불러오는 중...</div>
+    return <div className="text-center py-10">리뷰를 불러오는 중...</div>;
   }
 
   if (error) {
-    return <div className="text-center py-10 text-red-500">{error}</div>
+    return <div className="text-center py-10 text-red-500">{error}</div>;
   }
 
   return (
@@ -159,19 +192,19 @@ export default function ReviewList() {
             <Select
               value={sortOption}
               onValueChange={(value) => {
-                setSortOption(value)
-                setCurrentPage(1)
+                setSortOption(value);
+                setCurrentPage(1);
               }}
             >
-              <SelectTrigger className="w-full bg-white text-gray-700 shadow-sm z-10">
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="정렬 기준" />
               </SelectTrigger>
-              <SelectContent className="bg-white z-50">
+              <SelectContent>
                 <SelectItem value="newest">최신순</SelectItem>
                 <SelectItem value="oldest">오래된순</SelectItem>
                 <SelectItem value="highest_rating">평점 높은순</SelectItem>
                 <SelectItem value="lowest_rating">평점 낮은순</SelectItem>
-                <SelectItem value="comments">댓글 많은순</SelectItem>
+                <SelectItem value="most_comments">댓글 많은순</SelectItem>
                 <SelectItem value="most_viewed">조회수 높은순</SelectItem>
               </SelectContent>
             </Select>
@@ -181,14 +214,14 @@ export default function ReviewList() {
             <Select
               value={destinationFilter}
               onValueChange={(value) => {
-                setDestinationFilter(value)
-                setCurrentPage(1)
+                setDestinationFilter(value);
+                setCurrentPage(1);
               }}
             >
-              <SelectTrigger className="w-full bg-white text-gray-700 shadow-sm z-10">
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="여행지 선택" />
               </SelectTrigger>
-              <SelectContent className="bg-white z-50">
+              <SelectContent>
                 <SelectItem value="all">모든 여행지</SelectItem>
                 {destinations.map((destination) => (
                   <SelectItem key={destination.id} value={destination.id.toString()}>
@@ -200,7 +233,14 @@ export default function ReviewList() {
           </div>
         </div>
 
-        <form onSubmit={handleSearch} className="flex gap-2">
+        {/* 폼이 자동 제출되지 않도록 `onSubmit`에서 `preventDefault()` 실행 */}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault(); //자동 제출 방지
+            handleSearch();
+          }}
+          className="flex gap-2"
+        >
           <Input
             type="text"
             placeholder="리뷰 제목 검색"
@@ -215,6 +255,7 @@ export default function ReviewList() {
         </form>
       </div>
 
+
       {/* 리뷰 목록 */}
       {reviews.length === 0 ? (
         <div className="text-center py-10 bg-white rounded-lg shadow-md">
@@ -223,7 +264,7 @@ export default function ReviewList() {
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {getPaginatedReviews().map((review) => (
+            {reviews.map((review) => (
               <Card key={review.reviewId} className="overflow-hidden hover:shadow-lg transition-shadow">
                 <Link href={`/community/${review.reviewId}`}>
                   <CardContent className="p-6">
@@ -251,7 +292,7 @@ export default function ReviewList() {
                       <span>{review.commentCount}</span>
                     </div>
                   </div>
-                  <div className="text-sm text-gray-600">{review.nickname}</div>
+                  <div className="text-sm text-gray-600">{review.memberName}</div>
                 </CardFooter>
               </Card>
             ))}
@@ -294,13 +335,14 @@ export default function ReviewList() {
       )}
 
       {/* 리뷰 작성 버튼 */}
-      <div className="fixed bottom-8 right-8">
-        <Button onClick={() => router.push("/community/write")} className="rounded-full h-14 w-14 shadow-lg">
-          <PenSquare className="h-6 w-6" />
-          <span className="sr-only">리뷰 작성하기</span>
-        </Button>
-      </div>
+      {userLoggedIn && (
+        <div className="fixed bottom-8 right-8">
+          <Button onClick={() => router.push("/community/write")} className="rounded-full h-14 w-14 shadow-lg">
+            <PenSquare className="h-6 w-6" />
+            <span className="sr-only">리뷰 작성하기</span>
+          </Button>
+        </div>
+      )}
     </div>
-  )
+  );
 }
-

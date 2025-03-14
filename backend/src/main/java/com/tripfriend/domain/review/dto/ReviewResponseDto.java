@@ -17,6 +17,7 @@ public class ReviewResponseDto {
     private Long memberId;
     private String memberName;
     private Long placeId;
+    private String placeName;
     private int viewCount;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -30,6 +31,7 @@ public class ReviewResponseDto {
         this.memberId = review.getMember().getId();
         this.memberName = memberName;
         this.placeId = review.getPlace().getId();
+        this.placeName = review.getPlace().getPlaceName();
         this.viewCount = 0;
         this.createdAt = review.getCreatedAt();
         this.updatedAt = review.getUpdatedAt();

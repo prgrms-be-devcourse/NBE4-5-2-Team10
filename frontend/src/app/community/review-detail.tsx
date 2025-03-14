@@ -22,220 +22,207 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { reviewAPI, commentAPI, placeAPI } from "../utils/api"
-import { isLoggedIn, getCurrentUserId } from "../utils/auth"
-
-interface Review {
-  reviewId: number
-  title: string
-  content: string
-  rating: number
-  createdAt: string
-  updatedAt?: string
-  memberName: string
-  memberId: number
-  commentCount: number
-  viewCount: number
-  placeId: number
-  placeName?: string
-  images?: string[]
-}
-
-interface Comment {
-  commentId: number
-  content: string
-  createdAt: string
-  updatedAt?: string
-  memberName: string
-  memberId: number
-}
+import { getReviewById, deleteReview, ReviewDetail as ReviewDetailType } from "./services/reviewService"
+import { getCommentsByReviewId, createComment, updateComment, deleteComment, Comment } from "./services/commentService"
+import { getCurrentUserInfo, isLoggedIn } from "./services/authService"
+import { getPlaceById } from "./services/placeService"
 
 export default function ReviewDetail({ id }: { id: string }) {
   const router = useRouter()
-  const [review, setReview] = useState<Review | null>(null)
+  const [review, setReview] = useState<ReviewDetailType | null>(null)
   const [comments, setComments] = useState<Comment[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [commentText, setCommentText] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false)
   const [currentUserId, setCurrentUserId] = useState<number | null>(null)
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null)
   const [editCommentText, setEditCommentText] = useState("")
-  const [placeName, setPlaceName] = useState<string>("")
+  const [placeName, setPlaceName] = useState<string | null>(null)
 
-  // 로그인 상태 확인
+  // 로그인 상태 및 사용자 정보 확인
   useEffect(() => {
-    // auth.ts에서 제공하는 유틸리티 함수 사용
-    const loggedInStatus = isLoggedIn()
-    setIsLoggedIn(loggedInStatus)
+    const checkLoginStatus = async () => {
+      const loggedIn = isLoggedIn();
+      setIsUserLoggedIn(loggedIn);
+      
+      if (loggedIn) {
+        try {
+          const userInfo = await getCurrentUserInfo();
+          if (userInfo) {
+            setCurrentUserId(userInfo.id);
+          }
+        } catch (err) {
+          console.error("사용자 정보를 가져오는 중 오류가 발생했습니다:", err);
+        }
+      }
+    };
     
-    if (loggedInStatus) {
-      const userId = getCurrentUserId()
-      setCurrentUserId(userId)
-    }
-  }, [])
+    checkLoginStatus();
+  }, []);
 
-  // 리뷰 및 댓글 가져오기
+  // 리뷰와 댓글 가져오기
   useEffect(() => {
     const fetchReviewAndComments = async () => {
-      setLoading(true)
+      setLoading(true);
       try {
-        // 리뷰 상세 정보 가져오기
-        const reviewData = await reviewAPI.getReview(id)
-        setReview(reviewData)
-
-        // 장소 정보 가져오기
+        // 리뷰 데이터 가져오기
+        const reviewId = parseInt(id);
+        const reviewData = await getReviewById(reviewId);
+        setReview(reviewData);
+        
+        // 여행지 정보 가져오기
         if (reviewData.placeId) {
           try {
-            const placeData = await placeAPI.getPlace(reviewData.placeId)
-            setPlaceName(placeData.name || "알 수 없는 장소")
-          } catch (placeErr) {
-            console.error("장소 정보 가져오기 오류:", placeErr)
-            setPlaceName("알 수 없는 장소")
+            const placeData = await getPlaceById(reviewData.placeId);
+            if (placeData) {
+              setPlaceName(placeData.placeName);
+            }
+          } catch (placeError) {
+            console.error("여행지 정보를 불러오는 중 오류 발생:", placeError);
           }
         }
-
-        // 댓글 목록 가져오기
-        const commentsData = await commentAPI.getCommentsByReview(id)
-        setComments(commentsData)
-      } catch (err: any) {
-        console.error("리뷰 상세 정보 가져오기 오류:", err)
-        setError(err.message || "리뷰를 불러오는 중 오류가 발생했습니다.")
+        
+        // 댓글 데이터 가져오기
+        const commentsData = await getCommentsByReviewId(reviewId);
+        setComments(commentsData);
+      } catch (err) {
+        console.error("리뷰 정보를 불러오는 중 오류가 발생했습니다:", err);
+        setError("리뷰 정보를 불러오는 중 오류가 발생했습니다.");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchReviewAndComments()
-  }, [id])
+    fetchReviewAndComments();
+  }, [id]);
 
   // 댓글 제출 처리
   const handleCommentSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    if (!commentText.trim()) return
-    if (!isLoggedIn) {
-      alert("댓글을 작성하려면 로그인이 필요합니다.")
-      router.push("/member/login")
-      return
+    if (!commentText.trim()) return;
+    if (!isUserLoggedIn) {
+      alert("댓글을 작성하려면 로그인이 필요합니다.");
+      router.push("/member/login");
+      return;
     }
 
-    setIsSubmitting(true)
+    setIsSubmitting(true);
 
     try {
-      const newComment = await commentAPI.createComment({
-        reviewId: Number.parseInt(id),
+      const commentData = {
         content: commentText,
-      })
-      // 새 댓글을 목록에 추가
-      setComments([...comments, newComment])
-      setCommentText("")
-
-      // 리뷰의 댓글 수 업데이트
+        reviewId: parseInt(id)
+      };
+      
+      const newComment = await createComment(commentData);
+      
+      // 댓글 목록 갱신
+      setComments([...comments, newComment]);
+      setCommentText("");
+      
+      // 리뷰의 댓글 수 갱신
       if (review) {
         setReview({
           ...review,
-          commentCount: review.commentCount + 1,
-        })
+          commentCount: review.commentCount + 1
+        });
       }
-    } catch (err: any) {
-      console.error("댓글 작성 오류:", err)
-      alert(err.message || "댓글 작성 중 오류가 발생했습니다.")
+    } catch (err) {
+      console.error("댓글 작성 중 오류가 발생했습니다:", err);
+      alert("댓글 작성 중 오류가 발생했습니다.");
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
-  // 댓글 수정 시작
+  // 댓글 수정 처리
   const handleEditComment = (commentId: number, content: string) => {
-    setEditingCommentId(commentId)
-    setEditCommentText(content)
-  }
+    setEditingCommentId(commentId);
+    setEditCommentText(content);
+  };
 
-  // 댓글 업데이트 처리
+  // 댓글 수정 완료 처리
   const handleUpdateComment = async (commentId: number) => {
-    if (!editCommentText.trim()) return
+    if (!editCommentText.trim()) return;
 
     try {
-      const updatedComment = await commentAPI.updateComment(commentId, editCommentText)
-
-      // 댓글 목록 업데이트
+      const updatedComment = await updateComment(commentId, editCommentText);
+      
+      // 댓글 목록 갱신
       setComments(
         comments.map((comment) =>
-          comment.commentId === commentId ? { ...comment, content: editCommentText } : comment,
-        ),
-      )
-
-      setEditingCommentId(null)
-      setEditCommentText("")
-    } catch (err: any) {
-      console.error("댓글 수정 오류:", err)
-      alert(err.message || "댓글 수정 중 오류가 발생했습니다.")
+          comment.commentId === commentId ? { ...comment, content: editCommentText } : comment
+        )
+      );
+      
+      setEditingCommentId(null);
+      setEditCommentText("");
+    } catch (err) {
+      console.error("댓글 수정 중 오류가 발생했습니다:", err);
+      alert("댓글 수정 중 오류가 발생했습니다.");
     }
-  }
+  };
 
   // 댓글 삭제 처리
   const handleDeleteComment = async (commentId: number) => {
     try {
-      await commentAPI.deleteComment(commentId)
-
-      // 댓글 목록에서 삭제
-      setComments(comments.filter((comment) => comment.commentId !== commentId))
-
-      // 리뷰의 댓글 수 업데이트
+      await deleteComment(commentId);
+      
+      // 댓글 목록 갱신
+      setComments(comments.filter((comment) => comment.commentId !== commentId));
+      
+      // 리뷰의 댓글 수 갱신
       if (review) {
         setReview({
           ...review,
-          commentCount: review.commentCount - 1,
-        })
+          commentCount: review.commentCount - 1
+        });
       }
-    } catch (err: any) {
-      console.error("댓글 삭제 오류:", err)
-      alert(err.message || "댓글 삭제 중 오류가 발생했습니다.")
+    } catch (err) {
+      console.error("댓글 삭제 중 오류가 발생했습니다:", err);
+      alert("댓글 삭제 중 오류가 발생했습니다.");
     }
-  }
+  };
 
   // 리뷰 삭제 처리
   const handleDeleteReview = async () => {
     try {
-      await reviewAPI.deleteReview(id)
-
-      alert("리뷰가 삭제되었습니다.")
-      router.push("/community")
-    } catch (err: any) {
-      console.error("리뷰 삭제 오류:", err)
-      alert(err.message || "리뷰 삭제 중 오류가 발생했습니다.")
+      await deleteReview(parseInt(id));
+      alert("리뷰가 삭제되었습니다.");
+      router.push("/community");
+    } catch (err) {
+      console.error("리뷰 삭제 중 오류가 발생했습니다:", err);
+      alert("리뷰 삭제 중 오류가 발생했습니다.");
     }
-  }
+  };
 
-  // 날짜 포맷팅
+  // 날짜 형식 지정
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")} ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`
-  }
+    const date = new Date(dateString);
+    return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")} ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+  };
 
   // 별점 렌더링
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }).map((_, i) => (
       <Star key={i} className={`h-5 w-5 ${i < rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`} />
-    ))
-  }
+    ));
+  };
 
   if (loading) {
-    return <div className="text-center py-10">리뷰를 불러오는 중...</div>
+    return <div className="text-center py-10">리뷰를 불러오는 중...</div>;
   }
 
   if (error || !review) {
-    return <div className="text-center py-10 text-red-500">{error || "리뷰를 찾을 수 없습니다."}</div>
+    return <div className="text-center py-10 text-red-500">{error || "리뷰를 찾을 수 없습니다."}</div>;
   }
-  
-  // 작성자 ID 확인
-  const isAuthor = currentUserId === review.memberId
 
   return (
     <div className="max-w-4xl mx-auto">
-      {/* 뒤로 가기 버튼 */}
+      {/* 뒤로가기 버튼 */}
       <div className="mb-6">
         <Button variant="ghost" onClick={() => router.push("/community")}>
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -251,15 +238,15 @@ export default function ReviewDetail({ id }: { id: string }) {
               <div className="flex items-center gap-2 mb-2">
                 <MapPin className="h-4 w-4 text-gray-500" />
                 <Link href={`/place/${review.placeId}`} className="text-sm text-blue-600 hover:underline">
-                {placeName || review.placeName}
+                  {placeName || review.placeName || `여행지 ${review.placeId}`}
                 </Link>
               </div>
               <h1 className="text-2xl font-bold mb-2">{review.title}</h1>
               <div className="flex items-center mb-1">{renderStars(review.rating)}</div>
             </div>
 
-            {/* 수정/삭제 버튼 (작성자에게만 표시) */}
-            {isAuthor && (
+            {/* 수정/삭제 버튼 (작성자만 볼 수 있음) */}
+            {currentUserId === review.memberId && (
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={() => router.push(`/community/edit/${review.reviewId}`)}>
                   <Edit className="h-4 w-4 mr-1" />
@@ -325,8 +312,8 @@ export default function ReviewDetail({ id }: { id: string }) {
             ))}
           </div>
 
-          {/* 리뷰 이미지 */}
-          {review.images && review.images.length > 0 && (
+          {/* 리뷰 이미지 (백엔드 API가 구현된 경우 활성화) */}
+          {/* {review.images && review.images.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               {review.images.map((image, idx) => (
                 <img
@@ -337,7 +324,7 @@ export default function ReviewDetail({ id }: { id: string }) {
                 />
               ))}
             </div>
-          )}
+          )} */}
         </CardContent>
       </Card>
 
@@ -362,7 +349,7 @@ export default function ReviewDetail({ id }: { id: string }) {
                     </div>
                   </div>
 
-                  {/* 댓글 작업 (작성자에게만 표시) */}
+                  {/* 댓글 작업 (작성자만 볼 수 있음) */}
                   {currentUserId === comment.memberId && (
                     <div className="flex gap-2">
                       {editingCommentId === comment.commentId ? (
@@ -430,15 +417,15 @@ export default function ReviewDetail({ id }: { id: string }) {
         <form onSubmit={handleCommentSubmit}>
           <div className="mb-4">
             <Textarea
-              placeholder={isLoggedIn ? "댓글을 작성해주세요..." : "댓글을 작성하려면 로그인이 필요합니다."}
+              placeholder={isUserLoggedIn ? "댓글을 작성해주세요..." : "댓글을 작성하려면 로그인이 필요합니다."}
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
-              disabled={!isLoggedIn || isSubmitting}
+              disabled={!isUserLoggedIn || isSubmitting}
               className="w-full"
             />
           </div>
           <div className="flex justify-end">
-            <Button type="submit" disabled={!isLoggedIn || !commentText.trim() || isSubmitting}>
+            <Button type="submit" disabled={!isUserLoggedIn || !commentText.trim() || isSubmitting}>
               {isSubmitting ? "등록 중..." : "댓글 등록"}
               <Send className="h-4 w-4 ml-2" />
             </Button>

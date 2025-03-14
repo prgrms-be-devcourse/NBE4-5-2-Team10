@@ -120,21 +120,16 @@ public class ReviewController {
     @Operation(summary = "리뷰 목록 조회 (정렬 및 검색)")
     @GetMapping
     public RsData<List<ReviewResponseDto>> getReviews(
-            @RequestParam(name = "sort",defaultValue = "newest") String sort,
+            @RequestParam(name = "sort", defaultValue = "newest") String sort,
             @RequestParam(name = "keyword", required = false) String keyword,
             @RequestParam(name = "placeId", required = false) Long placeId,
             @RequestHeader(value = "Authorization", required = false) String token) {
 
-        Long memberId = null;
-        // 토큰이 제공된 경우 사용자 리뷰 필터링을 위해 memberId 추출
-        if (token != null && !token.isEmpty()) {
-            Member loggedInMember = authService.getLoggedInMember(token);
-            memberId = loggedInMember.getId();
-        }
-
-        List<ReviewResponseDto> reviews = reviewService.getReviews(sort, keyword, placeId, memberId);
+        // 항상 전체 리뷰를 조회 (memberId null)
+        List<ReviewResponseDto> reviews = reviewService.getReviews(sort, keyword, placeId, null);
         return new RsData<>("200-5", "리뷰 목록을 성공적으로 조회했습니다.", reviews);
     }
+
 
     // 내가 작성한 리뷰 목록 조회
     @Operation(summary = "내가 작성한 리뷰 목록 조회")

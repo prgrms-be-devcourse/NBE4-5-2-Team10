@@ -15,10 +15,10 @@ const getAuthHeader = (): Record<string, string> => {
 
 // 기본 API 요청 함수
 export async function apiRequest<T>(
-  url: string, 
-  method: HttpMethod = 'GET', 
-  data?: any,
-  isFormData: boolean = false
+    url: string,
+    method: HttpMethod = 'GET',
+    data?: any,
+    isFormData: boolean = false
 ): Promise<T> {
   const headers: HeadersInit = {
     ...getAuthHeader(),
@@ -55,23 +55,23 @@ export async function apiRequest<T>(
 
         if (refreshResponse.ok) {
           const refreshData = await refreshResponse.json();
-          
+
           // 새 액세스 토큰 저장
           if (typeof window !== 'undefined') {
             localStorage.setItem('accessToken', refreshData.data.accessToken);
           }
-          
+
           // 원래 요청 재시도
           headers['Authorization'] = `Bearer ${refreshData.data.accessToken}`;
           const retryResponse = await fetch(`${API_BASE_URL}${url}`, {
             ...config,
             headers
           });
-          
+
           if (!retryResponse.ok) {
             throw new Error(`API 요청 실패: ${retryResponse.status}`);
           }
-          
+
           return processResponse<T>(retryResponse);
         } else {
           // 리프레시 토큰도 만료된 경우 로그아웃 처리
@@ -103,45 +103,113 @@ export async function apiRequest<T>(
 }
 
 // 응답 처리 함수
+// api.ts의 processResponse 함수 수정
+// api.ts의 processResponse 함수 수정
 async function processResponse<T>(response: Response): Promise<T> {
+  console.log('🔄 processResponse 시작');
+  console.log('📤 응답 상태:', response.status);
+  
   try {
     const contentType = response.headers.get('content-type');
-    
+    console.log('📋 Content-Type:', contentType);
+
     // JSON 응답 처리
     if (contentType && contentType.includes('application/json')) {
-      const data = await response.json();
+      console.log('🔍 JSON 응답 감지');
       
-      // 백엔드에서 RsData 형식으로 응답하는 경우
-      if (data.hasOwnProperty('code') && data.hasOwnProperty('msg')) {
-        if (data.code.startsWith('4') || data.code.startsWith('5')) {
-          throw new Error(data.msg);
-        }
-        return data.data as T;
+      // JSON 파싱
+      let rawData;
+      try {
+        rawData = await response.json();
+        console.log('📦 원본 JSON 데이터:', rawData);
+      } catch (jsonError) {
+        console.error('❌ JSON 파싱 오류:', jsonError);
+        throw new Error('JSON 파싱 실패');
       }
-      
-      return data as T;
+
+      // RsData 구조 확인 (code, msg, data 필드 있는지)
+      if (rawData && typeof rawData === 'object') {
+        console.log('🔑 응답 키들:', Object.keys(rawData));
+        
+        const hasRsDataStructure = 'code' in rawData && 'msg' in rawData;
+        console.log('🧪 RsData 구조 여부:', hasRsDataStructure);
+        
+        if (hasRsDataStructure) {
+          // 오류 코드인 경우 예외 발생
+          if (rawData.code.startsWith('4') || rawData.code.startsWith('5')) {
+            console.error('🚫 API 오류:', rawData.code, rawData.msg);
+            throw new Error(rawData.msg || '서버 오류가 발생했습니다.');
+          }
+          
+          // data 필드가 있는지 확인
+          if ('data' in rawData) {
+            const dataType = Array.isArray(rawData.data) 
+              ? '배열' 
+              : (rawData.data === null ? 'null' : typeof rawData.data);
+            console.log('📎 data 필드 타입:', dataType);
+            
+            if (rawData.data === null) {
+              console.log('⚠️ data 필드가 null입니다.');
+              // 배열 타입인 경우 빈 배열 반환
+              if (Array.isArray(({} as unknown as T))) {
+                console.log('🔄 빈 배열 반환');
+                return ([] as unknown) as T;
+              }
+              console.log('🔄 빈 객체 반환');
+              return ({} as unknown) as T;
+            }
+            
+            console.log('✅ data 필드 반환');
+            return rawData.data as T;
+          } else {
+            console.warn('⚠️ data 필드가 없습니다.');
+            // 배열 타입인 경우 빈 배열 반환
+            if (Array.isArray(({} as unknown as T))) {
+              console.log('🔄 빈 배열 반환');
+              return ([] as unknown) as T;
+            }
+            console.log('🔄 빈 객체 반환');
+            return ({} as unknown) as T;
+          }
+        }
+      }
+
+      // RsData 형식이 아닌 경우 전체 데이터 반환
+      console.log('🔄 원본 데이터 반환');
+      return rawData as T;
     }
-    
+
     // 텍스트 응답 처리
     if (contentType && contentType.includes('text/plain')) {
       const text = await response.text();
+      console.log('📝 텍스트 응답:', text);
       return text as unknown as T;
     }
-    
+
     // 기타 응답 형식
-    return {} as T;
+    console.warn('⚠️ 지원되지 않는 응답 형식:', contentType);
+    
+    // 빈 응답 반환 (타입에 따라)
+    if (Array.isArray(({} as unknown) as T)) {
+      console.log('🔄 타입이 배열이므로 빈 배열 반환');
+      return ([] as unknown) as T;
+    }
+    
+    console.log('🔄 빈 객체 반환');
+    return ({} as unknown) as T;
   } catch (error) {
-    console.error('응답 처리 중 오류 발생:', error);
+    console.error('❌ 응답 처리 중 오류 발생:', error);
     throw error;
+  } finally {
+    console.log('🔄 processResponse 완료');
   }
 }
-
 // 편의 함수
 export const api = {
   get: <T>(url: string) => apiRequest<T>(url, 'GET'),
-  post: <T>(url: string, data?: any, isFormData: boolean = false) => 
-    apiRequest<T>(url, 'POST', data, isFormData),
-  put: <T>(url: string, data?: any, isFormData: boolean = false) => 
-    apiRequest<T>(url, 'PUT', data, isFormData),
+  post: <T>(url: string, data?: any, isFormData: boolean = false) =>
+      apiRequest<T>(url, 'POST', data, isFormData),
+  put: <T>(url: string, data?: any, isFormData: boolean = false) =>
+      apiRequest<T>(url, 'PUT', data, isFormData),
   delete: <T>(url: string) => apiRequest<T>(url, 'DELETE')
 };

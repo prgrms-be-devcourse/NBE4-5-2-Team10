@@ -11,12 +11,9 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { reviewAPI, placeAPI } from "./utils/api"
-
-interface Place {
-  id: number
-  name: string
-}
+import { getAllPlaces, Place, getPlacesAsOptions } from "./services/placeService"
+import { createReview, getReviewById, updateReview, uploadReviewImages } from "./services/reviewService"
+import { isLoggedIn } from "./services/authService"
 
 interface ReviewFormData {
   title: string
@@ -42,59 +39,64 @@ export default function ReviewForm({ reviewId }: ReviewFormProps) {
     images: [],
   })
 
-  const [destinations, setDestinations] = useState<Place[]>([])
+  const [places, setPlaces] = useState<Place[]>([])
+  const [placeOptions, setPlaceOptions] = useState<{ id: number; name: string }[]>([])
   const [previewImages, setPreviewImages] = useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isLoggedInState, setIsLoggedInState] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
 
   // 로그인 상태 확인
   useEffect(() => {
-    const token = localStorage.getItem("accessToken")
-    setIsLoggedIn(!!token)
+    const loggedIn = isLoggedIn()
+    setIsLoggedInState(loggedIn)
 
-    if (!token) {
+    if (!loggedIn) {
       setFormError("리뷰를 작성하려면 로그인이 필요합니다.")
     }
   }, [])
 
-  // 장소 목록 가져오기
+  // 여행지 목록 가져오기
   useEffect(() => {
-    const fetchDestinations = async () => {
+    const fetchPlaces = async () => {
       try {
-        const places = await placeAPI.getPlaces()
-        setDestinations(places)
-      } catch (err: any) {
-        console.error("장소 목록 가져오기 오류:", err)
-        setFormError("여행지 정보를 불러오는 중 오류가 발생했습니다.")
+        const fetchedPlaces = await getAllPlaces()
+        setPlaces(fetchedPlaces)
+        
+        const options = getPlacesAsOptions(fetchedPlaces)
+        setPlaceOptions(options)
+      } catch (err) {
+        console.error("여행지 목록을 불러오는 중 오류가 발생했습니다:", err)
+        setFormError("여행지 목록을 불러오는 중 오류가 발생했습니다.")
       }
     }
 
-    fetchDestinations()
+    fetchPlaces()
   }, [])
 
-  // 수정 모드인 경우 리뷰 데이터 가져오기
+  // 수정 모드일 경우 리뷰 데이터 가져오기
   useEffect(() => {
     if (isEditMode && reviewId) {
       const fetchReview = async () => {
         try {
-          const reviewData = await reviewAPI.getReview(reviewId)
-
+          const review = await getReviewById(parseInt(reviewId))
+          
           setFormData({
-            title: reviewData.title,
-            content: reviewData.content,
-            rating: reviewData.rating,
-            placeId: reviewData.placeId.toString(),
+            title: review.title,
+            content: review.content,
+            rating: review.rating,
+            placeId: review.placeId.toString(),
             images: [],
           })
-
-          // 이미지 URL이 있는 경우 미리보기 설정
-          // if (reviewData.images && reviewData.images.length > 0) {
-          //   setPreviewImages(reviewData.images)
+          
+          // 이미지 URL이 있다면 프리뷰 이미지 설정
+          // 백엔드에서 이미지 URL을 제공하는 경우에만 활성화
+          // if (review.images && review.images.length > 0) {
+          //   setPreviewImages(review.images);
           // }
-        } catch (err: any) {
-          console.error("리뷰 정보 가져오기 오류:", err)
+        } catch (err) {
+          console.error("리뷰 정보를 불러오는 중 오류가 발생했습니다:", err)
           setFormError("리뷰 정보를 불러오는 중 오류가 발생했습니다.")
         }
       }
@@ -103,22 +105,22 @@ export default function ReviewForm({ reviewId }: ReviewFormProps) {
     }
   }, [isEditMode, reviewId])
 
-  // 입력 변경 처리
+  // 입력값 변경 처리
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData({ ...formData, [name]: value })
 
-    // 해당 필드의 오류 지우기
+    // 해당 필드의 에러 제거
     if (errors[name]) {
       setErrors({ ...errors, [name]: "" })
     }
   }
 
-  // 장소 선택 처리
+  // 여행지 선택 처리
   const handleDestinationChange = (value: string) => {
     setFormData({ ...formData, placeId: value })
 
-    // 해당 필드의 오류 지우기
+    // 해당 필드의 에러 제거
     if (errors.placeId) {
       setErrors({ ...errors, placeId: "" })
     }
@@ -128,45 +130,45 @@ export default function ReviewForm({ reviewId }: ReviewFormProps) {
   const handleRatingChange = (rating: number) => {
     setFormData({ ...formData, rating })
 
-    // 해당 필드의 오류 지우기
+    // 해당 필드의 에러 제거
     if (errors.rating) {
       setErrors({ ...errors, rating: "" })
     }
   }
 
-  // // 이미지 업로드 처리
-  // const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   if (e.target.files) {
-  //     const newImages = Array.from(e.target.files)
+  // 이미지 업로드 처리
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newImages = Array.from(e.target.files)
 
-  //     // 최대 5개 이미지로 제한
-  //     if (formData.images.length + newImages.length > 5) {
-  //       alert("최대 5개의 이미지만 업로드할 수 있습니다.")
-  //       return
-  //     }
+      // 최대 5개 제한
+      if (formData.images.length + newImages.length > 5) {
+        alert("최대 5개의 이미지만 업로드할 수 있습니다.")
+        return
+      }
 
-  //     // 미리보기 URL 생성
-  //     const newPreviews = newImages.map((file) => URL.createObjectURL(file))
+      // 프리뷰 URL 생성
+      const newPreviews = newImages.map((file) => URL.createObjectURL(file))
 
-  //     setFormData({ ...formData, images: [...formData.images, ...newImages] })
-  //     setPreviewImages([...previewImages, ...newPreviews])
-  //   }
-  // }
+      setFormData({ ...formData, images: [...formData.images, ...newImages] })
+      setPreviewImages([...previewImages, ...newPreviews])
+    }
+  }
 
-  // // 이미지 제거 처리
-  // const handleRemoveImage = (index: number) => {
-  //   const updatedImages = [...formData.images]
-  //   const updatedPreviews = [...previewImages]
+  // 이미지 제거 처리
+  const handleRemoveImage = (index: number) => {
+    const updatedImages = [...formData.images]
+    const updatedPreviews = [...previewImages]
 
-  //   // 객체 URL 해제하여 메모리 누수 방지
-  //   URL.revokeObjectURL(updatedPreviews[index])
+    // 메모리 누수 방지를 위해 Object URL 해제
+    URL.revokeObjectURL(updatedPreviews[index])
 
-  //   updatedImages.splice(index, 1)
-  //   updatedPreviews.splice(index, 1)
+    updatedImages.splice(index, 1)
+    updatedPreviews.splice(index, 1)
 
-  //   setFormData({ ...formData, images: updatedImages })
-  //   setPreviewImages(updatedPreviews)
-  // }
+    setFormData({ ...formData, images: updatedImages })
+    setPreviewImages(updatedPreviews)
+  }
 
   // 폼 유효성 검사
   const validateForm = () => {
@@ -196,7 +198,7 @@ export default function ReviewForm({ reviewId }: ReviewFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!isLoggedIn) {
+    if (!isLoggedInState) {
       alert("리뷰를 작성하려면 로그인이 필요합니다.")
       router.push("/member/login")
       return
@@ -209,34 +211,50 @@ export default function ReviewForm({ reviewId }: ReviewFormProps) {
     setIsSubmitting(true)
 
     try {
-      // 이미지 업로드 처리는 백엔드 구현에 따라 다를 수 있음
-      // 여기서는 이미지 업로드 없이 리뷰 데이터만 전송
-      const reviewDataToSend = {
+      const reviewData = {
         title: formData.title,
         content: formData.content,
         rating: formData.rating,
-        placeId: Number.parseInt(formData.placeId),
+        placeId: parseInt(formData.placeId)
       }
 
-      if (isEditMode) {
+      let createdReview;
+      
+      if (isEditMode && reviewId) {
         // 리뷰 수정
-        await reviewAPI.updateReview(reviewId!, reviewDataToSend)
-        alert("리뷰가 수정되었습니다.")
+        await updateReview(parseInt(reviewId), reviewData)
+        alert("리뷰가 성공적으로 수정되었습니다.")
+        createdReview = { reviewId: parseInt(reviewId) }
       } else {
         // 리뷰 생성
-        await reviewAPI.createReview(reviewDataToSend)
-        alert("리뷰가 등록되었습니다.")
+        createdReview = await createReview(reviewData)
+        alert("리뷰가 성공적으로 등록되었습니다.")
+      }
+
+      // 이미지 업로드 (이미지가 있는 경우에만)
+      if (formData.images.length > 0 && createdReview && createdReview.reviewId) {
+        const imageFormData = new FormData()
+        formData.images.forEach(image => {
+          imageFormData.append('images', image)
+        })
+        
+        try {
+          await uploadReviewImages(createdReview.reviewId, imageFormData)
+        } catch (imageError) {
+          console.error("이미지 업로드 중 오류 발생:", imageError)
+          // 이미지 업로드 실패 시에도 리뷰는 생성/수정되었으므로 계속 진행
+        }
       }
 
       router.push("/community")
-    } catch (err: any) {
-      console.error("리뷰 제출 오류:", err)
-      setFormError(err.message || "리뷰 제출 중 오류가 발생했습니다.")
+    } catch (err) {
+      console.error("리뷰 제출 중 오류가 발생했습니다:", err)
+      setFormError("리뷰 제출 중 오류가 발생했습니다.")
       setIsSubmitting(false)
     }
   }
 
-  // 미리보기 URL 정리
+  // 컴포넌트 언마운트 시 프리뷰 URL 정리
   useEffect(() => {
     return () => {
       previewImages.forEach((url) => URL.revokeObjectURL(url))
@@ -281,9 +299,9 @@ export default function ReviewForm({ reviewId }: ReviewFormProps) {
                 <SelectValue placeholder="여행지를 선택해주세요" />
               </SelectTrigger>
               <SelectContent>
-                {destinations.map((destination) => (
-                  <SelectItem key={destination.id} value={destination.id.toString()}>
-                    {destination.name}
+                {placeOptions.map((place) => (
+                  <SelectItem key={place.id} value={place.id.toString()}>
+                    {place.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -325,7 +343,7 @@ export default function ReviewForm({ reviewId }: ReviewFormProps) {
           </div>
 
           {/* 이미지 업로드 */}
-          {/* <div className="mb-6">
+          <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-1">이미지 (최대 5개)</label>
             <div className="mt-2">
               <label className="flex justify-center items-center border-2 border-dashed border-gray-300 rounded-md p-6 cursor-pointer hover:bg-gray-50">
@@ -345,16 +363,16 @@ export default function ReviewForm({ reviewId }: ReviewFormProps) {
                   disabled={formData.images.length >= 5}
                 />
               </label>
-            </div> */}
+            </div>
 
-            {/* 이미지 미리보기 */}
-            {/* {previewImages.length > 0 && (
+            {/* 이미지 프리뷰 */}
+            {previewImages.length > 0 && (
               <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
                 {previewImages.map((preview, index) => (
                   <div key={index} className="relative">
                     <img
                       src={preview || "/placeholder.svg"}
-                      alt={`미리보기 ${index + 1}`}
+                      alt={`Preview ${index + 1}`}
                       className="h-24 w-24 object-cover rounded-md"
                     />
                     <button
@@ -368,14 +386,14 @@ export default function ReviewForm({ reviewId }: ReviewFormProps) {
                 ))}
               </div>
             )}
-          </div> */}
+          </div>
 
           {/* 제출 및 취소 버튼 */}
           <div className="flex justify-end gap-4">
             <Button type="button" variant="outline" onClick={() => router.push("/community")}>
               취소
             </Button>
-            <Button type="submit" disabled={isSubmitting || !isLoggedIn}>
+            <Button type="submit" disabled={isSubmitting || !isLoggedInState}>
               {isSubmitting ? "제출 중..." : isEditMode ? "수정하기" : "등록하기"}
             </Button>
           </div>
