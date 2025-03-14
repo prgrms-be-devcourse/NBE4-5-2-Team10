@@ -12,9 +12,10 @@ import lombok.Setter;
 public class AuthResponseDto {
 
     private String accessToken;
-    private String refreshToken;
+    private boolean isDeletedAccount;
 
     public AuthResponseDto(String accessToken) {
         this.accessToken = accessToken;
+        this.isDeletedAccount = false;
     }
 }

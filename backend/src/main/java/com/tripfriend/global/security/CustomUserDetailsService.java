@@ -3,10 +3,11 @@ package com.tripfriend.global.security;
 import com.tripfriend.domain.member.member.entity.Member;
 import com.tripfriend.domain.member.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -25,10 +26,19 @@ public class CustomUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException("검증되지 않은 사용자입니다.");
         }
 
-        return User.builder()
-                .username(member.getUsername())
-                .password(member.getPassword())
-                .authorities(member.getAuthority())
-                .build();
+        return new PrincipalDetails(member, null);  // OAuth2 인증에 필요한 attributes는 null로 설정
+    }
+
+    public UserDetails loadUserByOAuth2User(OAuth2User oAuth2User) throws OAuth2AuthenticationException {
+        Member member = memberRepository.findByUsername(oAuth2User.getName())
+                .orElseThrow(() -> new OAuth2AuthenticationException("Member not found"));
+
+        // 검증 상태 확인 (선택적)
+        if (!member.isVerified()) {
+            throw new OAuth2AuthenticationException("검증되지 않은 사용자입니다.");
+        }
+
+        // OAuth2User의 attributes를 PrincipalDetails로 전달
+        return new PrincipalDetails(member, oAuth2User.getAttributes());
     }
 }

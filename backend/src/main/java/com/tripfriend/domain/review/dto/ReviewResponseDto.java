@@ -3,6 +3,7 @@ package com.tripfriend.domain.review.dto;
 import com.tripfriend.domain.review.entity.Review;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
@@ -16,6 +17,8 @@ public class ReviewResponseDto {
     private Long memberId;
     private String memberName;
     private Long placeId;
+    private String placeName;
+    private int viewCount;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private int commentCount;
@@ -27,9 +30,16 @@ public class ReviewResponseDto {
         this.rating = review.getRating();
         this.memberId = review.getMember().getId();
         this.memberName = memberName;
-        this.placeId = review.getPlaceId();
+        this.placeId = review.getPlace().getId();
+        this.placeName = review.getPlace().getPlaceName();
+        this.viewCount = 0;
         this.createdAt = review.getCreatedAt();
         this.updatedAt = review.getUpdatedAt();
         this.commentCount = commentCount;
     }
+
+    public void setViewCount(int viewCount) {
+        this.viewCount = viewCount;
+    }
+
 }

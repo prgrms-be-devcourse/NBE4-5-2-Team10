@@ -1,40 +1,40 @@
 package com.tripfriend.domain.member.member.service;
 
 import com.tripfriend.domain.member.member.dto.EmailVerificationRequestDto;
-import com.tripfriend.domain.member.member.entity.EmailAuth;
 import com.tripfriend.domain.member.member.entity.Member;
-import com.tripfriend.domain.member.member.repository.EmailAuthRepository;
 import com.tripfriend.domain.member.member.repository.MemberRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
 public class MailService {
 
     private final JavaMailSender javaMailSender;
-    private final EmailAuthRepository emailAuthRepository;
     private final MemberRepository memberRepository;
+    private final StringRedisTemplate redisTemplate;
 
-    @Value("{spring.mail.username}")
-    private static String senderEmail;
+    @Value("${spring.mail.username}")
+    private String senderEmail;
 
     @Value("${spring.mail.properties.auth-code-expiration-millis}")
     private long authCodeExpirationMillis;
 
-    public String createCode() {
+    // Redis에 키 저장 시 접두어 (선택사항)
+    private static final String EMAIL_AUTH_PREFIX = "EMAIL_AUTH:";
 
+    public String createCode() {
         Random random = new Random();
         StringBuilder key = new StringBuilder();
 
@@ -50,7 +50,6 @@ public class MailService {
     }
 
     public MimeMessage createMail(String mail, String authCode) throws MessagingException {
-
         MimeMessage message = javaMailSender.createMimeMessage();
 
         message.setFrom(senderEmail);
@@ -67,7 +66,6 @@ public class MailService {
 
     // 메일 발송
     public String sendSimpleMessage(String sendEmail) throws MessagingException {
-
         String authCode = createCode(); // 랜덤 인증번호 생성
 
         MimeMessage message = createMail(sendEmail, authCode); // 메일 생성
@@ -81,53 +79,47 @@ public class MailService {
 
     @Transactional
     public boolean sendAuthCode(String email) throws MessagingException {
-
         String authCode = sendSimpleMessage(email); // 이메일 인증 코드 발송
+
         if (authCode != null) {
-            EmailAuth emailAuth = emailAuthRepository.findByEmail(email).orElse(null);
+            // Redis에 인증 코드 저장 (만료 시간 설정)
+            ValueOperations<String, String> values = redisTemplate.opsForValue();
+            // 키 이름에 접두어 추가해서 저장
+            String key = EMAIL_AUTH_PREFIX + email;
 
-            // 인증 코드와 만료 시간 설정
-            LocalDateTime expireAt = LocalDateTime.now().plus(authCodeExpirationMillis, ChronoUnit.MILLIS);
+            // Redis에 저장하고 만료 시간 설정 (밀리초를 초 단위로 변환)
+            values.set(key, authCode);
+            redisTemplate.expire(key, 300, TimeUnit.SECONDS); // 5분
 
-            if (emailAuth == null) {
-                emailAuthRepository.save(new EmailAuth(email, authCode, expireAt));
-            } else {
-                emailAuth.updateCode(authCode, expireAt);
-            }
             return true;
         }
         return false;
     }
 
-
     public boolean validationAuthCode(EmailVerificationRequestDto emailVerificationRequestDto) {
-
         String email = emailVerificationRequestDto.getEmail();
         String authCode = emailVerificationRequestDto.getAuthCode();
 
-        // 이메일로 인증 정보를 조회
-        EmailAuth emailAuth = emailAuthRepository.findByEmail(email).orElse(null);
+        // Redis에서 인증 코드 조회
+        ValueOperations<String, String> values = redisTemplate.opsForValue();
+        String key = EMAIL_AUTH_PREFIX + email;
+        String storedAuthCode = values.get(key);
 
-        if (emailAuth != null && emailAuth.getAuthCode().equals(authCode) && emailAuth.getExpireAt().isAfter(LocalDateTime.now())) {
-            // 인증 코드가 유효하면 Member 엔티티의 verified 필드를 true로 설정
+        // 인증 코드 검증
+        if (storedAuthCode != null && storedAuthCode.equals(authCode)) {
+            // 인증 성공 시 Member 엔티티의 verified 필드 업데이트
             Member member = memberRepository.findByEmail(email).orElse(null);
 
             if (member != null) {
-                member.setVerified(true);  // verified를 true로 설정
-                memberRepository.save(member);  // 변경된 Member 저장
+                member.setVerified(true);
+                memberRepository.save(member);
             }
 
-            // 인증 성공 후 이메일 인증 정보를 삭제
-            emailAuthRepository.delete(emailAuth);
+            // 인증 성공 후 Redis에서 인증 코드 삭제
+            redisTemplate.delete(key);
 
             return true;
         }
         return false;
-    }
-
-    @Scheduled(fixedRate = 3600000) // 1시간마다 실행
-    @Transactional
-    public void removeExpiredAuthCodes() {
-        emailAuthRepository.deleteExpiredCodes(); // 만료된 인증 코드 삭제
     }
 }

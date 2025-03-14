@@ -24,6 +24,7 @@ public class PlaceCreateReqDto {
     @NotNull(message = "카테고리를 선택해주세요")
     private Category category;
 
+    // DTO -> Entity 변환
     public Place toEntity(){
         return Place.builder()
                 .cityName(cityName)

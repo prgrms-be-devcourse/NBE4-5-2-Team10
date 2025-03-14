@@ -12,6 +12,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class TripInformationReqDto {
+    private Long tripScheduleId;
+    private Long tripInformationId;
     @NotNull(message = "Place Id는 필수 입력값입니다.")
     private Long placeId;
     private LocalDateTime visitTime;
@@ -19,6 +21,5 @@ public class TripInformationReqDto {
     private Transportation transportation;
     private int cost;
     private String notes;
-    private int priority;
-    private boolean isVisited;
+    //private int priority;
 }

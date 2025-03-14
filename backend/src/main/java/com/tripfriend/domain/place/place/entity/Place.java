@@ -1,7 +1,8 @@
 package com.tripfriend.domain.place.place.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.tripfriend.domain.recruit.recruit.entity.Recruit;
+import com.tripfriend.domain.review.entity.Review;
 import com.tripfriend.domain.trip.information.entity.TripInformation;
 import jakarta.persistence.*;
 import lombok.*;
@@ -32,6 +33,20 @@ public class Place {
     @OneToMany(mappedBy = "place", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<TripInformation> tripInformations = new ArrayList<>();
+
+    // 이미지 저장 URL
+    @Column(name = "image_url")
+    private String imageUrl;
+
+    // 동행 게시글 1:N 연결
+    @OneToMany(mappedBy = "place", cascade = CascadeType.REMOVE)
+    @JsonIgnore
+    private List<Recruit> recruits;
+
+    // 후기 게시글 1:N 연결
+    @OneToMany(mappedBy = "place", cascade = CascadeType.REMOVE)
+    @JsonIgnore
+    private List<Review> reviews;
 
     @Column(name = "city_name", nullable = false)
     private String cityName; // 도시명

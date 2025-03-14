@@ -7,6 +7,7 @@ import com.tripfriend.domain.review.entity.Comment;
 import com.tripfriend.domain.review.entity.Review;
 import com.tripfriend.domain.review.repository.CommentRepository;
 import com.tripfriend.domain.review.repository.ReviewRepository;
+import com.tripfriend.global.exception.ServiceException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,18 +17,18 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)  // 기본적으로 읽기 전용 트랜잭션 적용
+@Transactional(readOnly = true)
 public class CommentService {
 
     private final CommentRepository commentRepository;
     private final ReviewRepository reviewRepository;
 
     // 댓글 생성
-    @Transactional  // 읽기 전용이 아닌 일반 트랜잭션으로 오버라이드
+    @Transactional
     public CommentResponseDto createComment(CommentRequestDto requestDto, Member member) {
         // 댓글을 달 리뷰 조회
         Review review = reviewRepository.findById(requestDto.getReviewId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 리뷰입니다."));
+                .orElseThrow(() -> new ServiceException("404-3", "존재하지 않는 리뷰입니다."));
 
         // 새 댓글 엔티티 생성
         Comment comment = new Comment(
@@ -47,7 +48,7 @@ public class CommentService {
     public List<CommentResponseDto> getCommentsByReview(Long reviewId) {
         // 리뷰 존재 여부 확인
         if (!reviewRepository.existsById(reviewId)) {
-            throw new IllegalArgumentException("존재하지 않는 리뷰입니다.");
+            throw new ServiceException("404-3", "존재하지 않는 리뷰입니다.");
         }
 
         List<Comment> comments = commentRepository.findByReviewReviewIdOrderByCreatedAtAsc(reviewId);
@@ -71,7 +72,7 @@ public class CommentService {
     // 댓글 상세 조회
     public CommentResponseDto getComment(Long commentId) {
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 댓글입니다."));
+                .orElseThrow(() -> new ServiceException("404-4", "존재하지 않는 댓글입니다."));
 
         return new CommentResponseDto(comment, comment.getMember().getNickname());
     }
@@ -80,11 +81,11 @@ public class CommentService {
     @Transactional
     public CommentResponseDto updateComment(Long commentId, CommentRequestDto requestDto, Member member) {
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 댓글입니다."));
+                .orElseThrow(() -> new ServiceException("404-4", "존재하지 않는 댓글입니다."));
 
         // 작성자 본인인지 확인
         if (!comment.getMember().getId().equals(member.getId())) {
-            throw new IllegalArgumentException("댓글 작성자만 수정할 수 있습니다.");
+            throw new ServiceException("403-2", "댓글 작성자만 수정할 수 있습니다.");
         }
 
         // 댓글 내용 업데이트
@@ -98,11 +99,11 @@ public class CommentService {
     @Transactional
     public void deleteComment(Long commentId, Member member) {
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 댓글입니다."));
+                .orElseThrow(() -> new ServiceException("404-4", "존재하지 않는 댓글입니다."));
 
         // 작성자 본인인지 확인
         if (!comment.getMember().getId().equals(member.getId())) {
-            throw new IllegalArgumentException("댓글 작성자만 삭제할 수 있습니다.");
+            throw new ServiceException("403-2", "댓글 작성자만 삭제할 수 있습니다.");
         }
 
         // 댓글 삭제

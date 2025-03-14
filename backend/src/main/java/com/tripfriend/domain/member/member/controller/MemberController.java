@@ -5,15 +5,24 @@ import com.tripfriend.domain.member.member.entity.Member;
 import com.tripfriend.domain.member.member.service.AuthService;
 import com.tripfriend.domain.member.member.service.MailService;
 import com.tripfriend.domain.member.member.service.MemberService;
+import com.tripfriend.global.annotation.CheckPermission;
+import com.tripfriend.global.dto.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Tag(name = "Member API", description = "회원관련 기능을 제공합니다.")
 @RestController
@@ -25,78 +34,153 @@ public class MemberController {
     private final AuthService authService;
     private final MailService mailService;
 
+    //회원정보 조회
+    @GetMapping("/me")
+    public ResponseEntity<Map<String, Object>> getCurrentUser(@RequestHeader("Authorization") String token) {
+        Member member = authService.getLoggedInMember(token);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("id", member.getId());
+        response.put("username", member.getUsername());
+        response.put("isAdmin", member.isAdmin()); // 관리자 여부
+
+        return ResponseEntity.ok(response);
+    }
+
     @Operation(summary = "회원가입")
     @PostMapping("/join")
-    public ResponseEntity<MemberResponseDto> join(@Valid @RequestBody JoinRequestDto joinRequestDto) throws MessagingException {
+    public RsData<MemberResponseDto> join(@Valid @RequestBody JoinRequestDto joinRequestDto) throws MessagingException {
 
         MemberResponseDto savedMember = memberService.join(joinRequestDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedMember);
+        return new RsData<>("201-1", "회원가입이 완료되었습니다.", savedMember);
     }
+
+
 
     @Operation(summary = "로그인")
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequestDto loginRequestDto, HttpServletResponse response) {
+    public RsData<AuthResponseDto> login(@RequestBody LoginRequestDto loginRequestDto, HttpServletResponse response) {
+
         AuthResponseDto authResponse = authService.login(loginRequestDto, response);
-        return ResponseEntity.ok(authResponse);
+        return new RsData<>("200-1", "로그인 성공", authResponse);
     }
 
     @Operation(summary = "로그아웃")
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletResponse response) {
-        authService.logout(response);
-        return ResponseEntity.ok("Logout successful");
+    public RsData<Void> logout(HttpServletRequest request, HttpServletResponse response) {
+
+        authService.logout(request, response);
+        return new RsData<>("200-1", "로그아웃이 완료되었습니다.", null);
     }
 
     @Operation(summary = "액세스 토큰 재발급")
     @PostMapping("/refresh")
-    public ResponseEntity<?> refresh(@CookieValue(name = "refreshToken") String refreshToken, HttpServletResponse response) {
-        String newAccessToken = authService.refreshToken(refreshToken, response);
-        return ResponseEntity.ok(new AuthResponseDto(newAccessToken));
+    public RsData<AuthResponseDto> refresh(@CookieValue(name = "accessToken", required = false) String accessToken, HttpServletResponse response) {
+        try {
+            if (accessToken == null) {
+                return new RsData<>("401-2", "액세스 토큰이 없습니다.", null);
+            }
+
+            AuthResponseDto authResponseDto = authService.refreshToken(accessToken, response);
+            return new RsData<>("200-1", "토큰이 재발급되었습니다.", authResponseDto);
+        } catch (Exception e) {
+            return new RsData<>("401-1", "토큰 재발급에 실패했습니다: " + e.getMessage(), null);
+        }
     }
 
     @Operation(summary = "회원정보 수정")
-    @PutMapping("/{id}")
-    public ResponseEntity<MemberResponseDto> updateMember(@PathVariable Long id, @RequestBody MemberUpdateRequestDto memberUpdateRequestDto) {
+    @PutMapping("/update")
+    public RsData<MemberResponseDto> updateMember(@RequestHeader(value = "Authorization", required = false) String token, @RequestBody MemberUpdateRequestDto memberUpdateRequestDto) {
 
-        MemberResponseDto response = memberService.updateMember(id, memberUpdateRequestDto);
-        return ResponseEntity.ok(response);
+        Member loggedInMember = authService.getLoggedInMember(token);
+
+        MemberResponseDto response = memberService.updateMember(loggedInMember.getId(), memberUpdateRequestDto);
+        return new RsData<>("200-1", "회원 정보가 수정되었습니다.", response);
     }
 
     @Operation(summary = "회원 삭제")
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteMember(@PathVariable Long id) {
+    @DeleteMapping("/delete")
+    public RsData<Void> deleteMember(@RequestHeader(value = "Authorization", required = false) String token, HttpServletRequest request,
+                                     HttpServletResponse response) {
 
-        memberService.deleteMember(id);
-        return ResponseEntity.noContent().build();
+        Member loggedInMember = authService.getLoggedInMember(token);
+
+        memberService.deleteMember(loggedInMember.getId(), request, response);
+        return new RsData<>("204-1", "회원이 삭제되었습니다.", null);
+    }
+
+    @Operation(summary = "회원 복구")
+    @PostMapping("/restore")
+    public RsData<Void> restoreMember(@RequestHeader(value = "Authorization", required = false) String token) {
+
+        Member loggedInMember = authService.getLoggedInMember(token);
+        memberService.restoreMember(loggedInMember.getId());
+
+        return new RsData<>("200-1", "계정이 성공적으로 복구되었습니다.", null);
     }
 
     @Operation(summary = "이메일 인증 코드 전송")
     @GetMapping("/auth/verify-email")
-    public ResponseEntity<String> requestAuthCode(String email) throws MessagingException {
+    public RsData<Void> requestAuthCode(String email) throws MessagingException {
 
         boolean isSend = mailService.sendAuthCode(email);
-        return isSend ? ResponseEntity.status(HttpStatus.OK).body("인증 코드가 전송되었습니다.") :
-                ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("인증 코드 전송이 실패하였습니다.");
+        return isSend
+                ? new RsData<>("200-1", "인증 코드가 전송되었습니다.", null)
+                : new RsData<>("500-1", "인증 코드 전송이 실패하였습니다.", null);
     }
 
     @Operation(summary = "이메일 인증")
     @PostMapping("/auth/email")
-    public ResponseEntity<String> validateAuthCode(@RequestBody @Valid EmailVerificationRequestDto emailVerificationRequestDto) {
+    public RsData<Void> validateAuthCode(@RequestBody @Valid EmailVerificationRequestDto emailVerificationRequestDto) {
 
         boolean isSuccess = mailService.validationAuthCode(emailVerificationRequestDto);
-        return isSuccess ? ResponseEntity.status(HttpStatus.OK).body("이메일 인증에 성공하였습니다.") :
-                ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이메일 인증에 실패하였습니다.");
+        return isSuccess
+                ? new RsData<>("200-1", "이메일 인증에 성공하였습니다.", null)
+                : new RsData<>("400-1", "이메일 인증에 실패하였습니다.", null);
     }
 
     @Operation(summary = "마이페이지")
     @GetMapping("/mypage")
-    public ResponseEntity<MemberResponseDto> getMyPage(@RequestHeader(value = "Authorization", required = false) String token) {
+    public RsData<MemberResponseDto> getMyPage(@RequestHeader(value = "Authorization", required = false) String token) {
 
-        // 토큰에서 현재 로그인한 회원 정보 추출
         Member loggedInMember = authService.getLoggedInMember(token);
 
-        // 사용자 페이지 정보 가져오기
         MemberResponseDto response = memberService.getMyPage(loggedInMember.getId(), loggedInMember.getUsername());
-        return ResponseEntity.ok(response);
+        return new RsData<>("200-1", "마이페이지 정보 조회 성공", response);
+    }
+
+    //관리자 회원 조회
+    @Operation(summary = "전체 회원 목록 조회 (관리자 전용)")
+    @GetMapping("/all")
+    @CheckPermission("ADMIN") //관리자
+    public ResponseEntity<List<MemberResponseDto>> getAllMembers() {
+        List<MemberResponseDto> members = memberService.getAllMembers();
+        return ResponseEntity.ok(members);
+    }
+
+    @Operation(summary = "프로필 이미지 등록")
+    @PostMapping(value = "/profile-image/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public RsData<String> uploadProfileImage(@RequestHeader(value = "Authorization", required = false) String token,
+                                             @RequestPart("image") MultipartFile imageFile) throws IOException {
+
+        Member loggedInMember = authService.getLoggedInMember(token);
+        String imageUrl = memberService.uploadProfileImage(loggedInMember.getId(), imageFile);
+
+        return new RsData<>("200-1", "이미지 업로드 성공", imageUrl);
+    }
+
+    @Operation(summary = "프로필 이미지 삭제")
+    @DeleteMapping("/profile-image/delete")
+    public RsData<String> deleteProfileImage(@RequestHeader(value = "Authorization", required = false) String token) throws IOException {
+
+        Member loggedInMember = authService.getLoggedInMember(token);
+
+        if (loggedInMember.getProfileImage() == null) {
+            return new RsData<>("400-1", "삭제할 이미지가 없습니다.", null);
+        }
+
+        memberService.deleteProfileImage(loggedInMember.getId());
+
+        return new RsData<>("200-1", "이미지 삭제 성공", null);
     }
 }

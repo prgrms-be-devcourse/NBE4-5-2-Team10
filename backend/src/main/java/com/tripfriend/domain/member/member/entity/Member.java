@@ -20,7 +20,7 @@ public class Member {
     @Column(name = "username", nullable = false, length = 100, unique = true)
     private String username;
 
-    @Column(name = "email", nullable = false, unique = true)
+    @Column(name = "email", nullable = false)
     private String email;
 
     @Column(name = "password", nullable = false)
@@ -63,6 +63,24 @@ public class Member {
     @Column(name = "verified", nullable = false)
     private boolean verified; // 이메일 인증 여부
 
+    // 소셜 로그인 식별
+    @Column(name = "provider")
+    private String provider;
+
+    @Column(name = "provider_id")
+    private String providerId;
+
+    // soft delete 여부
+    @Column(name = "deleted")
+    private boolean deleted = false;
+
+    // soft delete 된 날짜
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
+    //관리자 여부
+    private boolean isAdmin = false;
+
     @PrePersist
     protected void onCreate() {
 
@@ -73,5 +91,17 @@ public class Member {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    // 삭제 취소 가능 여부 확인
+    public boolean canBeRestored() {
+        // 삭제되지 않았거나 삭제 시간이 기록되지 않은 경우
+        if (!deleted || deletedAt == null) {
+            return false;
+        }
+
+        // 삭제 후 30일 이내인지 확인
+        LocalDateTime restoreDeadline = deletedAt.plusDays(30);
+        return LocalDateTime.now().isBefore(restoreDeadline);
     }
 }

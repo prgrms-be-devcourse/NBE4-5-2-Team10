@@ -1,12 +1,12 @@
 package com.tripfriend.domain.recruit.apply.dto;
 
-import com.tripfriend.domain.member.member.entity.Member;
 import com.tripfriend.domain.recruit.apply.entity.Apply;
-import com.tripfriend.domain.recruit.recruit.entity.Recruit;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -14,12 +14,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ApplyResponseDto {
     private Long applyId;
-//    private Member member;
+    //    private Member member;
     private Long memberId;
     private String memberProfileImage;
     private String memberNickname;
-//    private Recruit recruit;
+    //    private Recruit recruit;
     private String content;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     public ApplyResponseDto(Apply apply) {
         this.applyId = apply.getApplyId();
@@ -29,5 +31,7 @@ public class ApplyResponseDto {
         this.memberNickname = apply.getMember().getNickname();
 //        this.recruit = apply.getRecruit();
         this.content = apply.getContent();
+        this.createdAt = apply.getCreatedAt();
+        this.updatedAt = apply.getUpdatedAt();
     }
 }

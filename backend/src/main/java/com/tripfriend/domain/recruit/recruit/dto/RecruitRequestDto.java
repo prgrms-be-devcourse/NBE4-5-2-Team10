@@ -1,5 +1,6 @@
 package com.tripfriend.domain.recruit.recruit.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.tripfriend.domain.member.member.entity.Member;
 import com.tripfriend.domain.place.place.entity.Place;
 import com.tripfriend.domain.recruit.recruit.entity.Recruit;
@@ -11,17 +12,17 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
-@Data
+@Data // getter, setter, hashcode, tostring 추가
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class RecruitUpdateRequestDto {
-    private Long recruitId;
-    private Long memberId;
+@NoArgsConstructor // serialization 시 필요
+@AllArgsConstructor // builder에 필요
+public class RecruitRequestDto {
+//    private Long memberId;
 //    private List<Apply> applies;
     private Long placeId;
     private String title;
     private String content;
+    @JsonProperty("isClosed")
     private boolean isClosed;
     private LocalDate startDate;
     private LocalDate endDate;
@@ -33,7 +34,6 @@ public class RecruitUpdateRequestDto {
 
     public Recruit toEntity(Member member, Place place){
         return Recruit.builder()
-                .recruitId(this.recruitId)
                 .member(member)
 //                .applies(applies)
                 .place(place)
