@@ -2,7 +2,6 @@ package com.tripfriend.domain.qna.service;
 
 import com.tripfriend.domain.member.member.entity.Member;
 import com.tripfriend.domain.member.member.repository.MemberRepository;
-import com.tripfriend.domain.member.member.service.MemberService;
 import com.tripfriend.domain.qna.dto.AnswerDto;
 import com.tripfriend.domain.qna.entity.Answer;
 import com.tripfriend.domain.qna.entity.Question;
@@ -18,7 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AnswerService {
     private final AnswerRepository answerRepository;
-   // private final QuestionService questionService;
+    // private final QuestionService questionService;
     //private final MemberService memberService;
     private final QuestionRepository questionRepository;
     private final MemberRepository memberRepository;

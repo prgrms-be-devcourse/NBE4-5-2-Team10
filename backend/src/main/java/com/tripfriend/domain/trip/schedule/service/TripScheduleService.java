@@ -7,7 +7,6 @@ import com.tripfriend.domain.place.place.entity.Place;
 import com.tripfriend.domain.place.place.repository.PlaceRepository;
 import com.tripfriend.domain.trip.information.dto.TripInformationReqDto;
 import com.tripfriend.domain.trip.information.dto.TripInformationResDto;
-import com.tripfriend.domain.trip.information.dto.TripInformationUpdateReqDto;
 import com.tripfriend.domain.trip.information.entity.TripInformation;
 import com.tripfriend.domain.trip.information.repository.TripInformationRepository;
 import com.tripfriend.domain.trip.information.service.TripInformationService;
@@ -305,6 +304,3 @@ public class TripScheduleService {
     }
 
 }
-
-
-

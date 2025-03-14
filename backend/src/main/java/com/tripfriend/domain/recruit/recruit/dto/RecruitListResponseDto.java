@@ -1,12 +1,8 @@
 package com.tripfriend.domain.recruit.recruit.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.tripfriend.domain.member.member.entity.AgeRange;
 import com.tripfriend.domain.member.member.entity.Gender;
-import com.tripfriend.domain.member.member.entity.Member;
-import com.tripfriend.domain.place.place.entity.Place;
 import com.tripfriend.domain.recruit.recruit.entity.Recruit;
-import com.tripfriend.domain.recruit.recruit.entity.TravelStyle;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,23 +17,23 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class RecruitListResponseDto {
     private Long recruitId;
-//    private Member member;
+    //    private Member member;
     private String memberProfileImage;
     private String memberNickname;
     private String genderRestriction;
     private String ageRestriction;
-//    private List<Apply> applies;
+    //    private List<Apply> applies;
 //    private Place place;
     private String placeCityName;
     private String placePlaceName;
     private String title;
-//    private String content;
+    //    private String content;
     @JsonProperty("isClosed")
     private boolean isClosed;
     private LocalDate startDate;
     private LocalDate endDate;
     private String travelStyle;
-//    private boolean sameGender;
+    //    private boolean sameGender;
 //    private boolean sameAge;
     private Integer budget = 0;
     private Integer groupSize = 2;

@@ -4,13 +4,8 @@ import com.tripfriend.domain.member.member.entity.Member;
 import com.tripfriend.domain.member.member.repository.MemberRepository;
 import com.tripfriend.domain.qna.entity.Question;
 import com.tripfriend.domain.qna.repository.QuestionRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.util.List;
 
@@ -56,8 +51,4 @@ public class QuestionService {
 
 
 
-    }
-
-
-
-
+}

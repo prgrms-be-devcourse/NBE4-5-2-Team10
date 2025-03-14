@@ -47,9 +47,9 @@ public class SecurityConfig {
                 .addFilterBefore(deletedMemberFilter, UsernamePasswordAuthenticationFilter.class)
                 // oauth2 로그인 활성화
                 .oauth2Login(oauth2 -> oauth2
-                                .userInfoEndpoint(userInfo -> userInfo
-                                        .userService(customOauth2UserService))
-                                .successHandler(oAuth2AuthenticationSuccessHandler)
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(customOauth2UserService))
+                        .successHandler(oAuth2AuthenticationSuccessHandler)
                 );
 
         return http.build();
