@@ -645,8 +645,12 @@ public class BaseInitData implements CommandLineRunner {
 
     // 리뷰 생성 헬퍼 메서드
     private Review createReview(String title, String content, double rating, Member member, Long placeId) {
-        return new Review(title, content, rating, member, placeId);
+        Place place = placeRepository.findById(placeId)
+                .orElseThrow(() -> new ServiceException("404-2", "해당 여행지가 존재하지 않습니다."));
+
+        return new Review(title, content, rating, member, place);
     }
+
 
     // 댓글 데이터 등록
     private void initComments() {

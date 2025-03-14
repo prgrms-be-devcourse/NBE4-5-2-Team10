@@ -1,5 +1,7 @@
 import type { Metadata } from "next"
+import { Suspense } from "react"
 import ReviewForm from "../review-form"
+import WriteAuthCheck from "../components/write-auth-check"
 
 export const metadata: Metadata = {
   title: "TripFriend - 리뷰 작성",
@@ -20,10 +22,13 @@ export default function WriteReviewPage() {
 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          <ReviewForm />
+          <Suspense fallback={<div className="text-center py-10">로딩 중...</div>}>
+            <WriteAuthCheck>
+              <ReviewForm />
+            </WriteAuthCheck>
+          </Suspense>
         </div>
       </div>
     </div>
   )
 }
-

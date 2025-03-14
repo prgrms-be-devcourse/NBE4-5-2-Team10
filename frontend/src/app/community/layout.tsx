@@ -3,16 +3,16 @@ import LocalHeader from "./components/local-header"
 import LocalFooter from "./components/local-footer"
 
 export default function CommunityLayout({
-  children,
-}: {
-  children: ReactNode
+                                            children,
+                                        }: {
+    children: ReactNode
 }) {
-  return (
-    <>
-      <LocalHeader />
-      <main>{children}</main>
-      <LocalFooter />
-    </>
-  )
+    return (
+        <>
+            <LocalHeader />
+            <main>{children}</main>
+            <LocalFooter />
+        </>
+    )
 }
 
