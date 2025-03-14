@@ -138,6 +138,9 @@ export default function Header() {
           <Link href="/about" className="text-gray-700 hover:text-blue-600">
             서비스 소개
           </Link>
+          <Link href="/qna" className="text-gray-700 hover:text-blue-600">
+            Q&A
+          </Link>
         </div>
         <div className="flex items-center space-x-4">
           {isLoggedIn ? (

@@ -19,7 +19,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Tag(name = "Member API", description = "회원관련 기능을 제공합니다.")
 @RestController
@@ -31,6 +33,19 @@ public class MemberController {
     private final AuthService authService;
     private final MailService mailService;
 
+    //회원정보 조회
+    @GetMapping("/me")
+    public ResponseEntity<Map<String, Object>> getCurrentUser(@RequestHeader("Authorization") String token) {
+        Member member = authService.getLoggedInMember(token);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("id", member.getId());
+        response.put("username", member.getUsername());
+        response.put("isAdmin", member.isAdmin()); // 관리자 여부
+
+        return ResponseEntity.ok(response);
+    }
+
     @Operation(summary = "회원가입")
     @PostMapping("/join")
     public RsData<MemberResponseDto> join(@Valid @RequestBody JoinRequestDto joinRequestDto) throws MessagingException {
@@ -38,6 +53,8 @@ public class MemberController {
         MemberResponseDto savedMember = memberService.join(joinRequestDto);
         return new RsData<>("201-1", "회원가입이 완료되었습니다.", savedMember);
     }
+
+
 
     @Operation(summary = "로그인")
     @PostMapping("/login")
