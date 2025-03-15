@@ -13,8 +13,12 @@ interface Answer {
 export default function AnswerSection({ questionId }: { questionId: number }) {
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [newAnswer, setNewAnswer] = useState("");
-  const [currentUsername, setCurrentUsername] = useState("");
+  const [currentUser, setCurrentUser] = useState<{
+    username: string;
+    role: string;
+  } | null>(null);
 
+  // ✅ 답변, 사용자 정보 불러오기
   useEffect(() => {
     const fetchAnswers = async () => {
       try {
@@ -36,7 +40,10 @@ export default function AnswerSection({ questionId }: { questionId: number }) {
           },
         });
 
-        setCurrentUsername(res.data.username);
+        setCurrentUser({
+          username: res.data.username,
+          role: res.data.role,
+        });
       } catch (err) {
         console.error("현재 사용자 정보 조회 실패", err);
       }
@@ -46,6 +53,7 @@ export default function AnswerSection({ questionId }: { questionId: number }) {
     fetchCurrentUser();
   }, [questionId]);
 
+  // ✅ 답변 등록
   const handleSubmit = async () => {
     const token = localStorage.getItem("accessToken");
 
@@ -73,10 +81,18 @@ export default function AnswerSection({ questionId }: { questionId: number }) {
     }
   };
 
+  // ✅ 답변 삭제
   const handleDelete = async (answerId: number) => {
     try {
       const token = localStorage.getItem("accessToken");
-      await api.delete(`/qna/answer/${answerId}`, {
+      if (!token || !currentUser) return;
+
+      const isAdmin = currentUser.role === "ADMIN";
+      const endpoint = isAdmin
+        ? `/admin/qna/answer/${answerId}` // 관리자용 API
+        : `/qna/answer/${answerId}`;     // 사용자용 API
+
+      await api.delete(endpoint, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -104,7 +120,8 @@ export default function AnswerSection({ questionId }: { questionId: number }) {
               {a.memberUsername} | {new Date(a.createdAt).toLocaleDateString()}
             </div>
 
-            {a.memberUsername === currentUsername && (
+            {(currentUser?.role === "ADMIN" ||
+              a.memberUsername === currentUser?.username) && (
               <button
                 onClick={() => handleDelete(a.answerId)}
                 className="absolute top-2 right-2 text-sm text-red-500 hover:underline"

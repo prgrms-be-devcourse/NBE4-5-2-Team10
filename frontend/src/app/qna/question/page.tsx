@@ -22,7 +22,7 @@ export default function QuestionCreatePage() {
 
     try {
       await api.post(
-        "/qna/question", // ✅ 정확한 백엔드 엔드포인트 확인
+        "/qna/question", // 정확한 백엔드 엔드포인트 확인
         { title, content },
         {
           headers: {
