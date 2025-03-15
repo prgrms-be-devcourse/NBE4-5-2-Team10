@@ -1,10 +1,12 @@
 import api from "@/lib/api";
-import { Notice } from "@/app/admin/notice/page"; // 또는 타입 따로 빼도 좋아요
+import { Notice } from "@/app/admin/notice/page";
+
+
 
 // 관리자 전용 전체 조회 (토큰 필요)
 export const fetchAllNoticesForAdmin = async (): Promise<Notice[]> => {
   const token = localStorage.getItem("accessToken");
-  const res = await api.get("/notice", {
+  const res = await api.get("/notice/admin", {
     headers: {
       Authorization: `Bearer ${token}`,
     },
