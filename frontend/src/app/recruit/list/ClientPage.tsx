@@ -44,6 +44,11 @@ export default function RecruitListPage() {
   const [sortBy, setSortBy] = useState("latest"); // 최신순 기본값
   const [minGroupSize, setMinGroupSize] = useState("");
   const [maxGroupSize, setMaxGroupSize] = useState("");
+  const [selectedTravelStyle, setSelectedTravelStyle] = useState<string>("");
+
+  const handleTravelStyleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedTravelStyle(e.target.value);
+  };
 
   // 도시 목록 불러오기
   useEffect(() => {
@@ -83,6 +88,7 @@ export default function RecruitListPage() {
           maxBudget: maxBudget ? Number(maxBudget) : undefined,
           minGroupSize: minGroupSize ? Number(minGroupSize) : undefined,
           maxGroupSize: maxGroupSize ? Number(maxGroupSize) : undefined,
+          travelStyle: selectedTravelStyle || undefined, // ✅ 기본값(전체)일 경우 undefined
           sortBy,
         };
 
@@ -105,6 +111,7 @@ export default function RecruitListPage() {
     maxBudget,
     minGroupSize, // ✅ 추가
     maxGroupSize, // ✅ 추가
+    selectedTravelStyle, // ✅ 추가
     sortBy,
   ]);
 
@@ -169,6 +176,18 @@ export default function RecruitListPage() {
             <option value="">모집 상태</option>
             <option value="true">모집 마감</option>
             <option value="false">모집 중</option>
+          </select>
+          <select
+            value={selectedTravelStyle}
+            onChange={handleTravelStyleChange}
+            className="w-full p-2 border rounded"
+          >
+            <option value="">여행 스타일</option> {/* 기본값: 전체 */}
+            <option value="SIGHTSEEING">관광</option>
+            <option value="RELAXATION">휴양</option>
+            <option value="ADVENTURE">액티비티</option>
+            <option value="GOURMET">미식</option>
+            <option value="SHOPPING">쇼핑</option>
           </select>
           <input
             type="date"
@@ -322,238 +341,3 @@ export default function RecruitListPage() {
     </div>
   );
 }
-
-// "use client";
-
-// import { useEffect, useState } from "react";
-// import Link from "next/link";
-// import { searchAndFilterRecruits } from "@/lib/api/recruit";
-// import { getCities } from "@/lib/api/place"; // 도시 목록 불러오는 API 추가
-// import Header from "@/components/Header";
-// import Footer from "@/components/Footer";
-
-// // 모집 글 타입 정의
-// interface Recruit {
-//   recruitId: number;
-//   memberProfileImage: string;
-//   memberNickname: string;
-//   placeCityName: string;
-//   placePlaceName: string;
-//   title: string;
-//   isClosed: boolean;
-//   startDate: string;
-//   endDate: string;
-//   travelStyle: string;
-//   genderRestriction: string;
-//   ageRestriction: string;
-//   budget: number;
-//   groupSize: number;
-//   createdAt: string;
-//   updatedAt: string;
-// }
-
-// export default function RecruitListPage() {
-//   const [recruits, setRecruits] = useState<Recruit[]>([]);
-//   const [error, setError] = useState<string | null>(null);
-//   const [cities, setCities] = useState<string[]>([]); // 도시 목록 상태 추가
-
-//   // 검색 및 필터링 상태
-//   const [keyword, setKeyword] = useState("");
-//   const [cityName, setCityName] = useState("");
-//   const [filteredCities, setFilteredCities] = useState<string[]>([]); // 검색된 도시 목록
-//   const [isClosed, setIsClosed] = useState<string | null>(null);
-//   const [startDate, setStartDate] = useState("");
-//   const [endDate, setEndDate] = useState("");
-//   const [minBudget, setMinBudget] = useState("");
-//   const [maxBudget, setMaxBudget] = useState("");
-//   const [sortBy, setSortBy] = useState("latest"); // 최신순 기본값
-
-//   // 도시 목록 불러오기
-//   useEffect(() => {
-//     async function fetchCities() {
-//       try {
-//         const data = await getCities();
-//         setCities(data.data); // 도시 목록 상태 업데이트
-//       } catch (error) {
-//         console.error("도시 목록 불러오기 실패:", error);
-//       }
-//     }
-//     fetchCities();
-//   }, []);
-
-//   // 도시 입력할 때 자동완성 리스트 필터링
-//   useEffect(() => {
-//     if (cityName) {
-//       const filtered = cities.filter((city) =>
-//         city.toLowerCase().includes(cityName.toLowerCase())
-//       );
-//       setFilteredCities(filtered);
-//     } else {
-//       setFilteredCities([]);
-//     }
-//   }, [cityName, cities]);
-
-//   useEffect(() => {
-//     async function fetchRecruits() {
-//       try {
-//         const queryParams = {
-//           keyword: keyword || undefined,
-//           cityName: cityName || undefined,
-//           isClosed: isClosed !== null ? isClosed === "true" : undefined,
-//           startDate: startDate || undefined,
-//           endDate: endDate || undefined,
-//           minBudget: minBudget ? Number(minBudget) : undefined,
-//           maxBudget: maxBudget ? Number(maxBudget) : undefined,
-//           sortBy,
-//         };
-
-//         const data = await searchAndFilterRecruits(queryParams);
-//         setRecruits(data.data);
-//       } catch (error) {
-//         console.error("모집 글을 불러오는 중 오류 발생:", error);
-//         setError("모집 글을 불러오는 중 오류가 발생했습니다.");
-//       }
-//     }
-
-//     fetchRecruits();
-//   }, [
-//     keyword,
-//     cityName,
-//     isClosed,
-//     startDate,
-//     endDate,
-//     minBudget,
-//     maxBudget,
-//     sortBy,
-//   ]);
-
-//   // 날짜 포맷 함수 (YYYY-MM-DD HH:mm)
-//   const formatDateTime = (dateString: string) => {
-//     const date = new Date(dateString);
-//     return date.toLocaleString("ko-KR", {
-//       year: "numeric",
-//       month: "2-digit",
-//       day: "2-digit",
-//       hour: "2-digit",
-//       minute: "2-digit",
-//     });
-//   };
-
-//   return (
-//     <div className="min-h-screen bg-gray-50 p-8">
-//       <Header />
-//       <h2 className="text-3xl font-bold mb-6">여행 동행 모집</h2>
-
-//       {/* 검색 및 필터 UI */}
-//       <div className="bg-white p-4 shadow-md rounded-md mb-6">
-//         <input
-//           type="text"
-//           placeholder="검색어 입력"
-//           value={keyword}
-//           onChange={(e) => setKeyword(e.target.value)}
-//           className="w-full p-2 border border-gray-300 rounded-md mb-2"
-//         />
-//         <div className="relative">
-//           <input
-//             type="text"
-//             placeholder="도시 이름 검색"
-//             value={cityName}
-//             onChange={(e) => setCityName(e.target.value)}
-//             className="w-full p-2 border border-gray-300 rounded-md"
-//           />
-//           {/* 자동완성된 도시 리스트 */}
-//           {filteredCities.length > 0 && (
-//             <ul className="absolute w-full bg-white border border-gray-300 rounded-md mt-1 shadow-md max-h-40 overflow-y-auto">
-//               {filteredCities.map((city) => (
-//                 <li
-//                   key={city}
-//                   className="p-2 cursor-pointer hover:bg-gray-100"
-//                   onClick={() => {
-//                     setCityName(city);
-//                     setFilteredCities([]); // 리스트 닫기
-//                   }}
-//                 >
-//                   {city}
-//                 </li>
-//               ))}
-//             </ul>
-//           )}
-//         </div>
-//         <div className="grid grid-cols-2 gap-2 mt-2">
-//           <select
-//             value={isClosed || ""}
-//             onChange={(e) => setIsClosed(e.target.value)}
-//             className="p-2 border border-gray-300 rounded-md"
-//           >
-//             <option value="">모집 상태</option>
-//             <option value="true">모집 마감</option>
-//             <option value="false">모집 중</option>
-//           </select>
-//           <input
-//             type="date"
-//             value={startDate}
-//             onChange={(e) => setStartDate(e.target.value)}
-//             className="p-2 border border-gray-300 rounded-md"
-//           />
-//           <input
-//             type="date"
-//             value={endDate}
-//             onChange={(e) => setEndDate(e.target.value)}
-//             className="p-2 border border-gray-300 rounded-md"
-//           />
-//           <input
-//             type="number"
-//             placeholder="최소 예산"
-//             value={minBudget}
-//             onChange={(e) => setMinBudget(e.target.value)}
-//             className="p-2 border border-gray-300 rounded-md"
-//           />
-//           <input
-//             type="number"
-//             placeholder="최대 예산"
-//             value={maxBudget}
-//             onChange={(e) => setMaxBudget(e.target.value)}
-//             className="p-2 border border-gray-300 rounded-md"
-//           />
-//         </div>
-//       </div>
-
-//       {error && <p className="text-red-500">{error}</p>}
-
-//       {Array.isArray(recruits) && recruits.length === 0 ? (
-//         <p>모집 글이 없습니다.</p>
-//       ) : (
-//         <ul className="space-y-4">
-//           {recruits.map((recruit) => (
-//             <li
-//               key={recruit.recruitId}
-//               className="p-6 bg-white shadow-md rounded-lg flex items-center space-x-4"
-//             >
-//               <img
-//                 src={recruit.memberProfileImage || "/default-profile.png"}
-//                 alt="프로필 이미지"
-//                 className="w-12 h-12 rounded-full object-cover"
-//               />
-//               <div className="flex-1">
-//                 <Link href={`/recruit/${recruit.recruitId}`}>
-//                   <h3 className="text-xl font-semibold text-blue-600 hover:underline">
-//                     {recruit.title}
-//                   </h3>
-//                 </Link>
-//                 <p className="text-gray-500">👤 {recruit.memberNickname}</p>
-//                 <p className="text-gray-600">
-//                   🗺️ 여행지: {recruit.placeCityName}
-//                 </p>
-//                 <p className="text-gray-600">
-//                   ⏳ 일정: {recruit.startDate} ~ {recruit.endDate}
-//                 </p>
-//               </div>
-//             </li>
-//           ))}
-//         </ul>
-//       )}
-
-//       <Footer />
-//     </div>
-//   );
-// }
