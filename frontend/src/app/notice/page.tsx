@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { fetchAllNotices } from "@/api/notice";
+import { fetchAllNoticesPublic } from "@/lib/api/notice";
 import type { Notice } from "@/app/admin/notice/page";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -13,7 +13,7 @@ export default function NoticePage() {
   useEffect(() => {
     const loadNotices = async () => {
       try {
-        const data = await fetchAllNotices();
+        const data = await fetchAllNoticesPublic();
         setNotices(data);
       } catch (err) {
         console.error("공지사항 조회 실패", err);
