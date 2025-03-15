@@ -42,6 +42,8 @@ export default function RecruitListPage() {
   const [minBudget, setMinBudget] = useState("");
   const [maxBudget, setMaxBudget] = useState("");
   const [sortBy, setSortBy] = useState("latest"); // 최신순 기본값
+  const [minGroupSize, setMinGroupSize] = useState("");
+  const [maxGroupSize, setMaxGroupSize] = useState("");
 
   // 도시 목록 불러오기
   useEffect(() => {
@@ -79,6 +81,8 @@ export default function RecruitListPage() {
           endDate: endDate || undefined,
           minBudget: minBudget ? Number(minBudget) : undefined,
           maxBudget: maxBudget ? Number(maxBudget) : undefined,
+          minGroupSize: minGroupSize ? Number(minGroupSize) : undefined,
+          maxGroupSize: maxGroupSize ? Number(maxGroupSize) : undefined,
           sortBy,
         };
 
@@ -99,6 +103,8 @@ export default function RecruitListPage() {
     endDate,
     minBudget,
     maxBudget,
+    minGroupSize, // ✅ 추가
+    maxGroupSize, // ✅ 추가
     sortBy,
   ]);
 
@@ -155,13 +161,6 @@ export default function RecruitListPage() {
           )}
         </div>
         <div className="grid grid-cols-2 gap-2">
-          {/* <input
-            type="text"
-            placeholder="도시 이름"
-            value={cityName}
-            onChange={(e) => setCityName(e.target.value)}
-            className="p-2 border border-gray-300 rounded-md"
-          /> */}
           <select
             value={isClosed || ""}
             onChange={(e) => setIsClosed(e.target.value)}
@@ -195,6 +194,20 @@ export default function RecruitListPage() {
             placeholder="최대 예산"
             value={maxBudget}
             onChange={(e) => setMaxBudget(e.target.value)}
+            className="p-2 border border-gray-300 rounded-md"
+          />
+          <input
+            type="number"
+            placeholder="최소 모집 인원"
+            value={minGroupSize}
+            onChange={(e) => setMinGroupSize(e.target.value)}
+            className="p-2 border border-gray-300 rounded-md"
+          />
+          <input
+            type="number"
+            placeholder="최대 모집 인원"
+            value={maxGroupSize}
+            onChange={(e) => setMaxGroupSize(e.target.value)}
             className="p-2 border border-gray-300 rounded-md"
           />
         </div>
