@@ -15,3 +15,65 @@ export async function getRecruitById(recruitId: string) {
 
   return response.json();
 }
+
+export async function searchAndFilterRecruits(params: Record<string, any>) {
+  // 🔹 localStorage에서 토큰 가져오기
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+
+  const filteredParams = Object.fromEntries(
+    Object.entries(params).filter(
+      ([_, value]) => value !== undefined && value !== ""
+    )
+  );
+
+  const queryString = new URLSearchParams(filteredParams).toString();
+
+  const res = await fetch(
+    `http://localhost:8080/recruits/search3?${queryString}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }), // ✅ 토큰을 Authorization 헤더에 추가
+      },
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error(`API 요청 실패: ${res.status}`);
+  }
+
+  return res.json();
+}
+
+// export async function searchAndFilterRecruits(params: Record<string, any>) {
+//   // 저장된 토큰 가져오기
+//   const token =
+//     typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+//   const filteredParams = Object.fromEntries(
+//     Object.entries(params).filter(
+//       ([_, value]) => value !== undefined && value !== ""
+//     )
+//   );
+
+//   const queryString = new URLSearchParams(filteredParams).toString();
+
+//   const res = await fetch(
+//     `http://localhost:8080/recruits/search3?${queryString}`,
+//     {
+//       method: "GET",
+//       headers: {
+//         "Content-Type": "application/json",
+//         ...(token && { Authorization: `Bearer ${token}` }), // 토큰이 있으면 Authorization 헤더 추가
+//       },
+//     }
+//   );
+
+//   if (!res.ok) {
+//     throw new Error(`API 요청 실패: ${res.status}`);
+//   }
+
+//   return res.json();
+// }
