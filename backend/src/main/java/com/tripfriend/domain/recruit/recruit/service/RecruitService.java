@@ -160,7 +160,7 @@ public class RecruitService {
         Member member = getLoggedInMember(token);
 
         // 본인 확인
-        if (!recruit.getMember().getId().equals(member.getId()) && member.getAuthority().equals("ADMIN")) {
+        if (!recruit.getMember().getId().equals(member.getId()) && !member.getAuthority().equals("ADMIN")) {
             throw new ServiceException("403-2", "관리자가 아니라면 본인이 등록한 동행 모집글만 삭제할 수 있습니다.");
         }
 
