@@ -5,11 +5,16 @@ import com.tripfriend.domain.place.place.dto.PlaceResDto;
 import com.tripfriend.domain.place.place.dto.PlaceUpdateReqDto;
 import com.tripfriend.domain.place.place.entity.Place;
 import com.tripfriend.domain.place.place.repository.PlaceRepository;
+import com.tripfriend.global.annotation.CheckPermission;
 import com.tripfriend.global.exception.ServiceException;
+import com.tripfriend.global.util.ImageUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.rmi.ServerException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -18,17 +23,31 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class PlaceService {
     private final PlaceRepository placeRepository;
+    private final ImageUtil imageUtil;
 
     // 여행 장소 등록
+    @Transactional
     public Place createPlace(PlaceCreateReqDto req) {
+
+        String imageUrl = null;
+        MultipartFile imageFile = req.getImageUrl();
+
+        if (imageFile != null && !imageFile.isEmpty()) {
+            try {
+                imageUrl = uploadPlaceImage(imageFile);
+            } catch (IOException e) {
+                throw new ServiceException("404-2", "이미지 업로드에 실패했습니다.");
+            }
+        }
+
         Place place = Place.builder()
                 .cityName(req.getCityName())
                 .placeName(req.getPlaceName())
                 .description(req.getDescription())
                 .category(req.getCategory())
+                .imageUrl(imageUrl)
                 .build();
         placeRepository.save(place);
-
         return place;
     }
 
@@ -55,6 +74,7 @@ public class PlaceService {
     }
 
     // 여행 장소 삭제
+    @CheckPermission("ADMIN")
     @Transactional
     public void deletePlace(Place place) {
         placeRepository.delete(place);
@@ -89,4 +109,18 @@ public class PlaceService {
         return new ArrayList<>();
 
     }
+
+    // 여행지 이미지 등록
+    public String uploadPlaceImage(MultipartFile imageFile) throws IOException {
+
+        String imageUrl = imageUtil.saveImage(imageFile);
+//        if (imageUrl != null) {
+//            throw new ServiceException("404-2", "이미지 업로드에 실패하였습니다.");
+//        }
+
+        return imageUrl;
+    }
+
+    // 여행 이미지 삭제
+
 }
