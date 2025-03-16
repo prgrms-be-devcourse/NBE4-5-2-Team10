@@ -135,7 +135,7 @@ export default function ClientPage() {
                     : "/default-placeholder.jpg"
                 }
                 alt={place.cityName}
-                className="w-full h-40 object-cover rounded-md cursor-pointer"
+                className="w-full h-auto object-cover rounded-md cursor-pointer"
                 onClick={() => router.push(`/place/${place.id}`)}
               />
               <h3

@@ -54,7 +54,7 @@ export default function PlaceDetailPage() {
             : "/default-placeholder.jpg"
         }
         alt={place.placeName}
-        className="w-full h-64 object-cover rounded-md"
+        className="w-full h-auto object-cover rounded-md"
       />
       <p className="mt-4 text-gray-700">{place.description}</p>
       <p className="mt-2 text-sm text-gray-500">도시: {place.cityName}</p>
