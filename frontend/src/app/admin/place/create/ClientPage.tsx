@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Upload, X } from "lucide-react";
 
-export default function CreatePlacePage() {
+export default function ClientPage() {
   const router = useRouter();
   const [cityName, setCityName] = useState("");
   const [placeName, setPlaceName] = useState("");

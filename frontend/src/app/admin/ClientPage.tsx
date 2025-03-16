@@ -14,7 +14,8 @@ export default function ClientPage() {
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl font-bold mb-4">TripFriend 관리자 페이지</h1>
           <p className="text-xl">
-            여행지, 게시글, 회원, 블랙리스트 등 서비스를 직접 관리할 수 있습니다.
+            여행지, 게시글, 회원, 블랙리스트 등 서비스를 직접 관리할 수
+            있습니다.
           </p>
         </div>
       </div>
@@ -24,11 +25,12 @@ export default function ClientPage() {
         <h2 className="text-2xl font-bold mb-8">관리 기능</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <AdminCard title="게시글 관리" href="/admin/post" />
-          <AdminCard title="여행지 관리" href="/admin/travel" />
+          <AdminCard title="여행지 관리" href="/admin/place" />
           <AdminCard title="이벤트 관리" href="/admin/event" />
           <AdminCard title="공지사항 관리" href="/admin/notice" />
           <AdminCard title="회원 목록" href="/admin/users" />
           <AdminCard title="블랙리스트 관리" href="/admin/blacklist" />
+          <AdminCard title="Q&A 관리" href="/admin/qna" />
         </div>
       </div>
 

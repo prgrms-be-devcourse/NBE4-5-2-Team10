@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+import { Suspense } from "react";
+import ClientPage from "./ClientPage";
+=======
 "use client";
 
 import { useState } from "react";
@@ -36,8 +40,15 @@ export default function QuestionCreatePage() {
       setError("질문 등록에 실패했습니다.");
     }
   };
+>>>>>>> a8846871a08c2387a23148e5156e5106d022c827
 
+export default function Page() {
   return (
+<<<<<<< HEAD
+    <Suspense fallback={<div>Loading...</div>}>
+      <ClientPage />
+    </Suspense>
+=======
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-grow max-w-2xl mx-auto p-8">
@@ -73,5 +84,6 @@ export default function QuestionCreatePage() {
       </main>
       <Footer />
     </div>
+>>>>>>> a8846871a08c2387a23148e5156e5106d022c827
   );
 }

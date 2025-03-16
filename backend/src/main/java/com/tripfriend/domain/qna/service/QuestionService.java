@@ -9,6 +9,7 @@ import com.tripfriend.domain.qna.entity.Question;
 import com.tripfriend.domain.qna.repository.QuestionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
