@@ -23,6 +23,7 @@ export default function ClientPage() {
     fetch("http://localhost:8080/place")
       .then((res) => res.json())
       .then((data) => {
+        console.log("API Response:", data);
         if (data && data.data) {
           const mappedPlaces: Place[] = data.data.map((place: any) => ({
             id: place.id,
@@ -46,45 +47,75 @@ export default function ClientPage() {
       (!selectedCategory || place.category === selectedCategory)
   );
 
+  const handleDelete = (id: number) => {
+    if (!confirm("정말 삭제하시겠습니까?")) return;
+    // 관리자 토큰을 헤더에 포함하여 요청
+    const token = localStorage.getItem("accessToken");
+    fetch(`http://localhost:8080/place/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("삭제에 실패했습니다.");
+        }
+        // 삭제가 성공하면 state에서 해당 여행지를 제거합니다.
+        setPlaces((prev) => prev.filter((place) => place.id !== id));
+      })
+      .catch((error) => console.error("Error deleting place:", error));
+  };
+
   if (loading) {
     return <p>여행지 데이터를 불러오는 중...</p>;
   }
 
   return (
     <div>
+      <button className="mb-4 text-blue-500" onClick={() => router.back()}>
+        뒤로가기
+      </button>
       <h2 className="text-2xl font-bold mb-4">전체 여행지</h2>
+      <div className="flex items-center gap-4 mb-4">
+        <div className="flex gap-4 flex-grow">
+          <select
+            value={selectedCity}
+            onChange={(e) => setSelectedCity(e.target.value)}
+            className="p-2 border rounded-md"
+          >
+            <option value="">모든 도시</option>
+            {Array.from(new Set(places.map((place) => place.cityName))).map(
+              (city) => (
+                <option key={city} value={city}>
+                  {city}
+                </option>
+              )
+            )}
+          </select>
 
-      {/* 여행지 필터링 UI */}
-      <div className="flex gap-4 mb-4">
-        <select
-          value={selectedCity}
-          onChange={(e) => setSelectedCity(e.target.value)}
-          className="p-2 border rounded-md"
-        >
-          <option value="">모든 도시</option>
-          {Array.from(new Set(places.map((place) => place.cityName))).map(
-            (city) => (
-              <option key={city} value={city}>
-                {city}
-              </option>
-            )
-          )}
-        </select>
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="p-2 border rounded-md"
+          >
+            <option value="">모든 카테고리</option>
+            {Array.from(new Set(places.map((place) => place.category))).map(
+              (category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              )
+            )}
+          </select>
+        </div>
 
-        <select
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-          className="p-2 border rounded-md"
+        <button
+          className="bg-green-500 text-white px-4 py-2 rounded-md"
+          onClick={() => router.push("/admin/place/create")}
         >
-          <option value="">모든 카테고리</option>
-          {Array.from(new Set(places.map((place) => place.category))).map(
-            (category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
-            )
-          )}
-        </select>
+          여행지 등록
+        </button>
       </div>
 
       {/* 여행지 리스트 */}
@@ -95,7 +126,7 @@ export default function ClientPage() {
           {filteredPlaces.map((place) => (
             <div
               key={place.id}
-              className="bg-white rounded-lg shadow-md p-4 cursor-pointer"
+              className="bg-white rounded-lg shadow-md p-4 relative"
             >
               <img
                 src={
@@ -114,6 +145,12 @@ export default function ClientPage() {
                 {place.placeName}
               </h3>
               <p className="text-gray-600">{place.description}</p>
+              <button
+                className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-md"
+                onClick={() => handleDelete(place.id)}
+              >
+                삭제
+              </button>
             </div>
           ))}
         </div>
