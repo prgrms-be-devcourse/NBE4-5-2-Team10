@@ -51,6 +51,11 @@ export default function CreatePlacePage() {
       formData.append("image", imageFile);
     }
 
+    // FormData 내용 확인: 각 key, value 쌍 출력
+    for (let [key, value] of formData.entries()) {
+      console.log("키,값 : ", key, value);
+    }
+
     try {
       const res = await fetch("http://localhost:8080/place", {
         method: "POST",
@@ -104,13 +109,19 @@ export default function CreatePlacePage() {
         </div>
         <div className="mb-4">
           <label className="block text-gray-700">카테고리</label>
-          <input
-            type="text"
+          <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             className="w-full p-2 border rounded-md"
             required
-          />
+          >
+            <option value="">카테고리 선택</option>
+            <option value="PLACE">장소</option>
+            <option value="STAY">숙소</option>
+            <option value="RESTAURANT">식당</option>
+            <option value="CAFE">카페</option>
+            <option value="ETC">기타</option>
+          </select>
         </div>
 
         {/* 단일 이미지 업로드 UI */}
