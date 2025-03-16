@@ -4,8 +4,11 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { searchAndFilterRecruits } from "@/lib/api/recruit";
 import { getCities } from "@/lib/api/place"; // 도시 목록 불러오는 API 추가
+import { fetchWithAuth } from "@/lib/auth";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+
+const USER_INFO_URL = "http://localhost:8080/member/mypage";
 
 // 모집 글 타입 정의
 interface Recruit {
@@ -45,10 +48,47 @@ export default function RecruitListPage() {
   const [minGroupSize, setMinGroupSize] = useState("");
   const [maxGroupSize, setMaxGroupSize] = useState("");
   const [selectedTravelStyle, setSelectedTravelStyle] = useState<string>("");
+  const [userGender, setUserGender] = useState<string | null>(null);
+  const [sameGender, setSameGender] = useState<string>("all"); // 기본값: 전체 성별
+
+  const fetchMyInfo = async () => {
+    const token = localStorage.getItem("accessToken");
+
+    if (!token) {
+      console.warn("🚫 로그인하지 않은 사용자입니다.");
+      return;
+    }
+
+    try {
+      const response = await fetchWithAuth(USER_INFO_URL);
+      const data = await response.json();
+      if (!response.ok || !data.data.gender) {
+        throw new Error("유저 정보를 가져오지 못했습니다.");
+      }
+
+      setUserGender(data.data.gender); // ✅ 성별 정보 저장 (MALE 또는 FEMALE)
+      console.log("📢 로그인한 사용자 성별:", data.data.gender); // ✅ 디버깅용 로그
+      // setMyMemberId(data.data.id); // ✅ 기존 myMemberId 설정도 유지
+      // fetchRecruits();
+    } catch (error) {
+      console.error("❌ 유저 정보 조회 오류:", error);
+    }
+  };
 
   const handleTravelStyleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedTravelStyle(e.target.value);
   };
+
+  const handleGenderFilterChange = (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    setSameGender(e.target.value);
+  };
+
+  useEffect(() => {
+    // ✅ 로그인한 사용자 정보 가져오기 (최초 1회 실행)
+    fetchMyInfo();
+  }, []);
 
   // 도시 목록 불러오기
   useEffect(() => {
@@ -77,6 +117,9 @@ export default function RecruitListPage() {
 
   useEffect(() => {
     async function fetchRecruits() {
+      if (sameGender === "same" && !userGender) {
+        return; // ✅ 성별 정보가 없으면 실행하지 않음
+      }
       try {
         const queryParams = {
           keyword: keyword || undefined,
@@ -89,8 +132,11 @@ export default function RecruitListPage() {
           minGroupSize: minGroupSize ? Number(minGroupSize) : undefined,
           maxGroupSize: maxGroupSize ? Number(maxGroupSize) : undefined,
           travelStyle: selectedTravelStyle || undefined, // ✅ 기본값(전체)일 경우 undefined
+          sameGender: sameGender === "same" ? true : undefined, // ✅ 수정 (boolean 값으로 변경)
           sortBy,
         };
+
+        console.log("🔹 API 요청 파라미터:", queryParams); // ✅ 디버깅용 로그
 
         const data = await searchAndFilterRecruits(queryParams);
         setRecruits(data.data);
@@ -112,6 +158,8 @@ export default function RecruitListPage() {
     minGroupSize, // ✅ 추가
     maxGroupSize, // ✅ 추가
     selectedTravelStyle, // ✅ 추가
+    sameGender, // ✅ 추가
+    userGender, // ✅ userGender가 변경될 때도 fetchRecruits 실행!
     sortBy,
   ]);
 
@@ -230,6 +278,15 @@ export default function RecruitListPage() {
             className="p-2 border border-gray-300 rounded-md"
           />
         </div>
+        <select
+          value={sameGender}
+          onChange={handleGenderFilterChange}
+          className="w-full p-2 border rounded mb-2"
+        >
+          <option value="all">전체 성별</option>
+          <option value="same">내 성별만</option> {/* ✅ same 선택 시 true */}
+        </select>
+
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
