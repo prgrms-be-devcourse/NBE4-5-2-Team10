@@ -46,6 +46,20 @@ export default function ClientPage() {
       (!selectedCategory || place.category === selectedCategory)
   );
 
+  const handleDelete = (id: number) => {
+    if (!confirm("정말 삭제하시겠습니까?")) return;
+    fetch(`http://localhost:8080/place/${id}`, {
+      method: "DELETE",
+    })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("삭제에 실패했습니다.");
+        }
+        setPlaces((prev) => prev.filter((place) => place.id !== id));
+      })
+      .catch((error) => console.error("Error deleting place:", error));
+  };
+
   if (loading) {
     return <p>여행지 데이터를 불러오는 중...</p>;
   }
@@ -53,6 +67,16 @@ export default function ClientPage() {
   return (
     <div>
       <h2 className="text-2xl font-bold mb-4">전체 여행지</h2>
+
+      {/* Registration button for admin */}
+      <div className="mb-4">
+        <button
+          className="bg-green-500 text-white px-4 py-2 rounded-md"
+          onClick={() => router.push("/admin/place/create")}
+        >
+          여행지 등록
+        </button>
+      </div>
 
       {/* 여행지 필터링 UI */}
       <div className="flex gap-4 mb-4">
@@ -95,7 +119,7 @@ export default function ClientPage() {
           {filteredPlaces.map((place) => (
             <div
               key={place.id}
-              className="bg-white rounded-lg shadow-md p-4 cursor-pointer"
+              className="bg-white rounded-lg shadow-md p-4 relative"
             >
               <img
                 src={place.imageUrl || "/default-placeholder.jpg"}
@@ -110,6 +134,12 @@ export default function ClientPage() {
                 {place.placeName}
               </h3>
               <p className="text-gray-600">{place.description}</p>
+              <button
+                className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-md"
+                onClick={() => handleDelete(place.id)}
+              >
+                삭제
+              </button>
             </div>
           ))}
         </div>

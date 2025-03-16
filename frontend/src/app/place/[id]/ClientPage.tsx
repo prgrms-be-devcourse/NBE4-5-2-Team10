@@ -10,7 +10,7 @@ interface Place {
   placeName: string;
   description: string;
   category: string;
-  image: string;
+  imageUrl: string;
 }
 
 export default function PlaceDetailPage() {
@@ -48,7 +48,7 @@ export default function PlaceDetailPage() {
       </button>
       <h1 className="text-3xl font-bold mb-4">{place.placeName}</h1>
       <img
-        src={place.image || "/default-placeholder.jpg"}
+        src={place.imageUrl || "/default-placeholder.jpg"}
         alt={place.placeName}
         className="w-full h-64 object-cover rounded-md"
       />
