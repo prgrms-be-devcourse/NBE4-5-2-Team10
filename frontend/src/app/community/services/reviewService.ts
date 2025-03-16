@@ -160,10 +160,14 @@ export async function getReviewById(reviewId: number): Promise<ReviewDetail> {
 // 리뷰 생성
 export async function createReview(review: ReviewRequestDto): Promise<Review> {
     try {
+        console.log('📤 리뷰 생성 요청:', review);
+
         const createdReview = await api.post<Review>('/api/reviews', review);
+        
+        console.log('✅ 리뷰 생성 성공:', createdReview);
         return createdReview;
     } catch (error) {
-        console.error("리뷰 생성 중 오류 발생:", error);
+        console.error("❌ 리뷰 생성 중 오류 발생:", error);
         throw error;
     }
 }

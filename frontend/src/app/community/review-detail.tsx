@@ -72,15 +72,27 @@ export default function ReviewDetail({ id }: { id: string }) {
         const reviewData = await getReviewById(reviewId);
         setReview(reviewData);
         
-        // 여행지 정보 가져오기
+        // 여행지 정보 가져오기 관련 부분 수정
         if (reviewData.placeId) {
           try {
-            const placeData = await getPlaceById(reviewData.placeId);
-            if (placeData) {
-              setPlaceName(placeData.placeName);
+            // 1. 리뷰 객체에 이미 placeName이 있다면 그대로 사용
+            if (reviewData.placeName) {
+              setPlaceName(reviewData.placeName);
+            } 
+            // 2. 없는 경우에만 API로 가져오기 시도
+            else {
+              const placeData = await getPlaceById(reviewData.placeId);
+              if (placeData) {
+                setPlaceName(placeData.placeName);
+              } else {
+                // 3. API 호출 실패시 기본값 설정
+                setPlaceName(`여행지 ${reviewData.placeId}`);
+              }
             }
           } catch (placeError) {
             console.error("여행지 정보를 불러오는 중 오류 발생:", placeError);
+            // 오류 발생시 기본값 설정
+            setPlaceName(reviewData.placeName || `여행지 ${reviewData.placeId}`);
           }
         }
         

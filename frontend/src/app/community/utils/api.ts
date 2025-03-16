@@ -8,6 +8,8 @@ type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
 const getAuthHeader = (): Record<string, string> => {
   if (typeof window !== 'undefined') {
     const token = localStorage.getItem('accessToken');
+    // 토큰 디버깅
+    console.log(`🔑 인증 토큰 ${token ? '있음' : '없음'}`);
     return token ? { 'Authorization': `Bearer ${token}` } : {};
   }
   return {};
@@ -15,96 +17,106 @@ const getAuthHeader = (): Record<string, string> => {
 
 // 기본 API 요청 함수
 export async function apiRequest<T>(
-    url: string,
-    method: HttpMethod = 'GET',
-    data?: any,
-    isFormData: boolean = false
+  url: string,
+  method: HttpMethod = 'GET',
+  data?: any,
+  isFormData: boolean = false
 ): Promise<T> {
-  const headers: HeadersInit = {
-    ...getAuthHeader(),
-  };
+const headers: HeadersInit = {
+  ...getAuthHeader(),
+};
 
-  // FormData가 아닌 경우에만 Content-Type 헤더 추가
-  if (!isFormData && method !== 'GET') {
-    headers['Content-Type'] = 'application/json';
-  }
+// FormData가 아닌 경우에만 Content-Type 헤더 추가
+if (!isFormData && method !== 'GET') {
+  headers['Content-Type'] = 'application/json';
+}
 
-  const config: RequestInit = {
-    method,
-    headers,
-    credentials: 'include', // 쿠키 포함
-  };
+const config: RequestInit = {
+  method,
+  headers,
+  credentials: 'include', // 쿠키 포함
+};
 
-  // GET 요청이 아니고 데이터가 있는 경우
-  if (method !== 'GET' && data) {
-    config.body = isFormData ? data : JSON.stringify(data);
-  }
+// GET 요청이 아니고 데이터가 있는 경우
+if (method !== 'GET' && data) {
+  config.body = isFormData ? data : JSON.stringify(data);
+}
 
-  try {
-    const response = await fetch(`${API_BASE_URL}${url}`, config);
+try {
+  // API 요청 URL 로깅 (디버깅용)
+  console.log(`🔄 API 요청: ${method} ${API_BASE_URL}${url}`);
+  if (data && !isFormData) console.log('📦 요청 데이터:', data);
+  
+  const response = await fetch(`${API_BASE_URL}${url}`, config);
+  console.log(`📤 응답 상태: ${response.status}`);
 
-    // 401 Unauthorized - 토큰 만료 처리
-    if (response.status === 401) {
-      // 리프레시 토큰으로 새 액세스 토큰 요청
-      try {
-        const refreshResponse = await fetch(`${API_BASE_URL}/member/refresh`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
+  // 401 Unauthorized - 토큰 만료 처리
+  if (response.status === 401) {
+    // 리프레시 토큰으로 새 액세스 토큰 요청
+    try {
+      const refreshResponse = await fetch(`${API_BASE_URL}/member/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+
+      if (refreshResponse.ok) {
+        const refreshData = await refreshResponse.json();
+
+        // 새 액세스 토큰 저장
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('accessToken', refreshData.data.accessToken);
+        }
+
+        // 원래 요청 재시도
+        headers['Authorization'] = `Bearer ${refreshData.data.accessToken}`;
+        const retryResponse = await fetch(`${API_BASE_URL}${url}`, {
+          ...config,
+          headers
         });
 
-        if (refreshResponse.ok) {
-          const refreshData = await refreshResponse.json();
-
-          // 새 액세스 토큰 저장
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('accessToken', refreshData.data.accessToken);
-          }
-
-          // 원래 요청 재시도
-          headers['Authorization'] = `Bearer ${refreshData.data.accessToken}`;
-          const retryResponse = await fetch(`${API_BASE_URL}${url}`, {
-            ...config,
-            headers
-          });
-
-          if (!retryResponse.ok) {
-            throw new Error(`API 요청 실패: ${retryResponse.status}`);
-          }
-
-          return processResponse<T>(retryResponse);
-        } else {
-          // 리프레시 토큰도 만료된 경우 로그아웃 처리
-          if (typeof window !== 'undefined') {
-            localStorage.removeItem('accessToken');
-            window.location.href = '/member/login';
-          }
-          throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
+        if (!retryResponse.ok) {
+          throw new Error(`API 요청 실패: ${retryResponse.status}`);
         }
-      } catch (error) {
-        // 리프레시 토큰 요청 자체가 실패한 경우
+
+        return processResponse<T>(retryResponse);
+      } else {
+        // 리프레시 토큰도 만료된 경우 로그아웃 처리
         if (typeof window !== 'undefined') {
           localStorage.removeItem('accessToken');
           window.location.href = '/member/login';
         }
-        throw new Error('인증 갱신에 실패했습니다. 다시 로그인해주세요.');
+        throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
       }
+    } catch (error) {
+      // 리프레시 토큰 요청 자체가 실패한 경우
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('accessToken');
+        window.location.href = '/member/login';
+      }
+      throw new Error('인증 갱신에 실패했습니다. 다시 로그인해주세요.');
     }
-
-    if (!response.ok) {
-      throw new Error(`API 요청 실패: ${response.status}`);
-    }
-
-    return processResponse<T>(response);
-  } catch (error) {
-    console.error('API 요청 중 오류 발생:', error);
-    throw error;
   }
+
+  if (!response.ok) {
+    // 에러 응답을 좀 더 상세히 처리
+    const errorText = await response.text();
+    try {
+      const errorJson = JSON.parse(errorText);
+      throw new Error(`API 오류: ${errorJson.msg || errorJson.message || response.status}`);
+    } catch (e) {
+      throw new Error(`API 요청 실패: ${response.status} - ${errorText || '알 수 없는 오류'}`);
+    }
+  }
+
+  return processResponse<T>(response);
+} catch (error) {
+  console.error('❌ API 요청 중 오류 발생:', error);
+  throw error;
+}
 }
 
 // 응답 처리 함수
-// api.ts의 processResponse 함수 수정
-// api.ts의 processResponse 함수 수정
 async function processResponse<T>(response: Response): Promise<T> {
   console.log('🔄 processResponse 시작');
   console.log('📤 응답 상태:', response.status);

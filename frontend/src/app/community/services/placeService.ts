@@ -29,8 +29,10 @@ export async function getAllPlaces(cityName?: string): Promise<Place[]> {
 // 특정 여행지 조회
 export async function getPlaceById(placeId: number): Promise<Place | null> {
   try {
-    const place = await api.get<Place>(`/place/${placeId}`);
-    return place;
+    // ID로 직접 조회하는 API가 없으므로 전체 목록에서 필터링 방식으로 대체
+    const places = await getAllPlaces();
+    const place = places.find(p => p.id === placeId);
+    return place || null;
   } catch (error) {
     console.error(`여행지 ID ${placeId} 조회 중 오류 발생:`, error);
     return null;
