@@ -162,8 +162,18 @@ export default function RecruitListPage() {
             minGroupSize: minGroupSize ? Number(minGroupSize) : undefined,
             maxGroupSize: maxGroupSize ? Number(maxGroupSize) : undefined,
             travelStyle: selectedTravelStyle || undefined,
-            sameGender: sameGender === "same" ? true : undefined,
-            sameAge: sameAge === "same" ? true : undefined,
+            // sameGender: sameGender === "same" ? true : undefined,
+            // sameAge: sameAge === "same" ? true : undefined,
+            sameGender: userGender
+              ? sameGender === "same"
+                ? true
+                : undefined
+              : undefined, // 로그인하지 않으면 sameGender 필터 적용 X
+            sameAge: userGender
+              ? sameAge === "same"
+                ? true
+                : undefined
+              : undefined, // 로그인하지 않으면 sameAge 필터 적용 X
             sortBy,
           };
 
@@ -391,31 +401,36 @@ export default function RecruitListPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Select
-              value={sameGender}
-              onValueChange={(value) => setSameGender(value)}
-            >
-              <SelectTrigger className="w-full bg-white text-gray-700 shadow-sm">
-                <SelectValue placeholder="성별 필터" />
-              </SelectTrigger>
-              <SelectContent className="bg-white">
-                <SelectItem value="all">전체 성별</SelectItem>
-                <SelectItem value="same">내 성별만</SelectItem>
-              </SelectContent>
-            </Select>
+            {/* 🔹 로그인한 경우에만 성별/나이 필터 표시 */}
+            {userGender && (
+              <>
+                <Select
+                  value={sameGender}
+                  onValueChange={(value) => setSameGender(value)}
+                >
+                  <SelectTrigger className="w-full bg-white text-gray-700 shadow-sm">
+                    <SelectValue placeholder="성별 필터" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white">
+                    <SelectItem value="all">전체 성별</SelectItem>
+                    <SelectItem value="same">내 성별만</SelectItem>
+                  </SelectContent>
+                </Select>
 
-            <Select
-              value={sameAge}
-              onValueChange={(value) => setSameAge(value)}
-            >
-              <SelectTrigger className="w-full bg-white text-gray-700 shadow-sm">
-                <SelectValue placeholder="연령대 필터" />
-              </SelectTrigger>
-              <SelectContent className="bg-white">
-                <SelectItem value="all">전체 연령대</SelectItem>
-                <SelectItem value="same">내 연령대만</SelectItem>
-              </SelectContent>
-            </Select>
+                <Select
+                  value={sameAge}
+                  onValueChange={(value) => setSameAge(value)}
+                >
+                  <SelectTrigger className="w-full bg-white text-gray-700 shadow-sm">
+                    <SelectValue placeholder="연령대 필터" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white">
+                    <SelectItem value="all">전체 연령대</SelectItem>
+                    <SelectItem value="same">내 연령대만</SelectItem>
+                  </SelectContent>
+                </Select>
+              </>
+            )}
 
             <Select value={sortBy} onValueChange={(value) => setSortBy(value)}>
               <SelectTrigger className="w-full bg-white text-gray-700 shadow-sm">
@@ -633,12 +648,14 @@ export default function RecruitListPage() {
       )}
 
       {/* 글 작성 버튼 */}
-      <Link href="/recruit/create">
-        <Button className="fixed bottom-16 right-6 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition">
-          <PenSquare className="h-5 w-5 mr-2" />
-          모집 글 작성
-        </Button>
-      </Link>
+      {userGender && (
+        <Link href="/recruit/create">
+          <Button className="fixed bottom-16 right-6 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition">
+            <PenSquare className="h-5 w-5 mr-2" />
+            모집 글 작성
+          </Button>
+        </Link>
+      )}
 
       <Footer />
     </div>
