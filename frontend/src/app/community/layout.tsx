@@ -1,18 +1,17 @@
 import type { ReactNode } from "react"
-import LocalHeader from "./components/local-header"
-import LocalFooter from "./components/local-footer"
+import Header from "@/components/Header"
+import Footer from "@/components/Footer"
 
 export default function CommunityLayout({
-                                            children,
-                                        }: {
+    children,
+}: {
     children: ReactNode
 }) {
     return (
         <>
-            <LocalHeader />
+            <Header />
             <main>{children}</main>
-            <LocalFooter />
+            <Footer />
         </>
     )
 }
-
