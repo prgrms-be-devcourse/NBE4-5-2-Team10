@@ -48,7 +48,7 @@ export default function CreatePlacePage() {
     formData.append("description", description);
     formData.append("category", category);
     if (imageFile) {
-      formData.append("image", imageFile);
+      formData.append("imageUrl", imageFile);
     }
 
     // FormData 내용 확인: 각 key, value 쌍 출력

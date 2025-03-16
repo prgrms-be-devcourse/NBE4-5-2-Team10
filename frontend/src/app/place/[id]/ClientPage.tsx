@@ -48,7 +48,11 @@ export default function PlaceDetailPage() {
       </button>
       <h1 className="text-3xl font-bold mb-4">{place.placeName}</h1>
       <img
-        src={place.imageUrl || "/default-placeholder.jpg"}
+        src={
+          place.imageUrl
+            ? `http://localhost:8080${place.imageUrl}`
+            : "/default-placeholder.jpg"
+        }
         alt={place.placeName}
         className="w-full h-64 object-cover rounded-md"
       />

@@ -23,6 +23,7 @@ export default function ClientPage() {
     fetch("http://localhost:8080/place")
       .then((res) => res.json())
       .then((data) => {
+        console.log("API Response:", data);
         if (data && data.data) {
           const mappedPlaces: Place[] = data.data.map((place: any) => ({
             id: place.id,
@@ -30,7 +31,7 @@ export default function ClientPage() {
             placeName: place.placeName,
             description: place.description,
             category: place.category,
-            imageUrl: place.imgeUrl,
+            imageUrl: place.imageUrl,
           }));
           setPlaces(mappedPlaces);
         }
@@ -128,7 +129,11 @@ export default function ClientPage() {
               className="bg-white rounded-lg shadow-md p-4 relative"
             >
               <img
-                src={place.imageUrl || "/default-placeholder.jpg"}
+                src={
+                  place.imageUrl
+                    ? `http://localhost:8080${place.imageUrl}`
+                    : "/default-placeholder.jpg"
+                }
                 alt={place.cityName}
                 className="w-full h-40 object-cover rounded-md cursor-pointer"
                 onClick={() => router.push(`/place/${place.id}`)}

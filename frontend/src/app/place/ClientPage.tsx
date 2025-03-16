@@ -98,7 +98,11 @@ export default function ClientPage() {
               className="bg-white rounded-lg shadow-md p-4 cursor-pointer"
             >
               <img
-                src={place.imageUrl || "/default-placeholder.jpg"}
+                src={
+                  place.imageUrl
+                    ? `http://localhost:8080${place.imageUrl}`
+                    : "/default-placeholder.jpg"
+                }
                 alt={place.cityName}
                 className="w-full h-40 object-cover rounded-md cursor-pointer"
                 onClick={() => router.push(`/place/${place.id}`)}
