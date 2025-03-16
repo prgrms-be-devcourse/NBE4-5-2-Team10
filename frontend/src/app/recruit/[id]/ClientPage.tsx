@@ -96,6 +96,9 @@ export default function RecruitDetailPage() {
   });
 
   const [myMemberId, setMyMemberId] = useState<number | null>(null);
+  const [myMemberAuthority, setMyMemberAuthority] = useState<string | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -140,6 +143,9 @@ export default function RecruitDetailPage() {
         }
 
         setMyMemberId(data.data.id);
+        setMyMemberAuthority(data.data.authority);
+        console.log("authority");
+        console.log(data.data.authority);
       } catch (error) {
         console.error("❌ 유저 정보 조회 오류:", error);
       }
@@ -314,38 +320,40 @@ export default function RecruitDetailPage() {
             </div>
 
             {/* Edit/Delete buttons (only visible to author) */}
-            {myMemberId !== null && recruit.memberId === myMemberId && (
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={handleEdit}>
-                  <Edit className="h-4 w-4 mr-1" />
-                  수정
-                </Button>
+            {myMemberId !== null &&
+              (recruit.memberId === myMemberId ||
+                myMemberAuthority == "ADMIN") && (
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={handleEdit}>
+                    <Edit className="h-4 w-4 mr-1" />
+                    수정
+                  </Button>
 
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="destructive" size="sm">
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      삭제
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>모집글 삭제</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        이 모집글을 정말 삭제하시겠습니까? 이 작업은 되돌릴 수
-                        없습니다.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>취소</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleDelete}>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" size="sm">
+                        <Trash2 className="h-4 w-4 mr-1" />
                         삭제
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
-            )}
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>모집글 삭제</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          이 모집글을 정말 삭제하시겠습니까? 이 작업은 되돌릴 수
+                          없습니다.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>취소</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDelete}>
+                          삭제
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              )}
           </div>
 
           <div className="flex justify-between items-center text-sm text-gray-500 mt-2">
@@ -459,7 +467,8 @@ export default function RecruitDetailPage() {
                   </div>
 
                   {/* Comment delete button (only for author) */}
-                  {comment.memberId === myMemberId && (
+                  {(comment.memberId === myMemberId ||
+                    myMemberAuthority == "ADMIN") && (
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button
