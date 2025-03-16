@@ -64,7 +64,7 @@ public class ApplyService {
         Member member = getLoggedInMember(token);
 
         // 본인 확인
-        if (!apply.getMember().getId().equals(member.getId()) && !apply.getMember().getAuthority().equals("ADMIN")) {
+        if (!apply.getMember().getId().equals(member.getId()) && !member.getAuthority().equals("ADMIN")) {
             throw new ServiceException("403-2", "관리자가 아니라면 본인이 등록한 동행 요청 댓글만 삭제할 수 있습니다.");
         }
         applyRepository.deleteById(applyId);

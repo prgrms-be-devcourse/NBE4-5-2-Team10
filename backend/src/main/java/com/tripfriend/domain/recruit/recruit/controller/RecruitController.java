@@ -79,6 +79,7 @@ public class RecruitController {
 
     @DeleteMapping("/{recruitId}")
     public RsData<Void> deleteRecruit(@PathVariable("recruitId") Long recruitId, @RequestHeader(value = "Authorization", required = false) String token){ // 이름 명시
+        recruitService.delete(recruitId, token);
         return new RsData<>("200-3", "동행 모집 글이 성공적으로 삭제되었습니다.");
     }
 }
