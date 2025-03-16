@@ -1,5 +1,6 @@
 package com.tripfriend.domain.recruit.recruit.repository;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.Expressions;
@@ -71,15 +72,41 @@ public class RecruitRepositoryCustomImpl implements RecruitRepositoryCustom {
         // 여행 스타일 필터링
         travelStyle.ifPresent(style -> builder.and(recruit.travelStyle.stringValue().eq(style)));
 
+        ObjectMapper objectMapper = new ObjectMapper();
         // ✅ 성별 필터링 (sameGender가 true일 경우에만 필터링 적용)
         sameGender.ifPresent(sg -> {
             if (sg) { // sameGender가 true일 경우, 같은 성별인 경우만 허용
+                System.out.println("📢 sameGender 필터 적용! 현재 로그인한 유저 성별: " + userGender);
+
+                try {
+                    System.out.println("📢 recruit 객체 확인: " + recruit.toString()); // 🚀 toString() 사용
+                } catch (Exception e) {
+                    System.out.println("❌ recruit 정보 출력 중 오류 발생: " + e.getMessage());
+                }
+
+                if (recruit.member != null) {
+                    System.out.println("📢 모집글 작성자의 성별: " + recruit.member.gender);
+                } else {
+                    System.out.println("❌ recruit.member가 NULL 입니다!");
+                }
+//                builder.and(
+//                        recruit.member.gender.eq(userGender)
+//                                .or(recruit.sameGender.isFalse())
+//                );
+
+                builder.and(recruit.member.isNotNull()); // 🔥 Lazy Loading 문제 방지
+
+                // 🔥 member가 null이 아닌 경우만 필터링 적용!
                 builder.and(
-                        recruit.member.gender.eq(userGender)
+                        recruit.member.isNotNull()
+                                .and(recruit.member.gender.eq(userGender))
                                 .or(recruit.sameGender.isFalse())
                 );
             }
         });
+
+        System.out.println("📢 현재 로그인한 유저의 성별: " + userGender);
+        System.out.println("📢 모집글 작성자의 성별: " + recruit.member.gender);
 
         // ✅ 나이대 필터링 (sameAge가 true일 경우에만 필터링 적용)
         sameAge.ifPresent(sa -> {
@@ -104,6 +131,8 @@ public class RecruitRepositoryCustomImpl implements RecruitRepositoryCustom {
 
         return jpaQueryFactory
                 .selectFrom(recruit)
+//                .leftJoin(recruit.member).fetchJoin() // 🔥 Lazy Loading 해결
+                .join(recruit.member).fetchJoin() // 🔥 Lazy Loading 완전 해결
                 .where(builder)
                 .orderBy(orderSpecifier)
                 .fetch();

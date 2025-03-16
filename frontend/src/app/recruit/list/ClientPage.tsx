@@ -50,6 +50,7 @@ export default function RecruitListPage() {
   const [selectedTravelStyle, setSelectedTravelStyle] = useState<string>("");
   const [userGender, setUserGender] = useState<string | null>(null);
   const [sameGender, setSameGender] = useState<string>("all"); // 기본값: 전체 성별
+  const [sameAge, setSameAge] = useState<string>("all"); // 기본값: 전체 연령대
 
   const fetchMyInfo = async () => {
     const token = localStorage.getItem("accessToken");
@@ -133,6 +134,7 @@ export default function RecruitListPage() {
           maxGroupSize: maxGroupSize ? Number(maxGroupSize) : undefined,
           travelStyle: selectedTravelStyle || undefined, // ✅ 기본값(전체)일 경우 undefined
           sameGender: sameGender === "same" ? true : undefined, // ✅ 수정 (boolean 값으로 변경)
+          sameAge: sameAge === "same" ? true : undefined, // ✅ sameAge 추가 🔥
           sortBy,
         };
 
@@ -160,6 +162,7 @@ export default function RecruitListPage() {
     selectedTravelStyle, // ✅ 추가
     sameGender, // ✅ 추가
     userGender, // ✅ userGender가 변경될 때도 fetchRecruits 실행!
+    sameAge,
     sortBy,
   ]);
 
@@ -286,7 +289,14 @@ export default function RecruitListPage() {
           <option value="all">전체 성별</option>
           <option value="same">내 성별만</option> {/* ✅ same 선택 시 true */}
         </select>
-
+        <select
+          value={sameAge}
+          onChange={(e) => setSameAge(e.target.value)}
+          className="w-full p-2 border rounded mb-2"
+        >
+          <option value="all">전체 연령대</option>
+          <option value="same">내 연령대만</option> {/* ✅ same 선택 시 true */}
+        </select>
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
