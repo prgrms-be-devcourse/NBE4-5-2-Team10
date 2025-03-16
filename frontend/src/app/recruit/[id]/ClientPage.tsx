@@ -414,10 +414,10 @@ export default function RecruitDetailPage() {
             ))}
           </div>
 
-          {/* Join button */}
+          {/* Join button
           <Button className="w-full mb-6" disabled={recruit.isClosed}>
             {recruit.isClosed ? "모집이 마감되었습니다" : "모집 참여하기"}
-          </Button>
+          </Button> */}
         </CardContent>
       </Card>
 
@@ -496,13 +496,37 @@ export default function RecruitDetailPage() {
           </div>
         ) : (
           <div className="text-center py-8 text-gray-500">
-            아직 댓글이 없습니다. 첫 댓글을 작성해보세요!
+            아직 댓글이 없습니다.
           </div>
         )}
 
         <Separator className="my-6" />
 
-        {/* Comment Form */}
+        {/* 🔹 로그인한 사용자만 댓글 입력 가능 */}
+        {myMemberId !== null && (
+          <form onSubmit={handleCommentSubmit}>
+            <div className="mb-4">
+              <Textarea
+                placeholder="댓글을 작성해주세요..."
+                value={commentContent}
+                onChange={(e) => setCommentContent(e.target.value)}
+                disabled={isSubmitting}
+                className="w-full"
+              />
+            </div>
+            <div className="flex justify-end">
+              <Button
+                type="submit"
+                disabled={!commentContent.trim() || isSubmitting}
+              >
+                {isSubmitting ? "등록 중..." : "댓글 등록"}
+                <Send className="h-4 w-4 ml-2" />
+              </Button>
+            </div>
+          </form>
+        )}
+
+        {/* Comment Form
         <form onSubmit={handleCommentSubmit}>
           <div className="mb-4">
             <Textarea
@@ -522,7 +546,7 @@ export default function RecruitDetailPage() {
               <Send className="h-4 w-4 ml-2" />
             </Button>
           </div>
-        </form>
+        </form> */}
       </div>
     </div>
   );
