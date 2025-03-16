@@ -50,7 +50,6 @@ public class QuestionController {
         return ResponseEntity.noContent().build();
     }
 
-
     //질문생성
     @PostMapping("/question")
     public ResponseEntity<Void> createQuestion(

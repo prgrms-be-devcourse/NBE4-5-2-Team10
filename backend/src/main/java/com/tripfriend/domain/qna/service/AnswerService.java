@@ -64,8 +64,12 @@ public class AnswerService {
         answerRepository.delete(answer);
     }
 
-
-
-
+    //관리자 답변 삭제
+    @Transactional
+    public void deleteAnswerByAdmin(Long answerId) {
+        Answer answer = answerRepository.findById(answerId)
+                .orElseThrow(() -> new RuntimeException("해당 답변을 찾을 수 없습니다."));
+        answerRepository.delete(answer);
+    }
 
 }

@@ -4,12 +4,12 @@ import { useEffect, useState } from "react";
 import { fetchAllNotices, createNotice, updateNotice, deleteNotice } from "@/api/notice";
 
 export type Notice = {
-    id: number;
-    title: string;
-    content: string;
-    createdAt: string;
-    updatedAt: string;
-  };
+  id: number;
+  title: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+};
 
 
 export default function AdminNoticePage() {
@@ -65,51 +65,51 @@ export default function AdminNoticePage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-8">
-      <h1 className="text-2xl font-bold mb-6">📢 관리자 공지 페이지</h1>
+      <div className="max-w-3xl mx-auto p-8">
+        <h1 className="text-2xl font-bold mb-6">📢 관리자 공지 페이지</h1>
 
-      {/* 등록 / 수정 폼 */}
-      <div className="space-y-2 mb-8">
-        <input
-          className="w-full p-2 border rounded"
-          placeholder="제목"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-        <textarea
-          className="w-full p-2 border rounded h-24"
-          placeholder="내용"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-        />
-        <button
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          onClick={handleSubmit}
-        >
-          {editingId ? "수정하기" : "등록하기"}
-        </button>
+        {/* 등록 / 수정 폼 */}
+        <div className="space-y-2 mb-8">
+          <input
+              className="w-full p-2 border rounded"
+              placeholder="제목"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+          />
+          <textarea
+              className="w-full p-2 border rounded h-24"
+              placeholder="내용"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+          />
+          <button
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              onClick={handleSubmit}
+          >
+            {editingId ? "수정하기" : "등록하기"}
+          </button>
+        </div>
+
+        {/* 목록 */}
+        {notices.length === 0 ? (
+            <p>공지사항이 없습니다.</p>
+        ) : (
+            <ul className="space-y-4">
+              {notices.map((n) => (
+                  <li key={n.id} className="border rounded p-4 flex justify-between items-start">
+                    <div>
+                      <h3 className="font-bold">{n.title}</h3>
+                      <p>{n.content}</p>
+                      <p className="text-xs text-gray-500">{new Date(n.createdAt).toLocaleString()}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button className="text-sm text-blue-600" onClick={() => handleEdit(n)}>수정</button>
+                      <button className="text-sm text-red-600" onClick={() => handleDelete(n.id)}>삭제</button>
+                    </div>
+                  </li>
+              ))}
+            </ul>
+        )}
       </div>
-
-      {/* 목록 */}
-      {notices.length === 0 ? (
-        <p>공지사항이 없습니다.</p>
-      ) : (
-        <ul className="space-y-4">
-          {notices.map((n) => (
-            <li key={n.id} className="border rounded p-4 flex justify-between items-start">
-              <div>
-                <h3 className="font-bold">{n.title}</h3>
-                <p>{n.content}</p>
-                <p className="text-xs text-gray-500">{new Date(n.createdAt).toLocaleString()}</p>
-              </div>
-              <div className="flex gap-2">
-                <button className="text-sm text-blue-600" onClick={() => handleEdit(n)}>수정</button>
-                <button className="text-sm text-red-600" onClick={() => handleDelete(n.id)}>삭제</button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
   );
 }
