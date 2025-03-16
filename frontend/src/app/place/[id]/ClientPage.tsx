@@ -51,7 +51,7 @@ export default function PlaceDetailPage() {
         src={
           place.imageUrl
             ? `http://localhost:8080${place.imageUrl}`
-            : "/default-placeholder.jpg"
+            : "/default-placeholder.svg"
         }
         alt={place.placeName}
         className="w-full h-auto object-cover rounded-md"

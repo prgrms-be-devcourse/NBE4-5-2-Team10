@@ -132,7 +132,7 @@ export default function ClientPage() {
                 src={
                   place.imageUrl
                     ? `http://localhost:8080${place.imageUrl}`
-                    : "/default-placeholder.jpg"
+                    : "/default-placeholder.svg"
                 }
                 alt={place.cityName}
                 className="w-full h-auto object-cover rounded-md cursor-pointer"
