@@ -114,13 +114,11 @@ public class PlaceService {
     public String uploadPlaceImage(MultipartFile imageFile) throws IOException {
 
         String imageUrl = imageUtil.saveImage(imageFile);
-//        if (imageUrl != null) {
-//            throw new ServiceException("404-2", "이미지 업로드에 실패하였습니다.");
-//        }
+        if (imageUrl == null) {
+            throw new ServiceException("404-2", "이미지 업로드에 실패하였습니다.");
+        }
 
         return imageUrl;
     }
-
-    // 여행 이미지 삭제
 
 }
