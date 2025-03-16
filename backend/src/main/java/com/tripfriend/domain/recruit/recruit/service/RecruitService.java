@@ -145,8 +145,8 @@ public class RecruitService {
 
         Member member = getLoggedInMember(token);
         // 본인 확인
-        if (!recruit.getMember().getId().equals(member.getId())) {
-            throw new ServiceException("403-2", "본인이 등록한 동행 모집글만 수정할 수 있습니다.");
+        if (!recruit.getMember().getId().equals(member.getId()) && !recruit.getMember().getAuthority().equals("ADMIN")) {
+            throw new ServiceException("403-2", "관리자가 아니라면 본인이 등록한 동행 모집글만 수정할 수 있습니다.");
         }
 
         recruit.update(requestDto, place);
@@ -160,8 +160,8 @@ public class RecruitService {
         Member member = getLoggedInMember(token);
 
         // 본인 확인
-        if (!recruit.getMember().getId().equals(member.getId())) {
-            throw new ServiceException("403-2", "본인이 등록한 동행 모집글만 삭제할 수 있습니다.");
+        if (!recruit.getMember().getId().equals(member.getId()) && !recruit.getMember().getAuthority().equals("ADMIN")) {
+            throw new ServiceException("403-2", "관리자가 아니라면 본인이 등록한 동행 모집글만 삭제할 수 있습니다.");
         }
 
         recruitRepository.deleteById(recruitId);
