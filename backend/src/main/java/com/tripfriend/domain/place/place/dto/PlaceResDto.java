@@ -18,7 +18,7 @@ public class PlaceResDto {
     private String placeName;
     private String description;
     private Category category;
-    private String imgeUrl;
+    private String imageUrl;
 
 
     public PlaceResDto(Place place) {
@@ -27,6 +27,6 @@ public class PlaceResDto {
         this.placeName = place.getPlaceName();
         this.description = place.getDescription();
         this.category = place.getCategory();
-        this.imgeUrl = place.getImageUrl();
+        this.imageUrl = place.getImageUrl();
     }
 }

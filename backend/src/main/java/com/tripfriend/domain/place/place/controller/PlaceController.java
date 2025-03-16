@@ -28,6 +28,7 @@ public class PlaceController {
 
     // 여행지 등록
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @CheckPermission("ADMIN") //관리자
     @Operation(summary = "여행지 등록", description = "새로운 여행지를 등록합니다.")
     public RsData<PlaceResDto> createPlace(@ModelAttribute PlaceCreateReqDto req) {
 
@@ -100,6 +101,7 @@ public class PlaceController {
 
     // 특정 여행지 삭제
     @DeleteMapping("/{id}")
+    @CheckPermission("ADMIN") //관리자
     @Operation(summary = "여행지 삭제", description = "특정 여행지를 삭제합니다.")
     public RsData<Void> deletePlace(@Parameter(description = "여행지 ID", required = true, example = "1")
                                     @PathVariable Long id) {
