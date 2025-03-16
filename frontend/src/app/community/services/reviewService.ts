@@ -28,14 +28,21 @@ export interface ReviewRequestDto {
 }
 
 // 리뷰 목록 조회
-// 리뷰 목록 조회 - 완전히 새로 작성
 export async function getReviews(
     sort: string = 'newest',
     keyword?: string,
     placeId?: number,
     page: number = 1
 ): Promise<{ reviews: Review[], totalPages: number, currentPage: number }> {
-    let url = `/api/reviews?sort=${sort}&page=${page}`;
+    // sort 파라미터 매핑 - 프론트엔드 값을 백엔드 값으로 변환
+    let apiSortParam = sort;
+
+    // 백엔드 API에 맞게 정렬 파라미터 변환
+    if (sort === 'most_comments') {
+        apiSortParam = 'comments'; // 백엔드에서 예상하는 파라미터로 변경
+    }
+
+    let url = `/api/reviews?sort=${apiSortParam}&page=${page}`;
 
     if (keyword) {
         url += `&keyword=${encodeURIComponent(keyword)}`;
@@ -160,10 +167,14 @@ export async function getReviewById(reviewId: number): Promise<ReviewDetail> {
 // 리뷰 생성
 export async function createReview(review: ReviewRequestDto): Promise<Review> {
     try {
+        console.log('📤 리뷰 생성 요청:', review);
+
         const createdReview = await api.post<Review>('/api/reviews', review);
+
+        console.log('✅ 리뷰 생성 성공:', createdReview);
         return createdReview;
     } catch (error) {
-        console.error("리뷰 생성 중 오류 발생:", error);
+        console.error("❌ 리뷰 생성 중 오류 발생:", error);
         throw error;
     }
 }

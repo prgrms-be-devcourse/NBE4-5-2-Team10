@@ -194,65 +194,91 @@ export default function ReviewForm({ reviewId }: ReviewFormProps) {
     return Object.keys(newErrors).length === 0
   }
 
-  // 폼 제출 처리
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+// 폼 제출 처리
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    if (!isLoggedInState) {
-      alert("리뷰를 작성하려면 로그인이 필요합니다.")
-      router.push("/member/login")
-      return
-    }
-
-    if (!validateForm()) {
-      return
-    }
-
-    setIsSubmitting(true)
-
-    try {
-      const reviewData = {
-        title: formData.title,
-        content: formData.content,
-        rating: formData.rating,
-        placeId: parseInt(formData.placeId)
-      }
-
-      let createdReview;
-      
-      if (isEditMode && reviewId) {
-        // 리뷰 수정
-        await updateReview(parseInt(reviewId), reviewData)
-        alert("리뷰가 성공적으로 수정되었습니다.")
-        createdReview = { reviewId: parseInt(reviewId) }
-      } else {
-        // 리뷰 생성
-        createdReview = await createReview(reviewData)
-        alert("리뷰가 성공적으로 등록되었습니다.")
-      }
-
-      // 이미지 업로드 (이미지가 있는 경우에만)
-      if (formData.images.length > 0 && createdReview && createdReview.reviewId) {
-        const imageFormData = new FormData()
-        formData.images.forEach(image => {
-          imageFormData.append('images', image)
-        })
-        
-        try {
-          await uploadReviewImages(createdReview.reviewId, imageFormData)
-        } catch (imageError) {
-          console.error("이미지 업로드 중 오류 발생:", imageError)
-          // 이미지 업로드 실패 시에도 리뷰는 생성/수정되었으므로 계속 진행
-        }
-      }
-
-      router.push("/community")
-    } catch (err) {
-      console.error("리뷰 제출 중 오류가 발생했습니다:", err)
-      setFormError("리뷰 제출 중 오류가 발생했습니다.")
-      setIsSubmitting(false)
-    }
+  // 로그인 확인 처리
+  if (!isLoggedInState) {
+    alert("리뷰를 작성하려면 로그인이 필요합니다.");
+    router.push("/member/login");
+    return;
   }
+
+  if (!validateForm()) {
+    return;
+  }
+
+  setIsSubmitting(true);
+
+  try {
+    // 지금 토큰 상태 확인 - 디버깅용
+    const token = localStorage.getItem('accessToken');
+    console.log(`📋 폼 제출 시 토큰 상태: ${token ? '있음' : '없음'}`);
+    
+    const reviewData = {
+      title: formData.title,
+      content: formData.content,
+      rating: formData.rating,
+      placeId: parseInt(formData.placeId)
+    };
+
+    console.log('📤 리뷰 데이터 준비:', reviewData);
+    
+    let createdReview;
+    
+    if (isEditMode && reviewId) {
+      // 리뷰 수정
+      console.log(`✏️ 리뷰 수정 시도: ID ${reviewId}`);
+      await updateReview(parseInt(reviewId), reviewData);
+      alert("리뷰가 성공적으로 수정되었습니다.");
+      createdReview = { reviewId: parseInt(reviewId) };
+    } else {
+      // 리뷰 생성
+      console.log('✨ 새 리뷰 생성 시도');
+      createdReview = await createReview(reviewData);
+      console.log('✅ 리뷰 생성 결과:', createdReview);
+      alert("리뷰가 성공적으로 등록되었습니다.");
+    }
+
+    // 이미지 업로드 (이미지가 있는 경우에만)
+    if (formData.images.length > 0 && createdReview && createdReview.reviewId) {
+      const imageFormData = new FormData();
+      formData.images.forEach(image => {
+        imageFormData.append('images', image);
+      });
+      
+      try {
+        await uploadReviewImages(createdReview.reviewId, imageFormData);
+      } catch (imageError) {
+        console.error("이미지 업로드 중 오류 발생:", imageError);
+        // 이미지 업로드 실패 시에도 리뷰는 생성/수정되었으므로 계속 진행
+      }
+    }
+
+    router.push("/community");
+  } catch (err) {
+    console.error("❌ 리뷰 제출 중 오류 발생:", err);
+    // 상세 오류 정보 표시
+    let errorMessage = "리뷰 제출 중 오류가 발생했습니다.";
+    
+    if (err instanceof Error) {
+      const message = err.message;
+      
+      // 내용 길이 관련 오류 처리
+      if (message.includes("content : Size")) {
+        errorMessage = "내용은 10자 이상 2000자 이하로 입력해주세요.";
+      }
+      // 제목 길이 관련 오류 처리
+      else if (message.includes("title : Size")) {
+        errorMessage = "제목은 2자 이상 30자 이하로 입력해주세요.";
+      }
+      // 기타 validation 오류 처리 추가
+    }
+    setFormError(errorMessage);
+    setIsSubmitting(false);
+  }
+}
 
   // 컴포넌트 언마운트 시 프리뷰 URL 정리
   useEffect(() => {
