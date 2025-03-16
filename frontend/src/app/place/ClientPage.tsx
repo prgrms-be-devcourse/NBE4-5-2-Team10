@@ -104,7 +104,7 @@ export default function ClientPage() {
                     : "/default-placeholder.svg"
                 }
                 alt={place.cityName}
-                className="w-full h-auto object-cover rounded-md cursor-pointer"
+                className="w-full aspect-[4/3] object-cover rounded-md cursor-pointer"
                 onClick={() => router.push(`/place/${place.id}`)}
               />
               <h3
