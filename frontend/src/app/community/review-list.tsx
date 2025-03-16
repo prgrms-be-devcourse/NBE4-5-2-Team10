@@ -24,6 +24,7 @@ export default function ReviewList() {
 
   const [sortOption, setSortOption] = useState(searchParams.get("sort") || "newest")
   const [searchQuery, setSearchQuery] = useState(searchParams.get("query") || "")
+  const [activeSearchQuery, setActiveSearchQuery] = useState(searchParams.get("query") || "")
   const [destinationFilter, setDestinationFilter] = useState(searchParams.get("destination") || "")
   const [destinations, setDestinations] = useState<{ id: number; name: string }[]>([])
 
@@ -73,7 +74,7 @@ export default function ReviewList() {
         }
         
         // 검색어 처리
-        const searchTerm = searchQuery && searchQuery.trim() ? searchQuery : undefined;
+        const searchTerm = activeSearchQuery && activeSearchQuery.trim() ? activeSearchQuery : undefined;
         if (searchTerm) {
           console.log('🔍 검색어:', searchTerm);
         }
@@ -136,13 +137,12 @@ export default function ReviewList() {
     };
   
     fetchReviews();
-  }, [sortOption, searchQuery, destinationFilter, currentPage]);
+  }, [sortOption, activeSearchQuery, destinationFilter, currentPage]);
   // 검색 제출 처리
   const handleSearch = () => {
-    fetch(`http://localhost:8080/api/reviews?search=${searchQuery}`)
-      .then((res) => res.json())
-      .then((data) => setReviews(data.result))
-      .catch((err) => console.error("검색 오류:", err));
+    // 입력된 검색어를 실제 검색에 사용하는 상태로 설정
+    setActiveSearchQuery(searchQuery);
+    setCurrentPage(1); // 새 검색 시 첫 페이지로 이동
   };
   
 
@@ -150,7 +150,7 @@ export default function ReviewList() {
   const updateUrlParams = () => {
     const params = new URLSearchParams();
     if (sortOption) params.set("sort", sortOption);
-    if (searchQuery) params.set("query", searchQuery);
+    if (activeSearchQuery) params.set("query", activeSearchQuery);
     if (destinationFilter) params.set("destination", destinationFilter);
 
     router.push(`/community?${params.toString()}`);
