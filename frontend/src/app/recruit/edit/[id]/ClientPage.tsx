@@ -5,7 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { fetchWithAuth } from "@/lib/auth";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const API_BASE_URL = "http://localhost:8080/recruits";
+const PLACE_API_URL = "http://localhost:8080/place";
 
 // 여행 스타일 (한글 ↔ 영문 변환)
 const travelStyleMap = {
@@ -29,6 +30,12 @@ const travelStyleMap = {
   GOURMET: "미식",
   SHOPPING: "쇼핑",
 };
+
+interface Place {
+  id: number;
+  placeName: string;
+  cityName: string;
+}
 
 export default function EditRecruitPage() {
   const router = useRouter();
@@ -54,6 +61,15 @@ export default function EditRecruitPage() {
   const [loading, setLoading] = useState(true);
   const [formError, setFormError] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [placeQuery, setPlaceQuery] = useState("");
+  const [placeResults, setPlaceResults] = useState<Place[]>([]);
+
+  // 기존 데이터를 가져온 후, placeQuery를 placePlaceName으로 설정
+  useEffect(() => {
+    if (form.placePlaceName) {
+      setPlaceQuery(form.placePlaceName);
+    }
+  }, [form.placePlaceName]);
 
   // 기존 데이터를 API에서 가져오기
   useEffect(() => {
@@ -93,6 +109,37 @@ export default function EditRecruitPage() {
 
     fetchRecruit();
   }, [recruitId]);
+
+  // 여행지 검색
+  const handlePlaceSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setPlaceQuery(query);
+    if (!query) return setPlaceResults([]);
+
+    try {
+      const response = await fetch(`${PLACE_API_URL}`);
+      if (!response.ok) throw new Error("장소 목록을 불러올 수 없습니다.");
+      const data = await response.json();
+      const filteredPlaces = data.data.filter((place: Place) =>
+        place.placeName.toLowerCase().includes(query.toLowerCase())
+      );
+      setPlaceResults(filteredPlaces);
+    } catch (error) {
+      console.error("❌ 장소 검색 오류:", error);
+    }
+  };
+
+  // 여행지 선택
+  const handlePlaceSelect = (place: Place) => {
+    setForm((prev) => ({
+      ...prev,
+      placeId: place.id,
+      placeCityName: place.cityName,
+      placePlaceName: place.placeName,
+    }));
+    setPlaceQuery(place.placeName);
+    setPlaceResults([]);
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -271,18 +318,38 @@ export default function EditRecruitPage() {
                 )}
               </div>
 
-              {/* 여행지 정보 */}
-              <div className="p-4 bg-gray-100 rounded-md">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  여행지 정보
+              {/* 여행지 검색 추가 */}
+              <div>
+                <label
+                  htmlFor="placeSearch"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  여행지 <span className="text-red-500">*</span>
                 </label>
-                <p className="text-gray-800">
-                  📍 {form.placeCityName}, {form.placePlaceName}
-                </p>
-                <p className="text-xs text-gray-500 mt-1">
-                  여행지 정보는 수정할 수 없습니다. 여행지를 변경하려면 새
-                  게시글을 작성해주세요.
-                </p>
+                <div className="relative">
+                  <Input
+                    id="placeSearch"
+                    value={placeQuery}
+                    onChange={handlePlaceSearch}
+                    placeholder="여행지를 검색하세요"
+                    className="w-full"
+                  />
+                  <Search className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
+
+                  {placeResults.length > 0 && (
+                    <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
+                      {placeResults.map((place) => (
+                        <li
+                          key={place.id}
+                          onClick={() => handlePlaceSelect(place)}
+                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                        >
+                          {place.placeName} ({place.cityName})
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               </div>
 
               {/* 날짜 */}
@@ -486,6 +553,236 @@ export default function EditRecruitPage() {
   );
 }
 
+// "use client";
+
+// import { useEffect, useState } from "react";
+// import { useRouter, useParams } from "next/navigation";
+// import { fetchWithAuth } from "@/lib/auth";
+// import Header from "@/components/Header";
+// import Footer from "@/components/Footer";
+// import { AlertCircle, Search } from "lucide-react";
+// import { Button } from "@/components/ui/button";
+// import { Card, CardContent } from "@/components/ui/card";
+// import { Input } from "@/components/ui/input";
+// import { Textarea } from "@/components/ui/textarea";
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue,
+// } from "@/components/ui/select";
+// import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+
+// const API_BASE_URL = "http://localhost:8080/recruits";
+// const PLACE_API_URL = "http://localhost:8080/place";
+
+// // 여행 스타일 (한글 ↔ 영문 변환)
+// const travelStyleMap = {
+//   SIGHTSEEING: "관광",
+//   RELAXATION: "휴양",
+//   ADVENTURE: "액티비티",
+//   GOURMET: "미식",
+//   SHOPPING: "쇼핑",
+// };
+
+// interface Place {
+//   id: number;
+//   placeName: string;
+//   cityName: string;
+// }
+
+// export default function EditRecruitPage() {
+//   const router = useRouter();
+//   const params = useParams();
+//   const recruitId = params.id;
+
+//   const [form, setForm] = useState({
+//     title: "",
+//     content: "",
+//     placeId: 0,
+//     placeCityName: "",
+//     placePlaceName: "",
+//     startDate: "",
+//     endDate: "",
+//     travelStyle: "SIGHTSEEING",
+//     budget: 0,
+//     groupSize: 2,
+//     isClosed: false,
+//     sameGender: false,
+//     sameAge: false,
+//   });
+
+//   const [placeQuery, setPlaceQuery] = useState("");
+//   const [placeResults, setPlaceResults] = useState<Place[]>([]);
+//   const [loading, setLoading] = useState(true);
+//   const [formError, setFormError] = useState<string | null>(null);
+//   const [errors, setErrors] = useState<Record<string, string>>({});
+
+//   // 기존 데이터를 API에서 가져오기
+//   useEffect(() => {
+//     async function fetchRecruit() {
+//       try {
+//         const response = await fetchWithAuth(`${API_BASE_URL}/${recruitId}`);
+//         if (!response.ok) throw new Error("기존 모집글을 불러오지 못했습니다.");
+//         const data = await response.json();
+
+//         setForm({
+//           title: data.data.title,
+//           content: data.data.content,
+//           placeId: data.data.placeId,
+//           placeCityName: data.data.placeCityName,
+//           placePlaceName: data.data.placePlaceName,
+//           startDate: data.data.startDate,
+//           endDate: data.data.endDate,
+//           travelStyle:
+//             Object.keys(travelStyleMap).find(
+//               (key) => travelStyleMap[key] === data.data.travelStyle
+//             ) || "SIGHTSEEING",
+//           budget: data.data.budget,
+//           groupSize: data.data.groupSize,
+//           isClosed: data.data.isClosed ?? false,
+//           sameGender: data.data.sameGender ?? false,
+//           sameAge: data.data.sameAge ?? false,
+//         });
+
+//         setLoading(false);
+//       } catch (error) {
+//         console.error("❌ 기존 모집글 불러오기 오류:", error);
+//         setFormError("기존 모집글을 불러오는 중 오류가 발생했습니다.");
+//         setLoading(false);
+//       }
+//     }
+
+//     fetchRecruit();
+//   }, [recruitId]);
+
+//   // 여행지 검색
+//   const handlePlaceSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
+//     const query = e.target.value;
+//     setPlaceQuery(query);
+//     if (!query) return setPlaceResults([]);
+
+//     try {
+//       const response = await fetch(`${PLACE_API_URL}`);
+//       if (!response.ok) throw new Error("장소 목록을 불러올 수 없습니다.");
+//       const data = await response.json();
+//       const filteredPlaces = data.data.filter((place: Place) =>
+//         place.placeName.toLowerCase().includes(query.toLowerCase())
+//       );
+//       setPlaceResults(filteredPlaces);
+//     } catch (error) {
+//       console.error("❌ 장소 검색 오류:", error);
+//     }
+//   };
+
+//   // 여행지 선택
+//   const handlePlaceSelect = (place: Place) => {
+//     setForm((prev) => ({
+//       ...prev,
+//       placeId: place.id,
+//       placeCityName: place.cityName,
+//       placePlaceName: place.placeName,
+//     }));
+//     setPlaceQuery(place.placeName);
+//     setPlaceResults([]);
+//   };
+
+//   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+//     e.preventDefault();
+
+//     try {
+//       const response = await fetchWithAuth(`${API_BASE_URL}/${recruitId}`, {
+//         method: "PUT",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify({
+//           ...form,
+//           placeId: form.placeId, // 변경된 장소 반영
+//           budget: Number(form.budget),
+//           groupSize: Number(form.groupSize),
+//         }),
+//       });
+
+//       if (!response.ok) throw new Error("모집글 수정에 실패했습니다.");
+
+//       router.push(`/recruit/${recruitId}`);
+//     } catch (error) {
+//       console.error("❌ 모집글 수정 오류:", error);
+//       setFormError("모집글 수정 중 오류가 발생했습니다.");
+//     }
+//   };
+
+//   if (loading) {
+//     return (
+//       <div className="min-h-screen flex justify-center items-center">
+//         <p className="text-lg">로딩 중...</p>
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div className="min-h-screen bg-gray-50">
+//       <Header />
+//       <div className="max-w-3xl mx-auto px-4 py-8">
+//         <h2 className="text-3xl font-bold mb-6">동행 모집 글 수정</h2>
+
+//         <Card>
+//           <CardContent className="p-6">
+//             {formError && (
+//               <Alert variant="destructive" className="mb-6">
+//                 <AlertCircle className="h-4 w-4" />
+//                 <AlertTitle>오류</AlertTitle>
+//                 <AlertDescription>{formError}</AlertDescription>
+//               </Alert>
+//             )}
+
+//             <form onSubmit={handleSubmit} className="space-y-6">
+//               {/* 장소 검색 추가 */}
+//               <div>
+//                 <label
+//                   htmlFor="placeSearch"
+//                   className="block text-sm font-medium text-gray-700 mb-1"
+//                 >
+//                   여행지 <span className="text-red-500">*</span>
+//                 </label>
+//                 <div className="relative">
+//                   <Input
+//                     id="placeSearch"
+//                     value={placeQuery}
+//                     onChange={handlePlaceSearch}
+//                     placeholder="여행지를 검색하세요"
+//                     className="w-full"
+//                   />
+//                   <Search className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
+
+//                   {placeResults.length > 0 && (
+//                     <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
+//                       {placeResults.map((place) => (
+//                         <li
+//                           key={place.id}
+//                           onClick={() => handlePlaceSelect(place)}
+//                           className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+//                         >
+//                           {place.placeName} ({place.cityName})
+//                         </li>
+//                       ))}
+//                     </ul>
+//                   )}
+//                 </div>
+//               </div>
+
+//               <Button type="submit">수정 완료</Button>
+//             </form>
+//           </CardContent>
+//         </Card>
+//       </div>
+
+//       <Footer />
+//     </div>
+//   );
+// }
+
+/////////////////////////////////////
 // "use client";
 
 // import { useEffect, useState } from "react";
