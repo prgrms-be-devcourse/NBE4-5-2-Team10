@@ -42,7 +42,6 @@ public class MemberController {
         Map<String, Object> response = new HashMap<>();
         response.put("id", member.getId());
         response.put("username", member.getUsername());
-        response.put("isAdmin", member.isAdmin()); // 관리자 여부
 
         return ResponseEntity.ok(response);
     }

@@ -19,7 +19,7 @@ export type BlacklistEntry = {
   reason: string;
 };
 
-export default function AdminBlacklistPage() {
+export default function ClientPage() {
   const [blacklist, setBlacklist] = useState<BlacklistEntry[]>([]);
   const [memberId, setMemberId] = useState("");
   const [reason, setReason] = useState("");

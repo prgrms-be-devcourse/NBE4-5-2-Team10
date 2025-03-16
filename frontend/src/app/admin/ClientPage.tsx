@@ -4,7 +4,7 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
-export default function AdminPage() {
+export default function ClientPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -25,11 +25,12 @@ export default function AdminPage() {
         <h2 className="text-2xl font-bold mb-8">관리 기능</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <AdminCard title="게시글 관리" href="/admin/post" />
-          <AdminCard title="여행지 관리" href="/admin/travel" />
+          <AdminCard title="여행지 관리" href="/admin/place" />
           <AdminCard title="이벤트 관리" href="/admin/event" />
           <AdminCard title="공지사항 관리" href="/admin/notice" />
           <AdminCard title="회원 목록" href="/admin/users" />
           <AdminCard title="블랙리스트 관리" href="/admin/blacklist" />
+          <AdminCard title="Q&A 관리" href="/admin/qna" />
         </div>
       </div>
 

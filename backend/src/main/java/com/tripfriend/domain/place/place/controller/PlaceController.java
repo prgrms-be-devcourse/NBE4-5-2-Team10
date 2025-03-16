@@ -5,12 +5,15 @@ import com.tripfriend.domain.place.place.dto.PlaceResDto;
 import com.tripfriend.domain.place.place.dto.PlaceUpdateReqDto;
 import com.tripfriend.domain.place.place.entity.Place;
 import com.tripfriend.domain.place.place.service.PlaceService;
+import com.tripfriend.global.annotation.CheckPermission;
 import com.tripfriend.global.dto.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,9 +27,10 @@ public class PlaceController {
     private final PlaceService placeService;
 
     // 여행지 등록
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @CheckPermission("ADMIN") //관리자
     @Operation(summary = "여행지 등록", description = "새로운 여행지를 등록합니다.")
-    public RsData<PlaceResDto> createPlace(@RequestBody(required = false) PlaceCreateReqDto req) {
+    public RsData<PlaceResDto> createPlace(@ModelAttribute PlaceCreateReqDto req) {
 
         Place savePlace = placeService.createPlace(req);
         PlaceResDto placeResDto = new PlaceResDto(savePlace);
@@ -52,6 +56,19 @@ public class PlaceController {
                 "200-2",
                 "전체 여행지가 성공적으로 조회되었습니다.",
                 placeResDtos
+        );
+    }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "특정 여행지 조회", description = "특정 여행지를 조회합니다.")
+    public RsData<PlaceResDto> getPlace(@PathVariable Long id) {
+        Place place = placeService.getPlace(id);
+        PlaceResDto placeResDto = new PlaceResDto(place);
+
+        return new RsData<>(
+                "200-3",
+                "특정 여행지가 성공적으로 조회되었습니다.",
+                placeResDto
         );
     }
 
@@ -84,6 +101,7 @@ public class PlaceController {
 
     // 특정 여행지 삭제
     @DeleteMapping("/{id}")
+    @CheckPermission("ADMIN") //관리자
     @Operation(summary = "여행지 삭제", description = "특정 여행지를 삭제합니다.")
     public RsData<Void> deletePlace(@Parameter(description = "여행지 ID", required = true, example = "1")
                                     @PathVariable Long id) {

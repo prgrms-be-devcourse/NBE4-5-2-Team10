@@ -16,7 +16,7 @@ export type Notice = {
   updatedAt: string;
 };
 
-export default function AdminNoticePage() {
+export default function ClientPage() {
   const [notices, setNotices] = useState<Notice[]>([]);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");

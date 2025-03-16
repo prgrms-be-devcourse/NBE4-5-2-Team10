@@ -2,12 +2,17 @@ package com.tripfriend.domain.qna.service;
 
 import com.tripfriend.domain.member.member.entity.Member;
 import com.tripfriend.domain.member.member.repository.MemberRepository;
+import com.tripfriend.domain.qna.dto.AnswerDto;
+import com.tripfriend.domain.qna.dto.QuestionDto;
+import com.tripfriend.domain.qna.dto.QuestionWithAnswersDto;
 import com.tripfriend.domain.qna.entity.Question;
 import com.tripfriend.domain.qna.repository.QuestionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -48,7 +53,30 @@ public class QuestionService {
         questionRepository.delete(question);
     }
 
+    // 관리자용 전체 질문 조회
+    public List<QuestionDto> getAllQuestionsForAdmin() {
+        return questionRepository.findAllWithMember()
+                .stream()
+                .map(QuestionDto::new)
+                .collect(Collectors.toList());
+    }
 
+
+    // 관리자용 질문 삭제
+    @Transactional
+    public void deleteQuestionByAdmin(Long id) {
+        Question question = questionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("해당 질문을 찾을 수 없습니다."));
+        questionRepository.delete(question);
+    }
+
+    @Transactional
+    public QuestionWithAnswersDto getQuestionWithAnswers(Long id) {
+        Question question = questionRepository.findByIdWithAnswers(id)
+                .orElseThrow(() -> new RuntimeException("해당 질문을 찾을 수 없습니다."));
+
+        return new QuestionWithAnswersDto(question);
+    }
 
 
 }

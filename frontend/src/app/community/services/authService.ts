@@ -12,7 +12,9 @@ export interface UserInfo {
 // 현재 로그인 상태 확인
 export function isLoggedIn(): boolean {
     if (typeof window !== 'undefined') {
-        return !!localStorage.getItem('accessToken');
+        const token = localStorage.getItem('accessToken');
+        console.log(`🔒 로그인 상태 확인: ${token ? '로그인됨' : '로그아웃됨'}`);
+        return !!token;
     }
     return false;
 }
