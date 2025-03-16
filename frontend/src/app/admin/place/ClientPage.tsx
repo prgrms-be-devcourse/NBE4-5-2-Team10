@@ -73,49 +73,49 @@ export default function ClientPage() {
 
   return (
     <div>
+      <button className="mb-4 text-blue-500" onClick={() => router.back()}>
+        뒤로가기
+      </button>
       <h2 className="text-2xl font-bold mb-4">전체 여행지</h2>
+      <div className="flex items-center gap-4 mb-4">
+        <div className="flex gap-4 flex-grow">
+          <select
+            value={selectedCity}
+            onChange={(e) => setSelectedCity(e.target.value)}
+            className="p-2 border rounded-md"
+          >
+            <option value="">모든 도시</option>
+            {Array.from(new Set(places.map((place) => place.cityName))).map(
+              (city) => (
+                <option key={city} value={city}>
+                  {city}
+                </option>
+              )
+            )}
+          </select>
 
-      {/* Registration button for admin */}
-      <div className="mb-4">
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="p-2 border rounded-md"
+          >
+            <option value="">모든 카테고리</option>
+            {Array.from(new Set(places.map((place) => place.category))).map(
+              (category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              )
+            )}
+          </select>
+        </div>
+
         <button
           className="bg-green-500 text-white px-4 py-2 rounded-md"
           onClick={() => router.push("/admin/place/create")}
         >
           여행지 등록
         </button>
-      </div>
-
-      {/* 여행지 필터링 UI */}
-      <div className="flex gap-4 mb-4">
-        <select
-          value={selectedCity}
-          onChange={(e) => setSelectedCity(e.target.value)}
-          className="p-2 border rounded-md"
-        >
-          <option value="">모든 도시</option>
-          {Array.from(new Set(places.map((place) => place.cityName))).map(
-            (city) => (
-              <option key={city} value={city}>
-                {city}
-              </option>
-            )
-          )}
-        </select>
-
-        <select
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-          className="p-2 border rounded-md"
-        >
-          <option value="">모든 카테고리</option>
-          {Array.from(new Set(places.map((place) => place.category))).map(
-            (category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
-            )
-          )}
-        </select>
       </div>
 
       {/* 여행지 리스트 */}

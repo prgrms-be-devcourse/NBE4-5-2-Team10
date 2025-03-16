@@ -79,6 +79,9 @@ export default function CreatePlacePage() {
 
   return (
     <div className="max-w-xl mx-auto p-4">
+      <button className="mb-4 text-blue-500" onClick={() => router.back()}>
+        뒤로가기
+      </button>
       <h2 className="text-2xl font-bold mb-4">여행지 등록</h2>
       {error && <p className="text-red-500 mb-4">{error}</p>}
       <form onSubmit={handleSubmit} encType="multipart/form-data">
