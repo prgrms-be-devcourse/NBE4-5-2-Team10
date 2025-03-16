@@ -1,5 +1,6 @@
 package com.tripfriend.domain.recruit.recruit.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.tripfriend.domain.member.member.entity.Member;
 import com.tripfriend.domain.place.place.entity.Place;
 import com.tripfriend.domain.recruit.apply.entity.Apply;
@@ -43,6 +44,7 @@ public class Recruit extends BaseEntity {
     @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;
 
+    @JsonProperty("isClosed")
     @Column(name = "is_closed", nullable = false)
     private boolean isClosed = false; // 어차피 null 안 되니까 Boolean 안 씀
 

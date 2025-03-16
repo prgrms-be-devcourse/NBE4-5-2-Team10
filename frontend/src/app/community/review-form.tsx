@@ -11,11 +11,9 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-
-interface Destination {
-  id: number
-  name: string
-}
+import { getAllPlaces, Place, getPlacesAsOptions } from "./services/placeService"
+import { createReview, getReviewById, updateReview, uploadReviewImages } from "./services/reviewService"
+import { isLoggedIn } from "./services/authService"
 
 interface ReviewFormData {
   title: string
@@ -41,82 +39,64 @@ export default function ReviewForm({ reviewId }: ReviewFormProps) {
     images: [],
   })
 
-  const [destinations, setDestinations] = useState<Destination[]>([])
+  const [places, setPlaces] = useState<Place[]>([])
+  const [placeOptions, setPlaceOptions] = useState<{ id: number; name: string }[]>([])
   const [previewImages, setPreviewImages] = useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isLoggedInState, setIsLoggedInState] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
 
-  // Check login status
+  // 로그인 상태 확인
   useEffect(() => {
-    const token = localStorage.getItem("accessToken")
-    setIsLoggedIn(!!token)
+    const loggedIn = isLoggedIn()
+    setIsLoggedInState(loggedIn)
 
-    if (!token) {
+    if (!loggedIn) {
       setFormError("리뷰를 작성하려면 로그인이 필요합니다.")
     }
   }, [])
 
-  // Fetch destinations
+  // 여행지 목록 가져오기
   useEffect(() => {
-    const fetchDestinations = async () => {
+    const fetchPlaces = async () => {
       try {
-        // In a real app, you would fetch from your API
-        // const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
-        // const response = await fetch(`${apiUrl}/place`);
-        // const data = await response.json();
-
-        // Mock data for demonstration
-        const mockDestinations: Destination[] = [
-          { id: 1, name: "제주도" },
-          { id: 2, name: "방콕" },
-          { id: 3, name: "오사카" },
-          { id: 4, name: "파리" },
-          { id: 5, name: "뉴욕" },
-        ]
-
-        setDestinations(mockDestinations)
+        const fetchedPlaces = await getAllPlaces()
+        setPlaces(fetchedPlaces)
+        
+        const options = getPlacesAsOptions(fetchedPlaces)
+        setPlaceOptions(options)
       } catch (err) {
-        console.error("Error fetching destinations:", err)
+        console.error("여행지 목록을 불러오는 중 오류가 발생했습니다:", err)
+        setFormError("여행지 목록을 불러오는 중 오류가 발생했습니다.")
       }
     }
 
-    fetchDestinations()
+    fetchPlaces()
   }, [])
 
-  // Fetch review data if in edit mode
+  // 수정 모드일 경우 리뷰 데이터 가져오기
   useEffect(() => {
     if (isEditMode && reviewId) {
       const fetchReview = async () => {
         try {
-          // In a real app, you would fetch from your API
-          // const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
-          // const response = await fetch(`${apiUrl}/review/${reviewId}`);
-          // const data = await response.json();
-
-          // Mock data for demonstration
-          const mockReview = {
-            reviewId: Number.parseInt(reviewId),
-            title: "제주도 여행 후기: 자연과 문화의 완벽한 조화",
-            content: "제주도는 정말 아름다운 곳이었습니다. 한라산 등반부터 해변 산책까지, 모든 순간이 특별했습니다.",
-            rating: 5,
-            placeId: "1",
-            images: [],
-          }
-
+          const review = await getReviewById(parseInt(reviewId))
+          
           setFormData({
-            title: mockReview.title,
-            content: mockReview.content,
-            rating: mockReview.rating,
-            placeId: mockReview.placeId,
+            title: review.title,
+            content: review.content,
+            rating: review.rating,
+            placeId: review.placeId.toString(),
             images: [],
           })
-
-          // If there were image URLs, you would set them as previews
-          // setPreviewImages(mockReview.imageUrls);
+          
+          // 이미지 URL이 있다면 프리뷰 이미지 설정
+          // 백엔드에서 이미지 URL을 제공하는 경우에만 활성화
+          // if (review.images && review.images.length > 0) {
+          //   setPreviewImages(review.images);
+          // }
         } catch (err) {
-          console.error("Error fetching review:", err)
+          console.error("리뷰 정보를 불러오는 중 오류가 발생했습니다:", err)
           setFormError("리뷰 정보를 불러오는 중 오류가 발생했습니다.")
         }
       }
@@ -125,49 +105,49 @@ export default function ReviewForm({ reviewId }: ReviewFormProps) {
     }
   }, [isEditMode, reviewId])
 
-  // Handle form input changes
+  // 입력값 변경 처리
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData({ ...formData, [name]: value })
 
-    // Clear error for this field if it exists
+    // 해당 필드의 에러 제거
     if (errors[name]) {
       setErrors({ ...errors, [name]: "" })
     }
   }
 
-  // Handle destination selection
+  // 여행지 선택 처리
   const handleDestinationChange = (value: string) => {
     setFormData({ ...formData, placeId: value })
 
-    // Clear error for this field if it exists
+    // 해당 필드의 에러 제거
     if (errors.placeId) {
       setErrors({ ...errors, placeId: "" })
     }
   }
 
-  // Handle rating selection
+  // 평점 선택 처리
   const handleRatingChange = (rating: number) => {
     setFormData({ ...formData, rating })
 
-    // Clear error for this field if it exists
+    // 해당 필드의 에러 제거
     if (errors.rating) {
       setErrors({ ...errors, rating: "" })
     }
   }
 
-  // Handle image upload
+  // 이미지 업로드 처리
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newImages = Array.from(e.target.files)
 
-      // Limit to 5 images total
+      // 최대 5개 제한
       if (formData.images.length + newImages.length > 5) {
         alert("최대 5개의 이미지만 업로드할 수 있습니다.")
         return
       }
 
-      // Create preview URLs
+      // 프리뷰 URL 생성
       const newPreviews = newImages.map((file) => URL.createObjectURL(file))
 
       setFormData({ ...formData, images: [...formData.images, ...newImages] })
@@ -175,12 +155,12 @@ export default function ReviewForm({ reviewId }: ReviewFormProps) {
     }
   }
 
-  // Remove image
+  // 이미지 제거 처리
   const handleRemoveImage = (index: number) => {
     const updatedImages = [...formData.images]
     const updatedPreviews = [...previewImages]
 
-    // Revoke object URL to avoid memory leaks
+    // 메모리 누수 방지를 위해 Object URL 해제
     URL.revokeObjectURL(updatedPreviews[index])
 
     updatedImages.splice(index, 1)
@@ -190,7 +170,7 @@ export default function ReviewForm({ reviewId }: ReviewFormProps) {
     setPreviewImages(updatedPreviews)
   }
 
-  // Validate form
+  // 폼 유효성 검사
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
@@ -214,61 +194,93 @@ export default function ReviewForm({ reviewId }: ReviewFormProps) {
     return Object.keys(newErrors).length === 0
   }
 
-  // Handle form submission
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+// 폼 제출 처리
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    if (!isLoggedIn) {
-      alert("리뷰를 작성하려면 로그인이 필요합니다.")
-      router.push("/member/login")
-      return
-    }
-
-    if (!validateForm()) {
-      return
-    }
-
-    setIsSubmitting(true)
-
-    try {
-      // In a real app, you would submit to your API
-      // const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
-      // const formDataToSend = new FormData();
-      // formDataToSend.append('title', formData.title);
-      // formDataToSend.append('content', formData.content);
-      // formDataToSend.append('rating', formData.rating.toString());
-      // formDataToSend.append('placeId', formData.placeId);
-      // formData.images.forEach(image => {
-      //   formDataToSend.append('images', image);
-      // });
-
-      // const url = isEditMode
-      //   ? `${apiUrl}/review/${reviewId}`
-      //   : `${apiUrl}/review`;
-
-      // const method = isEditMode ? 'PUT' : 'POST';
-
-      // await fetch(url, {
-      //   method,
-      //   headers: {
-      //     'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-      //   },
-      //   body: formDataToSend
-      // });
-
-      // Mock successful submission
-      setTimeout(() => {
-        alert(isEditMode ? "리뷰가 수정되었습니다." : "리뷰가 등록되었습니다.")
-        router.push("/community")
-      }, 1000)
-    } catch (err) {
-      console.error("Error submitting review:", err)
-      setFormError("리뷰 제출 중 오류가 발생했습니다.")
-      setIsSubmitting(false)
-    }
+  // 로그인 확인 처리
+  if (!isLoggedInState) {
+    alert("리뷰를 작성하려면 로그인이 필요합니다.");
+    router.push("/member/login");
+    return;
   }
 
-  // Clean up preview URLs when component unmounts
+  if (!validateForm()) {
+    return;
+  }
+
+  setIsSubmitting(true);
+
+  try {
+    // 지금 토큰 상태 확인 - 디버깅용
+    const token = localStorage.getItem('accessToken');
+    console.log(`📋 폼 제출 시 토큰 상태: ${token ? '있음' : '없음'}`);
+    
+    const reviewData = {
+      title: formData.title,
+      content: formData.content,
+      rating: formData.rating,
+      placeId: parseInt(formData.placeId)
+    };
+
+    console.log('📤 리뷰 데이터 준비:', reviewData);
+    
+    let createdReview;
+    
+    if (isEditMode && reviewId) {
+      // 리뷰 수정
+      console.log(`✏️ 리뷰 수정 시도: ID ${reviewId}`);
+      await updateReview(parseInt(reviewId), reviewData);
+      alert("리뷰가 성공적으로 수정되었습니다.");
+      createdReview = { reviewId: parseInt(reviewId) };
+    } else {
+      // 리뷰 생성
+      console.log('✨ 새 리뷰 생성 시도');
+      createdReview = await createReview(reviewData);
+      console.log('✅ 리뷰 생성 결과:', createdReview);
+      alert("리뷰가 성공적으로 등록되었습니다.");
+    }
+
+    // 이미지 업로드 (이미지가 있는 경우에만)
+    if (formData.images.length > 0 && createdReview && createdReview.reviewId) {
+      const imageFormData = new FormData();
+      formData.images.forEach(image => {
+        imageFormData.append('images', image);
+      });
+      
+      try {
+        await uploadReviewImages(createdReview.reviewId, imageFormData);
+      } catch (imageError) {
+        console.error("이미지 업로드 중 오류 발생:", imageError);
+        // 이미지 업로드 실패 시에도 리뷰는 생성/수정되었으므로 계속 진행
+      }
+    }
+
+    router.push("/community");
+  } catch (err) {
+    console.error("❌ 리뷰 제출 중 오류 발생:", err);
+    // 상세 오류 정보 표시
+    let errorMessage = "리뷰 제출 중 오류가 발생했습니다.";
+    
+    if (err instanceof Error) {
+      const message = err.message;
+      
+      // 내용 길이 관련 오류 처리
+      if (message.includes("content : Size")) {
+        errorMessage = "내용은 10자 이상 2000자 이하로 입력해주세요.";
+      }
+      // 제목 길이 관련 오류 처리
+      else if (message.includes("title : Size")) {
+        errorMessage = "제목은 2자 이상 30자 이하로 입력해주세요.";
+      }
+      // 기타 validation 오류 처리 추가
+    }
+    setFormError(errorMessage);
+    setIsSubmitting(false);
+  }
+}
+
+  // 컴포넌트 언마운트 시 프리뷰 URL 정리
   useEffect(() => {
     return () => {
       previewImages.forEach((url) => URL.revokeObjectURL(url))
@@ -287,7 +299,7 @@ export default function ReviewForm({ reviewId }: ReviewFormProps) {
         )}
 
         <form onSubmit={handleSubmit}>
-          {/* Title */}
+          {/* 제목 */}
           <div className="mb-6">
             <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
               제목 <span className="text-red-500">*</span>
@@ -303,7 +315,7 @@ export default function ReviewForm({ reviewId }: ReviewFormProps) {
             {errors.title && <p className="mt-1 text-sm text-red-500">{errors.title}</p>}
           </div>
 
-          {/* Destination */}
+          {/* 여행지 */}
           <div className="mb-6">
             <label htmlFor="destination" className="block text-sm font-medium text-gray-700 mb-1">
               여행지 <span className="text-red-500">*</span>
@@ -313,9 +325,9 @@ export default function ReviewForm({ reviewId }: ReviewFormProps) {
                 <SelectValue placeholder="여행지를 선택해주세요" />
               </SelectTrigger>
               <SelectContent>
-                {destinations.map((destination) => (
-                  <SelectItem key={destination.id} value={destination.id.toString()}>
-                    {destination.name}
+                {placeOptions.map((place) => (
+                  <SelectItem key={place.id} value={place.id.toString()}>
+                    {place.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -323,7 +335,7 @@ export default function ReviewForm({ reviewId }: ReviewFormProps) {
             {errors.placeId && <p className="mt-1 text-sm text-red-500">{errors.placeId}</p>}
           </div>
 
-          {/* Rating */}
+          {/* 평점 */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               평점 <span className="text-red-500">*</span>
@@ -340,7 +352,7 @@ export default function ReviewForm({ reviewId }: ReviewFormProps) {
             {errors.rating && <p className="mt-1 text-sm text-red-500">{errors.rating}</p>}
           </div>
 
-          {/* Content */}
+          {/* 내용 */}
           <div className="mb-6">
             <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-1">
               내용 <span className="text-red-500">*</span>
@@ -356,7 +368,7 @@ export default function ReviewForm({ reviewId }: ReviewFormProps) {
             {errors.content && <p className="mt-1 text-sm text-red-500">{errors.content}</p>}
           </div>
 
-          {/* Image Upload */}
+          {/* 이미지 업로드 */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-1">이미지 (최대 5개)</label>
             <div className="mt-2">
@@ -379,7 +391,7 @@ export default function ReviewForm({ reviewId }: ReviewFormProps) {
               </label>
             </div>
 
-            {/* Image Previews */}
+            {/* 이미지 프리뷰 */}
             {previewImages.length > 0 && (
               <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
                 {previewImages.map((preview, index) => (
@@ -402,12 +414,12 @@ export default function ReviewForm({ reviewId }: ReviewFormProps) {
             )}
           </div>
 
-          {/* Submit and Cancel Buttons */}
+          {/* 제출 및 취소 버튼 */}
           <div className="flex justify-end gap-4">
             <Button type="button" variant="outline" onClick={() => router.push("/community")}>
               취소
             </Button>
-            <Button type="submit" disabled={isSubmitting || !isLoggedIn}>
+            <Button type="submit" disabled={isSubmitting || !isLoggedInState}>
               {isSubmitting ? "제출 중..." : isEditMode ? "수정하기" : "등록하기"}
             </Button>
           </div>
@@ -416,4 +428,3 @@ export default function ReviewForm({ reviewId }: ReviewFormProps) {
     </Card>
   )
 }
-

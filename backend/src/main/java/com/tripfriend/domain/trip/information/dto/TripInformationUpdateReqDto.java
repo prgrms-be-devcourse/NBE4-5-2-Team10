@@ -1,7 +1,6 @@
 package com.tripfriend.domain.trip.information.dto;
 
 import com.tripfriend.domain.trip.information.entity.Transportation;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDateTime;

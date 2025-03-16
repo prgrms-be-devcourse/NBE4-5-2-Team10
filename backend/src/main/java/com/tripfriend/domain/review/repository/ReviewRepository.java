@@ -30,13 +30,13 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     List<Review> findByTitleContainingOrderByCreatedAtDesc(String keyword);
 
     // 여행지 ID로 검색
-    List<Review> findByPlaceIdOrderByCreatedAtDesc(Long placeId);
+    List<Review> findByPlace_IdOrderByCreatedAtDesc(Long placeId);
 
     // 여행지 ID + 정렬 옵션 (평점 높은 순)
-    List<Review> findByPlaceIdOrderByRatingDesc(Long placeId);
+    List<Review> findByPlace_IdOrderByRatingDesc(Long placeId);
 
     // 여행지 ID + 정렬 옵션 (평점 낮은 순)
-    List<Review> findByPlaceIdOrderByRatingAsc(Long placeId);
+    List<Review> findByPlace_IdOrderByRatingAsc(Long placeId);
 
     // 특정 사용자의 리뷰 목록
     List<Review> findByMemberIdOrderByCreatedAtDesc(Long memberId);

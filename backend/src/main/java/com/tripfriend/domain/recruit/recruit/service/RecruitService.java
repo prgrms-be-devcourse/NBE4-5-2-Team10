@@ -114,9 +114,9 @@ public class RecruitService {
     ) {
         Member member = getLoggedInMember(token);
         return recruitRepository.searchFilterSort(
-                keyword, placeCityName, isClosed, startDate, endDate,
-                travelStyle, sameGender, sameAge, minBudget, maxBudget, minGroupSize, maxGroupSize, sortBy, member.getGender(), member.getAgeRange()
-        ).stream()
+                        keyword, placeCityName, isClosed, startDate, endDate,
+                        travelStyle, sameGender, sameAge, minBudget, maxBudget, minGroupSize, maxGroupSize, sortBy, member.getGender(), member.getAgeRange()
+                ).stream()
                 .map(RecruitListResponseDto::new)
                 .toList();
     }

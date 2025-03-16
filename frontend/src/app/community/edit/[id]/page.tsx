@@ -1,6 +1,7 @@
 import { Suspense } from "react"
 import type { Metadata } from "next"
 import ReviewForm from "../../review-form"
+import EditAuthCheck from "../../components/edit-auth-check"
 
 interface EditReviewPageProps {
   params: {
@@ -28,11 +29,12 @@ export default function EditReviewPage({ params }: EditReviewPageProps) {
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <Suspense fallback={<div className="text-center py-10">리뷰 정보를 불러오는 중...</div>}>
-            <ReviewForm reviewId={params.id} />
+            <EditAuthCheck reviewId={params.id}>
+              <ReviewForm reviewId={params.id} />
+            </EditAuthCheck>
           </Suspense>
         </div>
       </div>
     </div>
   )
 }
-

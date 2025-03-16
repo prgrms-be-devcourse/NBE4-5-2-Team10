@@ -7,13 +7,8 @@ import com.tripfriend.domain.qna.dto.QuestionDto;
 import com.tripfriend.domain.qna.dto.QuestionWithAnswersDto;
 import com.tripfriend.domain.qna.entity.Question;
 import com.tripfriend.domain.qna.repository.QuestionRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -64,6 +59,7 @@ public class QuestionService {
                 .map(QuestionDto::new)
                 .collect(Collectors.toList());
     }
+
 
     // 관리자용 질문 삭제
     @Transactional

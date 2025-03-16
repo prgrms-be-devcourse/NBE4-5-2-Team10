@@ -21,7 +21,7 @@ public class AnswerController {
     private final AnswerService answerService;
     private final AuthService authService;
 
-//로그인 유저 정보조회
+    //로그인 유저 정보조회
     @GetMapping("/me")
     public ResponseEntity<Map<String, Object>> getCurrentUser(@RequestHeader("Authorization") String token) {
         Member member = authService.getLoggedInMember(token);

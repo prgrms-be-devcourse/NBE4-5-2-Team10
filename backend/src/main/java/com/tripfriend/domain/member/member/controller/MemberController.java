@@ -10,6 +10,7 @@ import com.tripfriend.global.dto.RsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -65,18 +66,25 @@ public class MemberController {
 
     @Operation(summary = "로그아웃")
     @PostMapping("/logout")
-    public RsData<Void> logout(HttpServletResponse response) {
+    public RsData<Void> logout(HttpServletRequest request, HttpServletResponse response) {
 
-        authService.logout(response);
+        authService.logout(request, response);
         return new RsData<>("200-1", "로그아웃이 완료되었습니다.", null);
     }
 
     @Operation(summary = "액세스 토큰 재발급")
     @PostMapping("/refresh")
-    public RsData<AuthResponseDto> refresh(@CookieValue(name = "refreshToken") String refreshToken, HttpServletResponse response) {
+    public RsData<AuthResponseDto> refresh(@CookieValue(name = "accessToken", required = false) String accessToken, HttpServletResponse response) {
+        try {
+            if (accessToken == null) {
+                return new RsData<>("401-2", "액세스 토큰이 없습니다.", null);
+            }
 
-        String newAccessToken = authService.refreshToken(refreshToken, response);
-        return new RsData<>("200-1", "토큰이 재발급되었습니다.", new AuthResponseDto(newAccessToken));
+            AuthResponseDto authResponseDto = authService.refreshToken(accessToken, response);
+            return new RsData<>("200-1", "토큰이 재발급되었습니다.", authResponseDto);
+        } catch (Exception e) {
+            return new RsData<>("401-1", "토큰 재발급에 실패했습니다: " + e.getMessage(), null);
+        }
     }
 
     @Operation(summary = "회원정보 수정")
@@ -91,11 +99,12 @@ public class MemberController {
 
     @Operation(summary = "회원 삭제")
     @DeleteMapping("/delete")
-    public RsData<Void> deleteMember(@RequestHeader(value = "Authorization", required = false) String token, HttpServletResponse response) {
+    public RsData<Void> deleteMember(@RequestHeader(value = "Authorization", required = false) String token, HttpServletRequest request,
+                                     HttpServletResponse response) {
 
         Member loggedInMember = authService.getLoggedInMember(token);
 
-        memberService.deleteMember(loggedInMember.getId(), response);
+        memberService.deleteMember(loggedInMember.getId(), request, response);
         return new RsData<>("204-1", "회원이 삭제되었습니다.", null);
     }
 

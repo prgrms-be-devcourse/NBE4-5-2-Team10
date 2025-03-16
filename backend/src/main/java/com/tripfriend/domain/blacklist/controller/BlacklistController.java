@@ -4,7 +4,7 @@ import com.tripfriend.domain.blacklist.dto.Dto;
 import com.tripfriend.domain.blacklist.entity.Blacklist;
 import com.tripfriend.domain.blacklist.service.BlacklistService;
 import com.tripfriend.global.annotation.CheckPermission;
-import jakarta.annotation.Resource;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
