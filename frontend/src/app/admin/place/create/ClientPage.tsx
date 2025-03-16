@@ -57,8 +57,13 @@ export default function CreatePlacePage() {
     }
 
     try {
+      // 관리자 토큰을 헤더에 포함하여 요청
+      const token = localStorage.getItem("accessToken");
       const res = await fetch("http://localhost:8080/place", {
         method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         body: formData,
       });
 

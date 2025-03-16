@@ -48,13 +48,19 @@ export default function ClientPage() {
 
   const handleDelete = (id: number) => {
     if (!confirm("정말 삭제하시겠습니까?")) return;
+    // 관리자 토큰을 헤더에 포함하여 요청
+    const token = localStorage.getItem("accessToken");
     fetch(`http://localhost:8080/place/${id}`, {
       method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     })
       .then((res) => {
         if (!res.ok) {
           throw new Error("삭제에 실패했습니다.");
         }
+        // 삭제가 성공하면 state에서 해당 여행지를 제거합니다.
         setPlaces((prev) => prev.filter((place) => place.id !== id));
       })
       .catch((error) => console.error("Error deleting place:", error));
