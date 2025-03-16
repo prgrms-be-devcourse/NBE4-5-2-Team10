@@ -14,6 +14,8 @@ import { getReviews, Review } from "./services/reviewService"
 import { getAllPlaces, getAllCities, getPlacesAsOptions } from "./services/placeService"
 import { isLoggedIn } from "./services/authService"
 
+
+
 export default function ReviewList() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -162,6 +164,43 @@ export default function ReviewList() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+    // 페이지 점프 처리 (여러 페이지 한 번에 이동)
+    const handlePageJump = (jumpAmount: number) => {
+      const newPage = Math.min(Math.max(1, currentPage + jumpAmount), totalPages);
+      setCurrentPage(newPage);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+  
+    // 표시할 페이지 번호 생성
+    const generatePageNumbers = () => {
+      let pages = [];
+      const maxVisiblePages = 5; // 한 번에 표시할 최대 페이지 버튼 수
+      
+      // 전체 페이지가 적으면 모두 표시
+      if (totalPages <= maxVisiblePages) {
+        for (let i = 1; i <= totalPages; i++) {
+          pages.push(i);
+        }
+      } 
+      // 페이지가 많으면 현재 페이지 주변만 표시
+      else {
+        // 시작 페이지 계산
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+        const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+        
+        // 끝 페이지가 최대값에 도달하면 시작 페이지 재조정
+        if (endPage === totalPages) {
+          startPage = Math.max(1, endPage - maxVisiblePages + 1);
+        }
+        
+        for (let i = startPage; i <= endPage; i++) {
+          pages.push(i);
+        }
+      }
+      
+      return pages;
+    };
+  
   // 별점 렌더링
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }).map((_, i) => (
@@ -199,13 +238,25 @@ export default function ReviewList() {
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="정렬 기준" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="newest">최신순</SelectItem>
-                <SelectItem value="oldest">오래된순</SelectItem>
-                <SelectItem value="highest_rating">평점 높은순</SelectItem>
-                <SelectItem value="lowest_rating">평점 낮은순</SelectItem>
-                <SelectItem value="most_comments">댓글 많은순</SelectItem>
-                <SelectItem value="most_viewed">조회수 높은순</SelectItem>
+              <SelectContent className="select-content bg-white border border-slate-200 shadow-lg z-50">
+              <div className="space-y-1 py-1">
+                  {[
+                    { value: "newest", label: "최신순" },
+                    { value: "oldest", label: "오래된순" },
+                    { value: "highest_rating", label: "평점 높은순" },
+                    { value: "lowest_rating", label: "평점 낮은순" },
+                    { value: "most_comments", label: "댓글 많은순" },
+                    { value: "most_viewed", label: "조회수 높은순" }
+                  ].map((option) => (
+                    <SelectItem 
+                      key={option.value} 
+                      value={option.value}
+                      className="px-8 py-2 hover:bg-blue-50 border-b border-gray-100 last:border-0 cursor-pointer"
+                    >
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </div>
               </SelectContent>
             </Select>
           </div>
@@ -221,10 +272,20 @@ export default function ReviewList() {
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="여행지 선택" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">모든 여행지</SelectItem>
-                {destinations.map((destination) => (
-                  <SelectItem key={destination.id} value={destination.id.toString()}>
+              <SelectContent className="select-content bg-white border border-slate-200 shadow-lg z-50 max-h-80 overflow-y-auto">
+                <SelectItem 
+                  value="all" 
+                  className="px-8 py-2 hover:bg-blue-50 mb-1 border-b border-gray-100"
+                >
+                  모든 여행지
+                </SelectItem>
+                
+                {destinations.map((destination, index) => (
+                  <SelectItem 
+                    key={destination.id} 
+                    value={destination.id.toString()}
+                    className={`px-8 py-2 hover:bg-blue-50 ${index < destinations.length - 1 ? 'border-b border-gray-100 mb-1' : ''}`}
+                  >
                     {destination.name}
                   </SelectItem>
                 ))}
@@ -304,13 +365,13 @@ export default function ReviewList() {
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-                disabled={currentPage === 1}
+                onClick={() => handlePageJump(-3)} // 3페이지씩 뒤로
+                disabled={currentPage <= 1}
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
 
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              {generatePageNumbers().map((page) => (
                 <Button
                   key={page}
                   variant={currentPage === page ? "default" : "outline"}
@@ -324,8 +385,8 @@ export default function ReviewList() {
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-                disabled={currentPage === totalPages}
+                onClick={() => handlePageJump(3)} // 3페이지씩 앞으로
+                disabled={currentPage >= totalPages}
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
