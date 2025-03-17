@@ -154,80 +154,69 @@ public class BaseInitData implements CommandLineRunner {
             }
 
             List<Recruit> recruits = List.of(
-                    Recruit.builder()
-                            .member(members.get(0))
-                            .place(places.get(0))
-                            .title("서울에서 동행 구합니다!")
-                            .content("서울 여행을 함께할 분을 모집합니다. 일정은 유동적이에요.")
-                            .isClosed(false)
-                            .startDate(LocalDate.now().plusDays(3))
-                            .endDate(LocalDate.now().plusDays(7))
-                            .travelStyle(com.tripfriend.domain.recruit.recruit.entity.TravelStyle.ADVENTURE)
-                            .sameGender(false)
-                            .sameAge(false)
-                            .budget(30000)
-                            .groupSize(4)
-                            .build(),
-                    Recruit.builder()
-                            .member(members.get(1))
-                            .place(places.get(3))
-                            .title("부산 광안리 동행 모집")
-                            .content("광안리에서 야경도 보고, 해운대도 가고 싶어요!")
-                            .isClosed(false)
-                            .startDate(LocalDate.now().plusDays(1))
-                            .endDate(LocalDate.now().plusDays(5))
+                    Recruit.builder().member(members.get(0)).place(places.get(0))
+                            .title("서울 한강에서 피크닉 함께해요!").content("한강에서 맛있는 음식과 함께 피크닉 즐길 분 모집합니다.")
+                            .isClosed(false).startDate(LocalDate.now().plusDays(3)).endDate(LocalDate.now().plusDays(3))
                             .travelStyle(com.tripfriend.domain.recruit.recruit.entity.TravelStyle.RELAXATION)
-                            .sameGender(true)
-                            .sameAge(true)
-                            .budget(50000)
-                            .groupSize(3)
-                            .build(),
-                    Recruit.builder()
-                            .member(members.get(0))
-                            .place(places.get(6))
-                            .title("제주도 탐방 같이 가실 분!")
-                            .content("우도랑 성산일출봉을 꼭 가고 싶습니다.")
-                            .isClosed(false)
-                            .startDate(LocalDate.now().plusDays(10))
-                            .endDate(LocalDate.now().plusDays(15))
+                            .sameGender(false).sameAge(false).budget(20000).groupSize(4).build(),
+
+                    Recruit.builder().member(members.get(1)).place(places.get(1))
+                            .title("부산 바다 여행! 해운대, 광안리 방문 예정").content("바다 여행을 좋아하시는 분과 함께하면 좋겠어요!")
+                            .isClosed(false).startDate(LocalDate.now().plusDays(5)).endDate(LocalDate.now().plusDays(8))
                             .travelStyle(com.tripfriend.domain.recruit.recruit.entity.TravelStyle.ADVENTURE)
-                            .sameGender(false)
-                            .sameAge(true)
-                            .budget(80000)
-                            .groupSize(5)
-                            .build(),
-                    Recruit.builder()
-                            .member(members.get(1))
-                            .place(places.get(9))
-                            .title("속초 맛집 투어 동행 모집")
-                            .content("속초에서 중앙시장과 맛집 탐방을 하려고 합니다.")
-                            .isClosed(false)
-                            .startDate(LocalDate.now().plusDays(5))
-                            .endDate(LocalDate.now().plusDays(8))
+                            .sameGender(true).sameAge(true).budget(50000).groupSize(3).build(),
+
+                    Recruit.builder().member(members.get(2)).place(places.get(3))
+                            .title("강릉 커피 투어 동행 모집").content("강릉의 유명한 커피 명소를 함께 방문할 동행을 찾습니다.")
+                            .isClosed(false).startDate(LocalDate.now().plusDays(7)).endDate(LocalDate.now().plusDays(10))
                             .travelStyle(com.tripfriend.domain.recruit.recruit.entity.TravelStyle.GOURMET)
-                            .sameGender(true)
-                            .sameAge(false)
-                            .budget(40000)
-                            .groupSize(2)
-                            .build(),
-                    Recruit.builder()
-                            .member(members.get(0))
-                            .place(places.get(12))
-                            .title("강원도 자연 여행 동행 찾습니다")
-                            .content("설악산 등반과 힐링 여행을 함께할 분을 찾고 있습니다.")
-                            .isClosed(false)
-                            .startDate(LocalDate.now().plusDays(7))
-                            .endDate(LocalDate.now().plusDays(12))
+                            .sameGender(false).sameAge(false).budget(30000).groupSize(2).build(),
+
+                    Recruit.builder().member(members.get(1)).place(places.get(5))
+                            .title("서울 도심 야경 투어").content("남산, 한강, 롯데타워 전망대 등을 함께 돌면서 야경을 감상해요.")
+                            .isClosed(false).startDate(LocalDate.now().plusDays(2)).endDate(LocalDate.now().plusDays(2))
                             .travelStyle(com.tripfriend.domain.recruit.recruit.entity.TravelStyle.RELAXATION)
-                            .sameGender(false)
-                            .sameAge(false)
-                            .budget(20000)
-                            .groupSize(3)
-                            .build()
+                            .sameGender(true).sameAge(true).budget(25000).groupSize(5).build(),
+
+                    Recruit.builder().member(members.get(0)).place(places.get(8))
+                            .title("제주도 성산일출봉 트레킹").content("이른 아침 일출을 보러 함께 가실 분 구해요!")
+                            .isClosed(false).startDate(LocalDate.now().plusDays(10)).endDate(LocalDate.now().plusDays(12))
+                            .travelStyle(com.tripfriend.domain.recruit.recruit.entity.TravelStyle.ADVENTURE)
+                            .sameGender(false).sameAge(true).budget(60000).groupSize(3).build(),
+
+                    Recruit.builder().member(members.get(2)).place(places.get(10))
+                            .title("속초 중앙시장 & 바닷가 투어").content("속초에서 맛집 탐방과 바닷가 드라이브 할 분!")
+                            .isClosed(false).startDate(LocalDate.now().plusDays(4)).endDate(LocalDate.now().plusDays(6))
+                            .travelStyle(com.tripfriend.domain.recruit.recruit.entity.TravelStyle.GOURMET)
+                            .sameGender(true).sameAge(false).budget(40000).groupSize(4).build(),
+
+                    Recruit.builder().member(members.get(1)).place(places.get(12))
+                            .title("설악산 단풍 여행 같이 가요!").content("가을 단풍을 보며 힐링할 분 찾습니다.")
+                            .isClosed(false).startDate(LocalDate.now().plusDays(15)).endDate(LocalDate.now().plusDays(17))
+                            .travelStyle(com.tripfriend.domain.recruit.recruit.entity.TravelStyle.RELAXATION)
+                            .sameGender(false).sameAge(false).budget(50000).groupSize(3).build(),
+
+                    Recruit.builder().member(members.get(0)).place(places.get(13))
+                            .title("강릉 바다 드라이브 & 맛집 투어").content("바다 드라이브와 유명 맛집 코스를 함께할 분!")
+                            .isClosed(false).startDate(LocalDate.now().plusDays(6)).endDate(LocalDate.now().plusDays(9))
+                            .travelStyle(com.tripfriend.domain.recruit.recruit.entity.TravelStyle.GOURMET)
+                            .sameGender(false).sameAge(false).budget(70000).groupSize(5).build(),
+
+                    Recruit.builder().member(members.get(2)).place(places.get(9))
+                            .title("부산 감천마을 & 국제시장 투어").content("부산 여행을 알차게 즐길 분 구해요!")
+                            .isClosed(false).startDate(LocalDate.now().plusDays(8)).endDate(LocalDate.now().plusDays(10))
+                            .travelStyle(com.tripfriend.domain.recruit.recruit.entity.TravelStyle.SHOPPING)
+                            .sameGender(true).sameAge(false).budget(35000).groupSize(3).build(),
+
+                    Recruit.builder().member(members.get(1)).place(places.get(7))
+                            .title("경주 문화유산 탐방").content("불국사, 석굴암 등 문화유적지를 돌면서 역사 탐방해요!")
+                            .isClosed(false).startDate(LocalDate.now().plusDays(12)).endDate(LocalDate.now().plusDays(15))
+                            .travelStyle(com.tripfriend.domain.recruit.recruit.entity.TravelStyle.SIGHTSEEING)
+                            .sameGender(false).sameAge(true).budget(45000).groupSize(4).build()
             );
 
             recruitRepository.saveAll(recruits);
-            System.out.println("동행 모집(게시글) 5개가 등록되었습니다.");
+            System.out.println("동행 모집(게시글) 10개가 등록되었습니다.");
         } else {
             System.out.println("이미 동행 모집(게시글) 데이터가 존재합니다.");
         }
@@ -244,24 +233,25 @@ public class BaseInitData implements CommandLineRunner {
             }
 
             List<Apply> applies = List.of(
-                    Apply.builder().content("재밌게 여행할 자신 있어요!").member(members.get(0)).recruit(recruits.get(0)).build(),
-                    Apply.builder().content("저랑 같이 일정 짜보실래요?").member(members.get(1)).recruit(recruits.get(0)).build(),
-                    Apply.builder().content("해운대 근처에서 머물 계획이에요!").member(members.get(0)).recruit(recruits.get(1)).build(),
-                    Apply.builder().content("광안리 야경 보러 가요!").member(members.get(1)).recruit(recruits.get(1)).build(),
-                    Apply.builder().content("제주도 일출 보러 갈 분!").member(members.get(0)).recruit(recruits.get(2)).build(),
-                    Apply.builder().content("우도 여행 함께하고 싶어요.").member(members.get(1)).recruit(recruits.get(2)).build(),
-                    Apply.builder().content("속초에서 맛집 같이 가고 싶어요.").member(members.get(0)).recruit(recruits.get(3)).build(),
-                    Apply.builder().content("중앙시장 가면 꼭 들려야 할 곳 있어요!").member(members.get(1)).recruit(recruits.get(3)).build(),
-                    Apply.builder().content("설악산 등반 함께해요!").member(members.get(0)).recruit(recruits.get(4)).build(),
-                    Apply.builder().content("등산 초보인데 같이 가도 될까요?").member(members.get(1)).recruit(recruits.get(4)).build()
+                    Apply.builder().content("한강 피크닉 너무 좋아요! 같이 해요.").member(members.get(2)).recruit(recruits.get(0)).build(),
+                    Apply.builder().content("부산 바다 진짜 가고 싶었는데 함께해요!").member(members.get(0)).recruit(recruits.get(1)).build(),
+                    Apply.builder().content("강릉 커피 투어 너무 흥미로워요!").member(members.get(1)).recruit(recruits.get(2)).build(),
+                    Apply.builder().content("서울 야경 투어 같이 하고 싶어요!").member(members.get(0)).recruit(recruits.get(3)).build(),
+                    Apply.builder().content("제주도 일출 보러 가는 거 기대돼요!").member(members.get(2)).recruit(recruits.get(4)).build(),
+                    Apply.builder().content("속초 여행 너무 재밌겠어요!").member(members.get(1)).recruit(recruits.get(5)).build(),
+                    Apply.builder().content("설악산 단풍 너무 기대돼요!").member(members.get(0)).recruit(recruits.get(6)).build(),
+                    Apply.builder().content("강릉 바다 드라이브 코스 완전 좋아요!").member(members.get(2)).recruit(recruits.get(7)).build(),
+                    Apply.builder().content("부산 감천마을 너무 가고 싶었어요!").member(members.get(0)).recruit(recruits.get(8)).build(),
+                    Apply.builder().content("경주 역사 탐방 너무 흥미로워요!").member(members.get(1)).recruit(recruits.get(9)).build()
             );
 
             applyRepository.saveAll(applies);
-            System.out.println("동행 요청(댓글) 10개가 등록되었습니다.");
+            System.out.println("동행 요청(댓글) 20개가 등록되었습니다.");
         } else {
             System.out.println("이미 동행 요청(댓글) 데이터가 존재합니다.");
         }
     }
+
 
 
     // 여행지 등록
