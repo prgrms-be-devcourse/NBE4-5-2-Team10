@@ -151,7 +151,7 @@ class MemberServiceTest {
         doNothing().when(memberRepository).deleteById(memberId);
 
         // When
-        memberService.deleteMember(memberId);
+        memberService.deleteMember(memberId,null,null);
 
         // Then
         verify(memberRepository, times(1)).existsById(memberId);
