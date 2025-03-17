@@ -14,6 +14,7 @@ public class CommentResponseDto {
     private Long reviewId;
     private Long memberId;
     private String memberName;
+    private String profileImage;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -23,7 +24,13 @@ public class CommentResponseDto {
         this.reviewId = comment.getReview().getReviewId();
         this.memberId = comment.getMember().getId();
         this.memberName = memberName;
+        this.profileImage = null;
         this.createdAt = comment.getCreatedAt();
         this.updatedAt = comment.getUpdatedAt();
+    }
+
+    public CommentResponseDto(Comment comment, String memberName, String profileImage) {
+        this(comment, memberName);
+        this.profileImage = profileImage;
     }
 }

@@ -126,20 +126,26 @@ export default function Header() {
           >
             여행 동행 찾기
           </Link>
-          <Link
-            href="/recruit/create"
-            className="text-gray-700 hover:text-blue-600"
-          >
-            동행 등록하기
-          </Link>
+          {/* 🔹 로그인한 경우에만 "동행 등록하기" 버튼 표시 */}
+          {isLoggedIn && (
+            <Link
+              href="/recruit/create"
+              className="text-gray-700 hover:text-blue-600"
+            >
+              동행 등록하기
+            </Link>
+          )}
           <Link href="/community" className="text-gray-700 hover:text-blue-600">
             커뮤니티
           </Link>
-          <Link href="/about" className="text-gray-700 hover:text-blue-600">
-            서비스 소개
+          <Link href="/notice" className="text-gray-700 hover:text-blue-600">
+            공지사항
           </Link>
           <Link href="/qna" className="text-gray-700 hover:text-blue-600">
             Q&A
+          </Link>
+          <Link href="/event" className="text-gray-700 hover:text-blue-600">
+            이벤트
           </Link>
         </div>
         <div className="flex items-center space-x-4">

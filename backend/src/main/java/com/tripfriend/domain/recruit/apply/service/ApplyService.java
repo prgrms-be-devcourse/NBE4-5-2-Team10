@@ -4,14 +4,12 @@ import com.tripfriend.domain.member.member.entity.Member;
 import com.tripfriend.domain.member.member.repository.MemberRepository;
 import com.tripfriend.domain.member.member.service.AuthService;
 import com.tripfriend.domain.recruit.apply.dto.ApplyCreateRequestDto;
-import com.tripfriend.domain.recruit.apply.dto.ApplyCreateRequestDto;
 import com.tripfriend.domain.recruit.apply.dto.ApplyResponseDto;
 import com.tripfriend.domain.recruit.apply.entity.Apply;
 import com.tripfriend.domain.recruit.apply.repository.ApplyRepository;
 import com.tripfriend.domain.recruit.recruit.entity.Recruit;
 import com.tripfriend.domain.recruit.recruit.repository.RecruitRepository;
 import com.tripfriend.global.exception.ServiceException;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -64,8 +62,8 @@ public class ApplyService {
         Member member = getLoggedInMember(token);
 
         // 본인 확인
-        if (!apply.getMember().getId().equals(member.getId())) {
-            throw new ServiceException("403-2", "본인이 등록한 동행 요청 댓글만 삭제할 수 있습니다.");
+        if (!apply.getMember().getId().equals(member.getId()) && !member.getAuthority().equals("ADMIN")) {
+            throw new ServiceException("403-2", "관리자가 아니라면 본인이 등록한 동행 요청 댓글만 삭제할 수 있습니다.");
         }
         applyRepository.deleteById(applyId);
     }

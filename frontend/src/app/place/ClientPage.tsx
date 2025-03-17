@@ -9,7 +9,7 @@ interface Place {
   placeName: string;
   description: string;
   category: string;
-  image: string;
+  imageUrl: string;
 }
 
 export default function ClientPage() {
@@ -17,21 +17,29 @@ export default function ClientPage() {
   const [loading, setLoading] = useState(true);
   const [selectedCity, setSelectedCity] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
-  const router = useRouter(); // useRouter 함수 호출
+  const router = useRouter();
 
   useEffect(() => {
-    fetch("http://localhost:8080/place") // 백엔드 API 호출
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/place`)
       .then((res) => res.json())
       .then((data) => {
         if (data && data.data) {
-          setPlaces(data.data); // 여행지 목록 저장
+          const mappedPlaces: Place[] = data.data.map((place: any) => ({
+            id: place.id,
+            cityName: place.cityName,
+            placeName: place.placeName,
+            description: place.description,
+            category: place.category,
+            imageUrl: place.imageUrl,
+          }));
+          setPlaces(mappedPlaces);
         }
       })
       .catch((error) => console.error("Error fetching places:", error))
       .finally(() => setLoading(false));
   }, []);
 
-  // 선택된 CityName이 있는 경우 필터링된 데이터 반환
+  // 선택된 도시와 카테고리에 따라 필터링
   const filteredPlaces = places.filter(
     (place) =>
       (!selectedCity || place.cityName === selectedCity) &&
@@ -46,7 +54,7 @@ export default function ClientPage() {
     <div>
       <h2 className="text-2xl font-bold mb-4">전체 여행지</h2>
 
-      {/* 여행지 필터링 */}
+      {/* 여행지 필터링 UI */}
       <div className="flex gap-4 mb-4">
         <select
           value={selectedCity}
@@ -89,14 +97,16 @@ export default function ClientPage() {
               key={place.id}
               className="bg-white rounded-lg shadow-md p-4 cursor-pointer"
             >
-              {/* 이미지 클릭 시 이동 */}
               <img
-                src={place.image || "/default-placeholder.jpg"}
+                src={
+                  place.imageUrl
+                    ? `${process.env.NEXT_PUBLIC_API_URL}${place.imageUrl}`
+                    : "/default-placeholder.svg"
+                }
                 alt={place.cityName}
-                className="w-full h-40 object-cover rounded-md cursor-pointer"
+                className="w-full aspect-[4/3] object-cover rounded-md cursor-pointer"
                 onClick={() => router.push(`/place/${place.id}`)}
               />
-              {/* 장소명 클릭 시 이동 */}
               <h3
                 className="text-xl font-semibold mt-2 text-blue-500 cursor-pointer"
                 onClick={() => router.push(`/place/${place.id}`)}

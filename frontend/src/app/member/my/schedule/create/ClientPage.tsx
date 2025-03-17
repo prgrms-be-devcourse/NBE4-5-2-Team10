@@ -53,7 +53,9 @@ export default function ClientPage() {
   useEffect(() => {
     const fetchCities = async () => {
       try {
-        const response = await fetch("http://localhost:8080/place/cities");
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/place/cities`
+        );
         if (!response.ok) {
           throw new Error("도시 목록을 불러오는데 실패했습니다.");
         }
@@ -74,7 +76,7 @@ export default function ClientPage() {
     const fetchPlaces = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8080/place?cityName=${cityName}`
+          `${process.env.NEXT_PUBLIC_API_URL}/place?cityName=${cityName}`
         );
         if (!response.ok) {
           throw new Error("장소 목록을 불러오는데 실패했습니다.");
@@ -138,14 +140,17 @@ export default function ClientPage() {
 
     try {
       const token = localStorage.getItem("accessToken") || "";
-      const response = await fetch("http://localhost:8080/trip/schedule", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(schedule),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/trip/schedule`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(schedule),
+        }
+      );
       if (!response.ok) {
         throw new Error("등록에 실패했습니다.");
       }

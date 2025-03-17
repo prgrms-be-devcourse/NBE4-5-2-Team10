@@ -193,7 +193,7 @@ export default function ClientPage() {
     };
 
     // 회원정보 수정 API 호출
-    fetch("http://localhost:8080/member/update", {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/member/update`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -271,13 +271,16 @@ export default function ClientPage() {
       }
 
       // 회원 탈퇴 API 호출
-      const response = await fetch("http://localhost:8080/member/delete", {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-        credentials: "include", // 쿠키를 포함하도록 설정
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/member/delete`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          credentials: "include", // 쿠키를 포함하도록 설정
+        }
+      );
 
       if (!response.ok) {
         if (response.status === 401) {
@@ -352,7 +355,7 @@ export default function ClientPage() {
     }
 
     // 마이페이지 정보 가져오기
-    fetch("http://localhost:8080/member/mypage", {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/member/mypage`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -365,7 +368,7 @@ export default function ClientPage() {
             // 새로운 accessToken 얻기 시도
             const refreshToken = localStorage.getItem("refreshToken");
             if (refreshToken) {
-              return fetch("http://localhost:8080/auth/refresh", {
+              return fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`, {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
@@ -378,11 +381,14 @@ export default function ClientPage() {
                     localStorage.setItem("accessToken", data.accessToken);
 
                     // 새 토큰으로 다시 마이페이지 요청
-                    return fetch("http://localhost:8080/member/mypage", {
-                      headers: {
-                        Authorization: `Bearer ${data.accessToken}`,
-                      },
-                    });
+                    return fetch(
+                      `${process.env.NEXT_PUBLIC_API_URL}/member/mypage`,
+                      {
+                        headers: {
+                          Authorization: `Bearer ${data.accessToken}`,
+                        },
+                      }
+                    );
                   });
                 } else {
                   // refreshToken도 만료된 경우 로그인 페이지로 리다이렉트
@@ -456,7 +462,7 @@ export default function ClientPage() {
 
     try {
       const response = await fetch(
-        "http://localhost:8080/member/profile-image/upload",
+        `${process.env.NEXT_PUBLIC_API_URL}/member/profile-image/upload`,
         {
           method: "POST",
           headers: {
@@ -512,7 +518,7 @@ export default function ClientPage() {
 
     try {
       const response = await fetch(
-        "http://localhost:8080/member/profile-image/delete",
+        `${process.env.NEXT_PUBLIC_API_URL}/member/profile-image/delete`,
         {
           method: "DELETE",
           headers: {

@@ -46,10 +46,13 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
 
 export const refreshAccessToken = async () => {
   try {
-    const response = await fetch("http://localhost:8080/member/refresh", {
-      method: "POST",
-      credentials: "include",
-    });
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/member/refresh`,
+      {
+        method: "POST",
+        credentials: "include",
+      }
+    );
 
     if (!response.ok) throw new Error("토큰 갱신 실패");
 

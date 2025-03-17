@@ -25,6 +25,4 @@ public class TripInformationUpdateReqDto {
     private int cost;
 
     private String notes;
-
-    private Boolean isVisited = false;
 }

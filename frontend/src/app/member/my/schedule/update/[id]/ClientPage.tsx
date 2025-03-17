@@ -32,7 +32,7 @@ export default function TripInfoUpdatePage() {
       return;
     }
     // 세부 일정 정보를 GET으로 호출
-    fetch(`http://localhost:8080/trip/information/${id}`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/trip/information/${id}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -81,14 +81,17 @@ export default function TripInfoUpdatePage() {
       visitTime: tripInfo.visitTime,
     };
     try {
-      const res = await fetch(`http://localhost:8080/trip/information/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/trip/information/${id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
       if (!res.ok) throw new Error("세부 일정 수정 실패");
       alert("세부 일정 수정 성공");
       router.back();

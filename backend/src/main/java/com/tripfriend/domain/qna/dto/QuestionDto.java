@@ -16,6 +16,8 @@ public class QuestionDto {
     private String updatedAt;
     private String memberUsername;
 
+
+
     public QuestionDto(Question question) {
         this.id = question.getId();
         this.title = question.getTitle();

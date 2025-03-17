@@ -78,10 +78,6 @@ public class Member {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
-    //관리자 여부
-    private boolean isAdmin = false;
-
-    @PrePersist
     protected void onCreate() {
 
         createdAt = LocalDateTime.now();

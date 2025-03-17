@@ -10,7 +10,7 @@ interface Place {
   placeName: string;
   description: string;
   category: string;
-  image: string;
+  imageUrl: string;
 }
 
 export default function PlaceDetailPage() {
@@ -22,7 +22,7 @@ export default function PlaceDetailPage() {
   useEffect(() => {
     if (!id) return;
 
-    fetch(`http://localhost:8080/place/${id}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/place/${id}`)
       .then((res) => res.json())
       .then((data) => {
         if (data && data.data) {
@@ -48,9 +48,13 @@ export default function PlaceDetailPage() {
       </button>
       <h1 className="text-3xl font-bold mb-4">{place.placeName}</h1>
       <img
-        src={place.image || "/default-placeholder.jpg"}
+        src={
+          place.imageUrl
+            ? `${process.env.NEXT_PUBLIC_API_URL}${place.imageUrl}`
+            : "/default-placeholder.svg"
+        }
         alt={place.placeName}
-        className="w-full h-64 object-cover rounded-md"
+        className="w-full aspect-[4/3] object-cover rounded-md cursor-pointer"
       />
       <p className="mt-4 text-gray-700">{place.description}</p>
       <p className="mt-2 text-sm text-gray-500">도시: {place.cityName}</p>

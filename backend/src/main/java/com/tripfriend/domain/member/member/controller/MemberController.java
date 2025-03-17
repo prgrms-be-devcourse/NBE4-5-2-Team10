@@ -35,6 +35,7 @@ public class MemberController {
     private final MailService mailService;
 
     //회원정보 조회
+    @Operation(summary = "회원정보 조회")
     @GetMapping("/me")
     public ResponseEntity<Map<String, Object>> getCurrentUser(@RequestHeader("Authorization") String token) {
         Member member = authService.getLoggedInMember(token);
@@ -42,7 +43,6 @@ public class MemberController {
         Map<String, Object> response = new HashMap<>();
         response.put("id", member.getId());
         response.put("username", member.getUsername());
-        response.put("isAdmin", member.isAdmin()); // 관리자 여부
 
         return ResponseEntity.ok(response);
     }

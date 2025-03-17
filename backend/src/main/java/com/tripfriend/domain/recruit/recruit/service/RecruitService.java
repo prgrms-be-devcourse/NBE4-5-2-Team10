@@ -1,5 +1,7 @@
 package com.tripfriend.domain.recruit.recruit.service;
 
+import com.tripfriend.domain.member.member.entity.AgeRange;
+import com.tripfriend.domain.member.member.entity.Gender;
 import com.tripfriend.domain.member.member.entity.Member;
 import com.tripfriend.domain.member.member.repository.MemberRepository;
 import com.tripfriend.domain.member.member.service.AuthService;
@@ -12,6 +14,7 @@ import com.tripfriend.domain.recruit.recruit.dto.RecruitDetailResponseDto;
 import com.tripfriend.domain.recruit.recruit.entity.Recruit;
 import com.tripfriend.domain.recruit.recruit.repository.RecruitRepository;
 import com.tripfriend.global.exception.ServiceException;
+import jakarta.validation.constraints.Null;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -112,10 +115,24 @@ public class RecruitService {
             Optional<String> sortBy,
             String token
     ) {
-        Member member = getLoggedInMember(token);
+        Member member;
+        if (token == null || token.isEmpty()) {
+            member = null; // 🔹 로그인하지 않은 경우 null 반환
+        } else {
+            member = getLoggedInMember(token);
+        }
+
+        // 🔹 로그인 여부 확인
+        Gender userGender = (member != null) ? member.getGender() : null;
+        AgeRange userAgeRange = (member != null) ? member.getAgeRange() : null;
+
+        // 🔹 비로그인 사용자는 성별 & 나이 필터를 적용하지 않음
+        Optional<Boolean> adjustedSameGender = (member != null) ? sameGender : Optional.empty();
+        Optional<Boolean> adjustedSameAge = (member != null) ? sameAge : Optional.empty();
+
         return recruitRepository.searchFilterSort(
                         keyword, placeCityName, isClosed, startDate, endDate,
-                        travelStyle, sameGender, sameAge, minBudget, maxBudget, minGroupSize, maxGroupSize, sortBy, member.getGender(), member.getAgeRange()
+                        travelStyle, adjustedSameGender, adjustedSameAge, minBudget, maxBudget, minGroupSize, maxGroupSize, sortBy, userGender, userAgeRange
                 ).stream()
                 .map(RecruitListResponseDto::new)
                 .toList();
@@ -128,8 +145,8 @@ public class RecruitService {
 
         Member member = getLoggedInMember(token);
         // 본인 확인
-        if (!recruit.getMember().getId().equals(member.getId())) {
-            throw new ServiceException("403-2", "본인이 등록한 동행 모집글만 수정할 수 있습니다.");
+        if (!recruit.getMember().getId().equals(member.getId()) && !member.getAuthority().equals("ADMIN")) {
+            throw new ServiceException("403-2", "관리자가 아니라면 본인이 등록한 동행 모집글만 수정할 수 있습니다.");
         }
 
         recruit.update(requestDto, place);
@@ -143,8 +160,8 @@ public class RecruitService {
         Member member = getLoggedInMember(token);
 
         // 본인 확인
-        if (!recruit.getMember().getId().equals(member.getId())) {
-            throw new ServiceException("403-2", "본인이 등록한 동행 모집글만 삭제할 수 있습니다.");
+        if (!recruit.getMember().getId().equals(member.getId()) && !member.getAuthority().equals("ADMIN")) {
+            throw new ServiceException("403-2", "관리자가 아니라면 본인이 등록한 동행 모집글만 삭제할 수 있습니다.");
         }
 
         recruitRepository.deleteById(recruitId);
