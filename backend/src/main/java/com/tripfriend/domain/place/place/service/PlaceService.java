@@ -1,7 +1,6 @@
 package com.tripfriend.domain.place.place.service;
 
 import com.tripfriend.domain.place.place.dto.PlaceCreateReqDto;
-import com.tripfriend.domain.place.place.dto.PlaceResDto;
 import com.tripfriend.domain.place.place.dto.PlaceUpdateReqDto;
 import com.tripfriend.domain.place.place.entity.Place;
 import com.tripfriend.domain.place.place.repository.PlaceRepository;
@@ -14,10 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.rmi.ServerException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor

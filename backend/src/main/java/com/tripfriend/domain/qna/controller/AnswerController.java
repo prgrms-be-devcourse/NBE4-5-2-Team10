@@ -3,8 +3,6 @@ package com.tripfriend.domain.qna.controller;
 import com.tripfriend.domain.member.member.entity.Member;
 import com.tripfriend.domain.member.member.service.AuthService;
 import com.tripfriend.domain.qna.dto.AnswerDto;
-import com.tripfriend.domain.qna.entity.Answer;
-import com.tripfriend.domain.qna.repository.AnswerRepository;
 import com.tripfriend.domain.qna.service.AnswerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

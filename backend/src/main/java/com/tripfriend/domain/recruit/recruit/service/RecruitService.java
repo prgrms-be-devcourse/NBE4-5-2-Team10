@@ -131,9 +131,9 @@ public class RecruitService {
         Optional<Boolean> adjustedSameAge = (member != null) ? sameAge : Optional.empty();
 
         return recruitRepository.searchFilterSort(
-                keyword, placeCityName, isClosed, startDate, endDate,
-                travelStyle, adjustedSameGender, adjustedSameAge, minBudget, maxBudget, minGroupSize, maxGroupSize, sortBy, userGender, userAgeRange
-        ).stream()
+                        keyword, placeCityName, isClosed, startDate, endDate,
+                        travelStyle, adjustedSameGender, adjustedSameAge, minBudget, maxBudget, minGroupSize, maxGroupSize, sortBy, userGender, userAgeRange
+                ).stream()
                 .map(RecruitListResponseDto::new)
                 .toList();
     }

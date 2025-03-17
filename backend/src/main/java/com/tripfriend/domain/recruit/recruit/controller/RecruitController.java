@@ -48,7 +48,7 @@ public class RecruitController {
     public RsData<List<RecruitListResponseDto>> searchRecruits(@RequestParam("keyword") String keyword){
         return new RsData<>("200-3", "동행 모집 글이 제목과 내용으로 성공적으로 검색되었습니다.", recruitService.searchRecruits(keyword));
     }
-    
+
     @Operation(summary = "동행모집 글 모집여부 검색", description = "모집 여부로 동행모집 글을 검색합니다.")
     @GetMapping("/search2")
     public RsData<List<RecruitListResponseDto>> findRecruitsByIsClosed(@RequestParam("isClosed") Boolean isClosed){
@@ -91,7 +91,7 @@ public class RecruitController {
     public RsData<RecruitDetailResponseDto> updateRecruit(@PathVariable("recruitId") Long recruitId, @RequestBody RecruitRequestDto requestDto, @RequestHeader(value = "Authorization", required = false) String token) {
         return new RsData<>("200-3", "동행 모집 글이 성공적으로 수정되었습니다.", recruitService.update(recruitId, requestDto, token));
     }
-    
+
     @Operation(summary = "동행모집 글 삭제", description = "동행모집 글을 삭제합니다.")
     @DeleteMapping("/{recruitId}")
     public RsData<Void> deleteRecruit(@PathVariable("recruitId") Long recruitId, @RequestHeader(value = "Authorization", required = false) String token){ // 이름 명시

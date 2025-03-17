@@ -90,7 +90,7 @@ export default function AnswerSection({ questionId }: { questionId: number }) {
       const isAdmin = currentUser.role === "ADMIN";
       const endpoint = isAdmin
         ? `/admin/qna/answer/${answerId}` // 관리자용 API
-        : `/qna/answer/${answerId}`;     // 사용자용 API
+        : `/qna/answer/${answerId}`; // 사용자용 API
 
       await api.delete(endpoint, {
         headers: {

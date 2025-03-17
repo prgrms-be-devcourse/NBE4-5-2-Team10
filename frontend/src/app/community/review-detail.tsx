@@ -1,16 +1,26 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { Star, Calendar, Eye, MessageSquare, MapPin, ArrowLeft, Edit, Trash2, Send } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Textarea } from "@/components/ui/textarea"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Separator } from "@/components/ui/separator"
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import {
+  Star,
+  Calendar,
+  Eye,
+  MessageSquare,
+  MapPin,
+  ArrowLeft,
+  Edit,
+  Trash2,
+  Send,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,33 +31,46 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { getReviewById, deleteReview, ReviewDetail as ReviewDetailType } from "./services/reviewService"
-import { getCommentsByReviewId, createComment, updateComment, deleteComment, Comment } from "./services/commentService"
-import { getCurrentUserInfo, isLoggedIn } from "./services/authService"
-import { getPlaceById } from "./services/placeService"
-import { getProfileImageUrl, handleProfileImageError } from "./utils/profileImageUtil";
+} from "@/components/ui/alert-dialog";
+import {
+  getReviewById,
+  deleteReview,
+  ReviewDetail as ReviewDetailType,
+} from "./services/reviewService";
+import {
+  getCommentsByReviewId,
+  createComment,
+  updateComment,
+  deleteComment,
+  Comment,
+} from "./services/commentService";
+import { getCurrentUserInfo, isLoggedIn } from "./services/authService";
+import { getPlaceById } from "./services/placeService";
+import {
+  getProfileImageUrl,
+  handleProfileImageError,
+} from "./utils/profileImageUtil";
 
 export default function ReviewDetail({ id }: { id: string }) {
-  const router = useRouter()
-  const [review, setReview] = useState<ReviewDetailType | null>(null)
-  const [comments, setComments] = useState<Comment[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [commentText, setCommentText] = useState("")
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false)
-  const [currentUserId, setCurrentUserId] = useState<number | null>(null)
-  const [editingCommentId, setEditingCommentId] = useState<number | null>(null)
-  const [editCommentText, setEditCommentText] = useState("")
-  const [placeName, setPlaceName] = useState<string | null>(null)
+  const router = useRouter();
+  const [review, setReview] = useState<ReviewDetailType | null>(null);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [commentText, setCommentText] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+  const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
+  const [editCommentText, setEditCommentText] = useState("");
+  const [placeName, setPlaceName] = useState<string | null>(null);
 
   // 로그인 상태 및 사용자 정보 확인
   useEffect(() => {
     const checkLoginStatus = async () => {
       const loggedIn = isLoggedIn();
       setIsUserLoggedIn(loggedIn);
-      
+
       if (loggedIn) {
         try {
           const userInfo = await getCurrentUserInfo();
@@ -59,7 +82,7 @@ export default function ReviewDetail({ id }: { id: string }) {
         }
       }
     };
-    
+
     checkLoginStatus();
   }, []);
 
@@ -72,14 +95,14 @@ export default function ReviewDetail({ id }: { id: string }) {
         const reviewId = parseInt(id);
         const reviewData = await getReviewById(reviewId);
         setReview(reviewData);
-        
+
         // 여행지 정보 가져오기 관련 부분 수정
         if (reviewData.placeId) {
           try {
             // 1. 리뷰 객체에 이미 placeName이 있다면 그대로 사용
             if (reviewData.placeName) {
               setPlaceName(reviewData.placeName);
-            } 
+            }
             // 2. 없는 경우에만 API로 가져오기 시도
             else {
               const placeData = await getPlaceById(reviewData.placeId);
@@ -93,10 +116,12 @@ export default function ReviewDetail({ id }: { id: string }) {
           } catch (placeError) {
             console.error("여행지 정보를 불러오는 중 오류 발생:", placeError);
             // 오류 발생시 기본값 설정
-            setPlaceName(reviewData.placeName || `여행지 ${reviewData.placeId}`);
+            setPlaceName(
+              reviewData.placeName || `여행지 ${reviewData.placeId}`
+            );
           }
         }
-        
+
         // 댓글 데이터 가져오기
         const commentsData = await getCommentsByReviewId(reviewId);
         setComments(commentsData);
@@ -127,20 +152,20 @@ export default function ReviewDetail({ id }: { id: string }) {
     try {
       const commentData = {
         content: commentText,
-        reviewId: parseInt(id)
+        reviewId: parseInt(id),
       };
-      
+
       const newComment = await createComment(commentData);
-      
+
       // 댓글 목록 갱신
       setComments([...comments, newComment]);
       setCommentText("");
-      
+
       // 리뷰의 댓글 수 갱신
       if (review) {
         setReview({
           ...review,
-          commentCount: review.commentCount + 1
+          commentCount: review.commentCount + 1,
         });
       }
     } catch (err) {
@@ -163,14 +188,16 @@ export default function ReviewDetail({ id }: { id: string }) {
 
     try {
       const updatedComment = await updateComment(commentId, editCommentText);
-      
+
       // 댓글 목록 갱신
       setComments(
         comments.map((comment) =>
-          comment.commentId === commentId ? { ...comment, content: editCommentText } : comment
+          comment.commentId === commentId
+            ? { ...comment, content: editCommentText }
+            : comment
         )
       );
-      
+
       setEditingCommentId(null);
       setEditCommentText("");
     } catch (err) {
@@ -183,15 +210,17 @@ export default function ReviewDetail({ id }: { id: string }) {
   const handleDeleteComment = async (commentId: number) => {
     try {
       await deleteComment(commentId);
-      
+
       // 댓글 목록 갱신
-      setComments(comments.filter((comment) => comment.commentId !== commentId));
-      
+      setComments(
+        comments.filter((comment) => comment.commentId !== commentId)
+      );
+
       // 리뷰의 댓글 수 갱신
       if (review) {
         setReview({
           ...review,
-          commentCount: review.commentCount - 1
+          commentCount: review.commentCount - 1,
         });
       }
     } catch (err) {
@@ -215,13 +244,23 @@ export default function ReviewDetail({ id }: { id: string }) {
   // 날짜 형식 지정
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")} ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+    return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(
+      2,
+      "0"
+    )}.${String(date.getDate()).padStart(2, "0")} ${String(
+      date.getHours()
+    ).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
   };
 
   // 별점 렌더링
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }).map((_, i) => (
-      <Star key={i} className={`h-5 w-5 ${i < rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`} />
+      <Star
+        key={i}
+        className={`h-5 w-5 ${
+          i < rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"
+        }`}
+      />
     ));
   };
 
@@ -230,7 +269,11 @@ export default function ReviewDetail({ id }: { id: string }) {
   }
 
   if (error || !review) {
-    return <div className="text-center py-10 text-red-500">{error || "리뷰를 찾을 수 없습니다."}</div>;
+    return (
+      <div className="text-center py-10 text-red-500">
+        {error || "리뷰를 찾을 수 없습니다."}
+      </div>
+    );
   }
 
   return (
@@ -250,18 +293,29 @@ export default function ReviewDetail({ id }: { id: string }) {
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <MapPin className="h-4 w-4 text-gray-500" />
-                <Link href={`/place/${review.placeId}`} className="text-sm text-blue-600 hover:underline">
+                <Link
+                  href={`/place/${review.placeId}`}
+                  className="text-sm text-blue-600 hover:underline"
+                >
                   {placeName || review.placeName || `여행지 ${review.placeId}`}
                 </Link>
               </div>
               <h1 className="text-2xl font-bold mb-2">{review.title}</h1>
-              <div className="flex items-center mb-1">{renderStars(review.rating)}</div>
+              <div className="flex items-center mb-1">
+                {renderStars(review.rating)}
+              </div>
             </div>
 
             {/* 수정/삭제 버튼 (작성자만 볼 수 있음) */}
             {currentUserId === review.memberId && (
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => router.push(`/community/edit/${review.reviewId}`)}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    router.push(`/community/edit/${review.reviewId}`)
+                  }
+                >
                   <Edit className="h-4 w-4 mr-1" />
                   수정
                 </Button>
@@ -277,12 +331,15 @@ export default function ReviewDetail({ id }: { id: string }) {
                     <AlertDialogHeader>
                       <AlertDialogTitle>리뷰 삭제</AlertDialogTitle>
                       <AlertDialogDescription>
-                        이 리뷰를 정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+                        이 리뷰를 정말 삭제하시겠습니까? 이 작업은 되돌릴 수
+                        없습니다.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>취소</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleDeleteReview}>삭제</AlertDialogAction>
+                      <AlertDialogAction onClick={handleDeleteReview}>
+                        삭제
+                      </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
@@ -294,11 +351,13 @@ export default function ReviewDetail({ id }: { id: string }) {
             <div className="flex items-center">
               <Avatar className="h-6 w-6 mr-2">
                 <AvatarImage
-                    src={getProfileImageUrl(review.profileImage)}
-                    alt={review.memberName}
-                    onError={handleProfileImageError}
+                  src={getProfileImageUrl(review.profileImage)}
+                  alt={review.memberName}
+                  onError={handleProfileImageError}
                 />
-                <AvatarFallback>{review.memberName.substring(0, 2)}</AvatarFallback>
+                <AvatarFallback>
+                  {review.memberName.substring(0, 2)}
+                </AvatarFallback>
               </Avatar>
               <span className="font-medium">{review.memberName}</span>
             </div>
@@ -353,20 +412,27 @@ export default function ReviewDetail({ id }: { id: string }) {
         {comments.length > 0 ? (
           <div className="space-y-6 mb-6">
             {comments.map((comment) => (
-              <div key={comment.commentId} className="border-b pb-4 last:border-0 last:pb-0">
+              <div
+                key={comment.commentId}
+                className="border-b pb-4 last:border-0 last:pb-0"
+              >
                 <div className="flex justify-between items-start mb-2">
                   <div className="flex items-center">
                     <Avatar className="h-8 w-8 mr-2">
                       <AvatarImage
-                          src={getProfileImageUrl(comment.profileImage)}
-                          alt={comment.memberName}
-                          onError={handleProfileImageError}
+                        src={getProfileImageUrl(comment.profileImage)}
+                        alt={comment.memberName}
+                        onError={handleProfileImageError}
                       />
-                      <AvatarFallback>{comment.memberName.substring(0, 2)}</AvatarFallback>
+                      <AvatarFallback>
+                        {comment.memberName.substring(0, 2)}
+                      </AvatarFallback>
                     </Avatar>
                     <div>
                       <div className="font-medium">{comment.memberName}</div>
-                      <div className="text-xs text-gray-500">{formatDate(comment.createdAt)}</div>
+                      <div className="text-xs text-gray-500">
+                        {formatDate(comment.createdAt)}
+                      </div>
                     </div>
                   </div>
 
@@ -375,10 +441,20 @@ export default function ReviewDetail({ id }: { id: string }) {
                     <div className="flex gap-2">
                       {editingCommentId === comment.commentId ? (
                         <>
-                          <Button variant="outline" size="sm" onClick={() => handleUpdateComment(comment.commentId)}>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              handleUpdateComment(comment.commentId)
+                            }
+                          >
                             저장
                           </Button>
-                          <Button variant="ghost" size="sm" onClick={() => setEditingCommentId(null)}>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setEditingCommentId(null)}
+                          >
                             취소
                           </Button>
                         </>
@@ -387,7 +463,12 @@ export default function ReviewDetail({ id }: { id: string }) {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleEditComment(comment.commentId, comment.content)}
+                            onClick={() =>
+                              handleEditComment(
+                                comment.commentId,
+                                comment.content
+                              )
+                            }
                           >
                             수정
                           </Button>
@@ -400,11 +481,17 @@ export default function ReviewDetail({ id }: { id: string }) {
                             <AlertDialogContent>
                               <AlertDialogHeader>
                                 <AlertDialogTitle>댓글 삭제</AlertDialogTitle>
-                                <AlertDialogDescription>이 댓글을 정말 삭제하시겠습니까?</AlertDialogDescription>
+                                <AlertDialogDescription>
+                                  이 댓글을 정말 삭제하시겠습니까?
+                                </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
                                 <AlertDialogCancel>취소</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleDeleteComment(comment.commentId)}>
+                                <AlertDialogAction
+                                  onClick={() =>
+                                    handleDeleteComment(comment.commentId)
+                                  }
+                                >
                                   삭제
                                 </AlertDialogAction>
                               </AlertDialogFooter>
@@ -429,7 +516,9 @@ export default function ReviewDetail({ id }: { id: string }) {
             ))}
           </div>
         ) : (
-          <div className="text-center py-8 text-gray-500">아직 댓글이 없습니다. 첫 댓글을 작성해보세요!</div>
+          <div className="text-center py-8 text-gray-500">
+            아직 댓글이 없습니다. 첫 댓글을 작성해보세요!
+          </div>
         )}
 
         <Separator className="my-6" />
@@ -438,7 +527,11 @@ export default function ReviewDetail({ id }: { id: string }) {
         <form onSubmit={handleCommentSubmit}>
           <div className="mb-4">
             <Textarea
-              placeholder={isUserLoggedIn ? "댓글을 작성해주세요..." : "댓글을 작성하려면 로그인이 필요합니다."}
+              placeholder={
+                isUserLoggedIn
+                  ? "댓글을 작성해주세요..."
+                  : "댓글을 작성하려면 로그인이 필요합니다."
+              }
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
               disabled={!isUserLoggedIn || isSubmitting}
@@ -446,7 +539,10 @@ export default function ReviewDetail({ id }: { id: string }) {
             />
           </div>
           <div className="flex justify-end">
-            <Button type="submit" disabled={!isUserLoggedIn || !commentText.trim() || isSubmitting}>
+            <Button
+              type="submit"
+              disabled={!isUserLoggedIn || !commentText.trim() || isSubmitting}
+            >
               {isSubmitting ? "등록 중..." : "댓글 등록"}
               <Send className="h-4 w-4 ml-2" />
             </Button>
@@ -454,5 +550,5 @@ export default function ReviewDetail({ id }: { id: string }) {
         </form>
       </div>
     </div>
-  )
+  );
 }

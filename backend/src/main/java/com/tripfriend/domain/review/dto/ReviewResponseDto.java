@@ -3,7 +3,6 @@ package com.tripfriend.domain.review.dto;
 import com.tripfriend.domain.review.entity.Review;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 

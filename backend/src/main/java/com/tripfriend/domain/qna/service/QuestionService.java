@@ -2,7 +2,6 @@ package com.tripfriend.domain.qna.service;
 
 import com.tripfriend.domain.member.member.entity.Member;
 import com.tripfriend.domain.member.member.repository.MemberRepository;
-import com.tripfriend.domain.qna.dto.AnswerDto;
 import com.tripfriend.domain.qna.dto.QuestionDto;
 import com.tripfriend.domain.qna.dto.QuestionWithAnswersDto;
 import com.tripfriend.domain.qna.entity.Question;
