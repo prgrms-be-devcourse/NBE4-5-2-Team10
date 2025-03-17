@@ -274,24 +274,28 @@ public class BaseInitData implements CommandLineRunner {
                             .placeName("경복궁")
                             .description("조선 시대의 대표적인 궁궐로, 한국 전통 건축의 아름다움을 느낄 수 있는 곳입니다.")
                             .category(Category.PLACE) // 관광지
+                            .imageUrl("/images/경복궁.jpg")
                             .build(),
                     Place.builder()
                             .cityName("서울")
                             .placeName("신라 호텔")
                             .description("럭셔리한 서비스와 아름다운 전망을 자랑하는 서울의 대표적인 호텔입니다.")
                             .category(Category.STAY) // 숙박 시설
+                            .imageUrl("/images/신라호텔.png")
                             .build(),
                     Place.builder()
                             .cityName("서울")
                             .placeName("스타벅스 더종로점")
                             .description("탁 트인 전망과 함께 프리미엄 커피를 즐길 수 있는 카페입니다.")
                             .category(Category.CAFE) // 카페
+                            .imageUrl("/images/스타벅스 더종로점.png")
                             .build(),
                     Place.builder()
                             .cityName("서울")
                             .placeName("명동교자")
                             .description("서울에서 가장 유명한 칼국수 맛집 중 하나입니다.")
                             .category(Category.RESTAURANT) // 식당
+                            .imageUrl("/images/명동교자.png")
                             .build(),
 
                     // 부산
@@ -300,24 +304,28 @@ public class BaseInitData implements CommandLineRunner {
                             .placeName("해운대 해수욕장")
                             .description("부산을 대표하는 해변으로, 여름철에는 많은 관광객이 찾는 명소입니다.")
                             .category(Category.PLACE) // 관광지
+                            .imageUrl("/images/해운대.jpg")
                             .build(),
                     Place.builder()
                             .cityName("부산")
                             .placeName("광안대교 야경")
                             .description("부산의 야경 명소 중 하나로, 광안리 해변에서 아름다운 전망을 볼 수 있습니다.")
                             .category(Category.PLACE) // 관광지
+                            .imageUrl("/images/광안대교.jpg")
                             .build(),
                     Place.builder()
                             .cityName("부산")
                             .placeName("기장 연화리 카페거리")
                             .description("바닷가 바로 앞에서 커피를 마실 수 있는 멋진 카페들이 모여 있는 곳입니다.")
                             .category(Category.CAFE) // 카페
+                            .imageUrl("/images/기장 연화리 카페거리.jpg")
                             .build(),
                     Place.builder()
                             .cityName("부산")
                             .placeName("초량밀면")
                             .description("부산에서 유명한 밀면 맛집으로, 여름철에 특히 인기가 많습니다.")
                             .category(Category.RESTAURANT) // 식당
+                            .imageUrl("/images/초량밀면.jpg")
                             .build(),
 
                     // 제주도
@@ -326,18 +334,21 @@ public class BaseInitData implements CommandLineRunner {
                             .placeName("성산일출봉")
                             .description("유네스코 세계자연유산으로 지정된 제주도의 대표적인 명소입니다.")
                             .category(Category.PLACE) // 자연 관광지
+                            .imageUrl("/images/성산일출봉.jpg")
                             .build(),
                     Place.builder()
                             .cityName("제주도")
                             .placeName("우도")
                             .description("에메랄드빛 바다와 멋진 해안도로가 있는 작은 섬으로, 제주도의 인기 관광지입니다.")
                             .category(Category.PLACE) // 관광지
+                            .imageUrl("/images/우도.jpg")
                             .build(),
                     Place.builder()
                             .cityName("제주도")
                             .placeName("제주 흑돼지 거리")
                             .description("제주도에서만 맛볼 수 있는 특색 있는 흑돼지 요리를 즐길 수 있는 곳입니다.")
                             .category(Category.RESTAURANT) // 식당
+                            .imageUrl("/images/제주 흑돼지 거리.jpg")
                             .build(),
 
                     // 강원도 속초
@@ -346,18 +357,21 @@ public class BaseInitData implements CommandLineRunner {
                             .placeName("속초 중앙시장")
                             .description("속초에서 가장 유명한 재래시장으로, 다양한 먹거리를 즐길 수 있습니다.")
                             .category(Category.ETC) // 기타 명소
+                            .imageUrl("/images/속초중앙시장.jpg")
                             .build(),
                     Place.builder()
                             .cityName("속초")
                             .placeName("설악산 국립공원")
                             .description("대한민국에서 가장 아름다운 산 중 하나로, 사계절 내내 등산객이 찾는 명소입니다.")
                             .category(Category.PLACE) // 자연 관광지
+                            .imageUrl("/images/설악산.jpg")
                             .build(),
                     Place.builder()
                             .cityName("속초")
                             .placeName("봉포머구리집")
                             .description("싱싱한 해산물 요리를 맛볼 수 있는 속초의 대표적인 맛집입니다.")
                             .category(Category.RESTAURANT) // 식당
+                            .imageUrl("/images/봉포머구리집.png")
                             .build()
             );
 

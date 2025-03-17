@@ -72,6 +72,5 @@ public class TripInformation {
         this.transportation = updateDto.getTransportation();
         this.cost = updateDto.getCost();
         this.notes = updateDto.getNotes();
-        this.isVisited = updateDto.getIsVisited();
     }
 }
