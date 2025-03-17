@@ -73,7 +73,7 @@ public class RecruitRepositoryCustomImpl implements RecruitRepositoryCustom {
 
         // ✅ 성별 필터링 (sameGender가 true일 경우에만 필터링 적용)
         sameGender.ifPresent(sg -> {
-            if (sg) { // sameGender가 true일 경우, 같은 성별인 경우만 허용
+            if (sg && userGender != null) { // sameGender가 true일 경우, 같은 성별인 경우만 허용
                 builder.and(
                         recruit.member.gender.eq(userGender)
                                 .or(recruit.sameGender.isFalse())
@@ -83,7 +83,7 @@ public class RecruitRepositoryCustomImpl implements RecruitRepositoryCustom {
 
         // ✅ 나이대 필터링 (sameAge가 true일 경우에만 필터링 적용)
         sameAge.ifPresent(sa -> {
-            if (sa) { // sameAge가 true일 경우, 같은 나이대인 경우만 허용
+            if (sa && userAgeRange != null) { // sameAge가 true일 경우, 같은 나이대인 경우만 허용
                 builder.and(
                         recruit.member.ageRange.eq(userAgeRange)
                                 .or(recruit.sameAge.isFalse())
