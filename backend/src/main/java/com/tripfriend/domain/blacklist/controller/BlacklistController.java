@@ -16,12 +16,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/admin/blacklist")
 @RequiredArgsConstructor
+@Tag(name = "Blacklist API", description = "관리자가 블랙리스트를 관리할 수 있는 기능을 제공합니다.")
 public class BlacklistController {
     private final BlacklistService blacklistService;
 
     //블랙리스트 추가
     @Operation(summary = "블랙리스트 추가", description = "특정 사용자를 블랙리스트에 등록합니다.")
-    @Tag(name = "Blacklist API", description = "관리자가 블랙리스트를 관리할 수 있는 기능을 제공합니다.")
     @PostMapping
     @CheckPermission("ADMIN")
     public ResponseEntity<String> addToBlacklist(@RequestBody Dto requestDto) {
