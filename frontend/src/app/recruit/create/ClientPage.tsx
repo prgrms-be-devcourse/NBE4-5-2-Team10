@@ -294,10 +294,10 @@ export default function CreateRecruitPage() {
                     handleSelectChange("travelStyle", value)
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-white border border-gray-300">
                     <SelectValue placeholder="여행 스타일 선택" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white border border-gray-300">
                     <SelectItem value="SIGHTSEEING">관광</SelectItem>
                     <SelectItem value="RELAXATION">휴양</SelectItem>
                     <SelectItem value="ADVENTURE">액티비티</SelectItem>

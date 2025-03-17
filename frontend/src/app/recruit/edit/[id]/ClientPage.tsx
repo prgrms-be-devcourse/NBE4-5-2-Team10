@@ -412,11 +412,13 @@ export default function EditRecruitPage() {
                   onValueChange={handleTravelStyleChange}
                 >
                   <SelectTrigger
-                    className={errors.travelStyle ? "border-red-500" : ""}
+                    className={`bg-white border border-gray-300 ${
+                      errors.travelStyle ? "border-red-500" : ""
+                    }`}
                   >
                     <SelectValue placeholder="여행 스타일을 선택해주세요" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white shadow-md border border-gray-300">
                     {Object.entries(travelStyleMap).map(([key, label]) => (
                       <SelectItem key={key} value={label}>
                         {label}
