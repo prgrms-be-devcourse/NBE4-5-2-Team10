@@ -146,7 +146,7 @@ public class SecurityConfig {
                 "/recruits/{recruitId}",
                 "/recruits/{recruitId}/applies",
                 "/admin/notice/{id}",
-                "/admin/event",  // 추가된 부분
+                "/admin/event",
                 "/qna",
                 "/qna/{id}",
                 "/qna/{questionId}/answers",
