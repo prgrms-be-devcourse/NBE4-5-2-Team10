@@ -20,7 +20,7 @@ export default function ClientPage() {
   const router = useRouter();
 
   useEffect(() => {
-    fetch("http://localhost:8080/place")
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/place`)
       .then((res) => res.json())
       .then((data) => {
         console.log("API Response:", data);
@@ -51,7 +51,7 @@ export default function ClientPage() {
     if (!confirm("정말 삭제하시겠습니까?")) return;
     // 관리자 토큰을 헤더에 포함하여 요청
     const token = localStorage.getItem("accessToken");
-    fetch(`http://localhost:8080/place/${id}`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/place/${id}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -131,7 +131,7 @@ export default function ClientPage() {
               <img
                 src={
                   place.imageUrl
-                    ? `http://localhost:8080${place.imageUrl}`
+                    ? `${process.env.NEXT_PUBLIC_API_BASE_URL}${place.imageUrl}`
                     : "/default-placeholder.svg"
                 }
                 alt={place.cityName}

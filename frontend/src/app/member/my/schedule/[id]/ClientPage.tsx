@@ -76,7 +76,7 @@ export default function ClientPage() {
     const fetchSchedule = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8080/trip/schedule/my-schedules/${id}`,
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/trip/schedule/my-schedules/${id}`,
           {
             method: "GET",
             credentials: "include",
@@ -111,9 +111,9 @@ export default function ClientPage() {
       const fetchPlaces = async () => {
         try {
           const response = await fetch(
-            `http://localhost:8080/place?cityName=${encodeURIComponent(
-              schedule[0].cityName
-            )}`,
+            `${
+              process.env.NEXT_PUBLIC_API_BASE_URL
+            }/place?cityName=${encodeURIComponent(schedule[0].cityName)}`,
             {
               method: "GET",
               headers: { "Content-Type": "application/json" },
@@ -163,14 +163,17 @@ export default function ClientPage() {
       //priority: newTripInfo.priority,
     };
     try {
-      const res = await fetch("http://localhost:8080/trip/information", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/trip/information`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
       console.log("세빙일정 등록 : ", payload);
       if (!res.ok) throw new Error("세부 일정 등록 실패");
       alert("세부 일정 등록 성공");
@@ -205,7 +208,7 @@ export default function ClientPage() {
     const token = localStorage.getItem("accessToken");
     try {
       const res = await fetch(
-        `http://localhost:8080/trip/information/${tripInformationId}`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/trip/information/${tripInformationId}`,
         {
           method: "DELETE",
           headers: {
@@ -237,7 +240,7 @@ export default function ClientPage() {
     const token = localStorage.getItem("accessToken");
     try {
       const res = await fetch(
-        "http://localhost:8080/trip/information/update-visited",
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/trip/information/update-visited`,
         {
           method: "PUT",
           headers: {

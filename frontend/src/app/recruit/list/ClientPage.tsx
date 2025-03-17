@@ -30,7 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const USER_INFO_URL = "http://localhost:8080/member/mypage";
+const USER_INFO_URL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/member/mypage`;
 
 // 모집 글 타입 정의
 interface Recruit {
@@ -55,7 +55,7 @@ interface Recruit {
 export default function RecruitListPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   const [recruits, setRecruits] = useState<Recruit[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [cities, setCities] = useState<string[]>([]);
@@ -65,21 +65,41 @@ export default function RecruitListPage() {
   const [keyword, setKeyword] = useState(searchParams?.get("keyword") || "");
   const [cityName, setCityName] = useState(searchParams?.get("cityName") || "");
   const [filteredCities, setFilteredCities] = useState<string[]>([]);
-  const [isClosed, setIsClosed] = useState<string | null>(searchParams?.get("isClosed") || null);
-  const [startDate, setStartDate] = useState(searchParams?.get("startDate") || "");
+  const [isClosed, setIsClosed] = useState<string | null>(
+    searchParams?.get("isClosed") || null
+  );
+  const [startDate, setStartDate] = useState(
+    searchParams?.get("startDate") || ""
+  );
   const [endDate, setEndDate] = useState(searchParams?.get("endDate") || "");
-  const [minBudget, setMinBudget] = useState(searchParams?.get("minBudget") || "");
-  const [maxBudget, setMaxBudget] = useState(searchParams?.get("maxBudget") || "");
+  const [minBudget, setMinBudget] = useState(
+    searchParams?.get("minBudget") || ""
+  );
+  const [maxBudget, setMaxBudget] = useState(
+    searchParams?.get("maxBudget") || ""
+  );
   const [sortBy, setSortBy] = useState(searchParams?.get("sortBy") || "latest");
-  const [minGroupSize, setMinGroupSize] = useState(searchParams?.get("minGroupSize") || "");
-  const [maxGroupSize, setMaxGroupSize] = useState(searchParams?.get("maxGroupSize") || "");
-  const [selectedTravelStyle, setSelectedTravelStyle] = useState<string>(searchParams?.get("travelStyle") || "");
+  const [minGroupSize, setMinGroupSize] = useState(
+    searchParams?.get("minGroupSize") || ""
+  );
+  const [maxGroupSize, setMaxGroupSize] = useState(
+    searchParams?.get("maxGroupSize") || ""
+  );
+  const [selectedTravelStyle, setSelectedTravelStyle] = useState<string>(
+    searchParams?.get("travelStyle") || ""
+  );
   const [userGender, setUserGender] = useState<string | null>(null);
-  const [sameGender, setSameGender] = useState<string>(searchParams?.get("sameGender") === "true" ? "same" : "all");
-  const [sameAge, setSameAge] = useState<string>(searchParams?.get("sameAge") === "true" ? "same" : "all");
+  const [sameGender, setSameGender] = useState<string>(
+    searchParams?.get("sameGender") === "true" ? "same" : "all"
+  );
+  const [sameAge, setSameAge] = useState<string>(
+    searchParams?.get("sameAge") === "true" ? "same" : "all"
+  );
 
   // 페이지네이션
-  const [currentPage, setCurrentPage] = useState(parseInt(searchParams?.get("page") || "1"));
+  const [currentPage, setCurrentPage] = useState(
+    parseInt(searchParams?.get("page") || "1")
+  );
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 6;
 
@@ -148,7 +168,7 @@ export default function RecruitListPage() {
     }
 
     setLoading(true);
-    
+
     // Don't reset page if we're just loading from URL params initially
     if (e) {
       setCurrentPage(1);
@@ -189,7 +209,7 @@ export default function RecruitListPage() {
       const data = await searchAndFilterRecruits(queryParams);
       setRecruits(data.data);
       setTotalPages(Math.ceil(data.data.length / itemsPerPage));
-      
+
       // Update URL with current filters (without reloading the page)
       updateURLWithFilters();
     } catch (error) {
@@ -203,7 +223,7 @@ export default function RecruitListPage() {
   // Update URL with current filters
   const updateURLWithFilters = () => {
     const params = new URLSearchParams();
-    
+
     if (keyword) params.set("keyword", keyword);
     if (cityName) params.set("cityName", cityName);
     if (isClosed !== null) params.set("isClosed", isClosed);
@@ -218,7 +238,7 @@ export default function RecruitListPage() {
     if (sameAge === "same") params.set("sameAge", "true");
     if (sortBy !== "latest") params.set("sortBy", sortBy);
     if (currentPage > 1) params.set("page", currentPage.toString());
-    
+
     // Replace current URL with the new one including search params (without page reload)
     const newUrl = `${window.location.pathname}?${params.toString()}`;
     window.history.replaceState({}, "", newUrl);
@@ -244,7 +264,7 @@ export default function RecruitListPage() {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: "smooth" });
-    
+
     // Update just the page parameter in the URL
     const params = new URLSearchParams(window.location.search);
     params.set("page", page.toString());
@@ -277,7 +297,9 @@ export default function RecruitListPage() {
 
   // Generate link to detail page with return URL
   const generateDetailLink = (recruitId: number) => {
-    return `/recruit/${recruitId}?returnTo=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+    return `/recruit/${recruitId}?returnTo=${encodeURIComponent(
+      window.location.pathname + window.location.search
+    )}`;
   };
 
   return (
@@ -354,18 +376,18 @@ export default function RecruitListPage() {
                 <SelectItem value="all">전체</SelectItem>
                 <SelectItem value="SIGHTSEEING">관광</SelectItem>
 
-                 <SelectItem value="RELAXATION">휴양</SelectItem>
-                 <SelectItem value="ADVENTURE">액티비티</SelectItem>
-                 <SelectItem value="GOURMET">미식</SelectItem>
-                 <SelectItem value="SHOPPING">쇼핑</SelectItem>
-               </SelectContent>
-             </Select>
-           </div>
+                <SelectItem value="RELAXATION">휴양</SelectItem>
+                <SelectItem value="ADVENTURE">액티비티</SelectItem>
+                <SelectItem value="GOURMET">미식</SelectItem>
+                <SelectItem value="SHOPPING">쇼핑</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-             <div className="space-y-2">
-               <label className="text-sm text-gray-500">출발일</label>
-               <Input
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+            <div className="space-y-2">
+              <label className="text-sm text-gray-500">출발일</label>
+              <Input
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
@@ -630,7 +652,7 @@ export default function RecruitListPage() {
 //   SelectValue,
 // } from "@/components/ui/select";
 
-// const USER_INFO_URL = "http://localhost:8080/member/mypage";
+// const USER_INFO_URL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/member/mypage`;
 
 // // 모집 글 타입 정의
 // interface Recruit {
@@ -1184,7 +1206,7 @@ export default function RecruitListPage() {
 //   SelectValue,
 // } from "@/components/ui/select";
 
-// const USER_INFO_URL = "http://localhost:8080/member/mypage";
+// const USER_INFO_URL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/member/mypage`;
 
 // // 모집 글 타입 정의
 // interface Recruit {

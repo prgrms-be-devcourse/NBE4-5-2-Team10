@@ -5,7 +5,9 @@ import axios from "axios";
 // 도시 목록 불러오는 API 함수
 export async function getCities() {
   try {
-    const response = await axios.get(`http://localhost:8080/place/cities`);
+    const response = await axios.get(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/place/cities`
+    );
     return response.data; // RsData<List<String>> 형태의 응답 반환
   } catch (error) {
     console.error("도시 목록 조회 실패:", error);
