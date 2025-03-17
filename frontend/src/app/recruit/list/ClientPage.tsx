@@ -30,7 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const USER_INFO_URL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/member/mypage`;
+const USER_INFO_URL = `${process.env.NEXT_PUBLIC_API_URL}/member/mypage`;
 
 // 모집 글 타입 정의
 interface Recruit {
@@ -652,7 +652,7 @@ export default function RecruitListPage() {
 //   SelectValue,
 // } from "@/components/ui/select";
 
-// const USER_INFO_URL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/member/mypage`;
+// const USER_INFO_URL = `${process.env.NEXT_PUBLIC_API_URL}/member/mypage`;
 
 // // 모집 글 타입 정의
 // interface Recruit {
@@ -1206,7 +1206,7 @@ export default function RecruitListPage() {
 //   SelectValue,
 // } from "@/components/ui/select";
 
-// const USER_INFO_URL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/member/mypage`;
+// const USER_INFO_URL = `${process.env.NEXT_PUBLIC_API_URL}/member/mypage`;
 
 // // 모집 글 타입 정의
 // interface Recruit {

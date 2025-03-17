@@ -54,7 +54,7 @@ export default function ClientPage() {
     const fetchCities = async () => {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/place/cities`
+          `${process.env.NEXT_PUBLIC_API_URL}/place/cities`
         );
         if (!response.ok) {
           throw new Error("도시 목록을 불러오는데 실패했습니다.");
@@ -76,7 +76,7 @@ export default function ClientPage() {
     const fetchPlaces = async () => {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/place?cityName=${cityName}`
+          `${process.env.NEXT_PUBLIC_API_URL}/place?cityName=${cityName}`
         );
         if (!response.ok) {
           throw new Error("장소 목록을 불러오는데 실패했습니다.");
@@ -141,7 +141,7 @@ export default function ClientPage() {
     try {
       const token = localStorage.getItem("accessToken") || "";
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/trip/schedule`,
+        `${process.env.NEXT_PUBLIC_API_URL}/trip/schedule`,
         {
           method: "POST",
           headers: {

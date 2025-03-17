@@ -47,7 +47,7 @@ export const fetchWithAuth = async (url: string, options: RequestInit = {}) => {
 export const refreshAccessToken = async () => {
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/member/refresh`,
+      `${process.env.NEXT_PUBLIC_API_URL}/member/refresh`,
       {
         method: "POST",
         credentials: "include",

@@ -59,7 +59,7 @@ export default function ClientPage() {
     try {
       // 관리자 토큰을 헤더에 포함하여 요청
       const token = localStorage.getItem("accessToken");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/place`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/place`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

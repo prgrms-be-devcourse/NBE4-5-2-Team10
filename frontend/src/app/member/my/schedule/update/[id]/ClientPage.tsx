@@ -32,7 +32,7 @@ export default function TripInfoUpdatePage() {
       return;
     }
     // 세부 일정 정보를 GET으로 호출
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/trip/information/${id}`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/trip/information/${id}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -82,7 +82,7 @@ export default function TripInfoUpdatePage() {
     };
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/trip/information/${id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/trip/information/${id}`,
         {
           method: "PUT",
           headers: {

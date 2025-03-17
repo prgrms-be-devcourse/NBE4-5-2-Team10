@@ -1,12 +1,12 @@
 import axios from "axios";
 
-// const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL; // 환경변수에서 API 주소 가져오기
+// const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL; // 환경변수에서 API 주소 가져오기
 
 // 도시 목록 불러오는 API 함수
 export async function getCities() {
   try {
     const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/place/cities`
+      `${process.env.NEXT_PUBLIC_API_URL}/place/cities`
     );
     return response.data; // RsData<List<String>> 형태의 응답 반환
   } catch (error) {

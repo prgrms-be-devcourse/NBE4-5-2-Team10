@@ -1,4 +1,4 @@
-const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/recruits`; // 로컬 백엔드 URL
+const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}/recruits`; // 로컬 백엔드 URL
 
 export async function getRecruits() {
   const response = await fetch(API_BASE_URL);
@@ -8,7 +8,7 @@ export async function getRecruits() {
 
 export async function getRecruitById(recruitId: string) {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/recruits/${recruitId}`
+    `${process.env.NEXT_PUBLIC_API_URL}/recruits/${recruitId}`
   );
 
   if (!response.ok) {
@@ -32,7 +32,7 @@ export async function searchAndFilterRecruits(params: Record<string, any>) {
   const queryString = new URLSearchParams(filteredParams).toString();
 
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/recruits/search3?${queryString}`,
+    `${process.env.NEXT_PUBLIC_API_URL}/recruits/search3?${queryString}`,
     {
       method: "GET",
       headers: {
@@ -63,7 +63,7 @@ export async function searchAndFilterRecruits(params: Record<string, any>) {
 //   const queryString = new URLSearchParams(filteredParams).toString();
 
 //   const res = await fetch(
-//     `${process.env.NEXT_PUBLIC_API_BASE_URL}/recruits/search3?${queryString}`,
+//     `${process.env.NEXT_PUBLIC_API_URL}/recruits/search3?${queryString}`,
 //     {
 //       method: "GET",
 //       headers: {

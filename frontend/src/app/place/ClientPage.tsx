@@ -20,7 +20,7 @@ export default function ClientPage() {
   const router = useRouter();
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/place`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/place`)
       .then((res) => res.json())
       .then((data) => {
         if (data && data.data) {
@@ -100,7 +100,7 @@ export default function ClientPage() {
               <img
                 src={
                   place.imageUrl
-                    ? `${process.env.NEXT_PUBLIC_API_BASE_URL}${place.imageUrl}`
+                    ? `${process.env.NEXT_PUBLIC_API_URL}${place.imageUrl}`
                     : "/default-placeholder.svg"
                 }
                 alt={place.cityName}

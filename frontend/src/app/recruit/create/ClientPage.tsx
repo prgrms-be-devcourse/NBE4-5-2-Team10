@@ -20,8 +20,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Search } from "lucide-react";
 
-const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/recruits`;
-const PLACE_API_URL = `${process.env.NEXT_PUBLIC_API_BASE_URL}BLIC_API_BASE_URL}/place`;
+const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}/recruits`;
+const PLACE_API_URL = `${process.env.NEXT_PUBLIC_API_URL}BLIC_API_BASE_URL}/place`;
 
 interface Place {
   id: number;
@@ -422,8 +422,8 @@ export default function CreateRecruitPage() {
 // import Header from "@/components/Header";
 // import Footer from "@/components/Footer";
 
-// const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/recruits`;
-// const PLACE_API_URL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/place`;
+// const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}/recruits`;
+// const PLACE_API_URL = `${process.env.NEXT_PUBLIC_API_URL}/place`;
 
 // export default function CreateRecruitPage() {
 //   const router = useRouter();

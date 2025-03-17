@@ -33,8 +33,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 
-const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/recruits`;
-const USER_INFO_URL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/member/mypage`;
+const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}/recruits`;
+const USER_INFO_URL = `${process.env.NEXT_PUBLIC_API_URL}/member/mypage`;
 
 // 댓글 타입 정의
 interface CommentType {
@@ -570,8 +570,8 @@ export default function RecruitDetailPage() {
 // import Header from "@/components/Header";
 // import Footer from "@/components/Footer";
 
-// const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/recruits`;
-// const USER_INFO_URL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/member/mypage`;
+// const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}/recruits`;
+// const USER_INFO_URL = `${process.env.NEXT_PUBLIC_API_URL}/member/mypage`;
 
 // // 댓글 타입 정의
 // interface CommentType {

@@ -6,7 +6,7 @@ import Footer from "@/components/Footer";
 import Place from "./place/ClientPage"; // 여행지 조회
 import { fetchWithAuth } from "@/lib/auth"; // 인증된 요청을 위한 유틸
 
-const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/recruits`;
+const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}/recruits`;
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");

@@ -193,7 +193,7 @@ export default function ClientPage() {
     };
 
     // 회원정보 수정 API 호출
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/member/update`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/member/update`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -272,7 +272,7 @@ export default function ClientPage() {
 
       // 회원 탈퇴 API 호출
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/member/delete`,
+        `${process.env.NEXT_PUBLIC_API_URL}/member/delete`,
         {
           method: "DELETE",
           headers: {
@@ -355,7 +355,7 @@ export default function ClientPage() {
     }
 
     // 마이페이지 정보 가져오기
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/member/mypage`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/member/mypage`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -368,16 +368,13 @@ export default function ClientPage() {
             // 새로운 accessToken 얻기 시도
             const refreshToken = localStorage.getItem("refreshToken");
             if (refreshToken) {
-              return fetch(
-                `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/refresh`,
-                {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({ refreshToken }),
-                }
-              ).then((refreshResponse) => {
+              return fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ refreshToken }),
+              }).then((refreshResponse) => {
                 if (refreshResponse.ok) {
                   return refreshResponse.json().then((data) => {
                     // 새 accessToken 저장
@@ -385,7 +382,7 @@ export default function ClientPage() {
 
                     // 새 토큰으로 다시 마이페이지 요청
                     return fetch(
-                      `${process.env.NEXT_PUBLIC_API_BASE_URL}/member/mypage`,
+                      `${process.env.NEXT_PUBLIC_API_URL}/member/mypage`,
                       {
                         headers: {
                           Authorization: `Bearer ${data.accessToken}`,
@@ -465,7 +462,7 @@ export default function ClientPage() {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/member/profile-image/upload`,
+        `${process.env.NEXT_PUBLIC_API_URL}/member/profile-image/upload`,
         {
           method: "POST",
           headers: {
@@ -521,7 +518,7 @@ export default function ClientPage() {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/member/profile-image/delete`,
+        `${process.env.NEXT_PUBLIC_API_URL}/member/profile-image/delete`,
         {
           method: "DELETE",
           headers: {

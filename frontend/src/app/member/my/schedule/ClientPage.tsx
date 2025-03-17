@@ -28,7 +28,7 @@ const ClientPage = () => {
 
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/trip/schedule/my-schedules`,
+          `${process.env.NEXT_PUBLIC_API_URL}/trip/schedule/my-schedules`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -79,7 +79,7 @@ const ClientPage = () => {
     if (!confirm("정말 삭제하시겠습니까?")) return;
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/trip/schedule/my-schedules/${scheduleId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/trip/schedule/my-schedules/${scheduleId}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },

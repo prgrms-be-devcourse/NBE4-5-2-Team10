@@ -76,7 +76,7 @@ export default function ClientPage() {
     const fetchSchedule = async () => {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/trip/schedule/my-schedules/${id}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/trip/schedule/my-schedules/${id}`,
           {
             method: "GET",
             credentials: "include",
@@ -112,7 +112,7 @@ export default function ClientPage() {
         try {
           const response = await fetch(
             `${
-              process.env.NEXT_PUBLIC_API_BASE_URL
+              process.env.NEXT_PUBLIC_API_URL
             }/place?cityName=${encodeURIComponent(schedule[0].cityName)}`,
             {
               method: "GET",
@@ -164,7 +164,7 @@ export default function ClientPage() {
     };
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/trip/information`,
+        `${process.env.NEXT_PUBLIC_API_URL}/trip/information`,
         {
           method: "POST",
           headers: {
@@ -208,7 +208,7 @@ export default function ClientPage() {
     const token = localStorage.getItem("accessToken");
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/trip/information/${tripInformationId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/trip/information/${tripInformationId}`,
         {
           method: "DELETE",
           headers: {
@@ -240,7 +240,7 @@ export default function ClientPage() {
     const token = localStorage.getItem("accessToken");
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/trip/information/update-visited`,
+        `${process.env.NEXT_PUBLIC_API_URL}/trip/information/update-visited`,
         {
           method: "PUT",
           headers: {
