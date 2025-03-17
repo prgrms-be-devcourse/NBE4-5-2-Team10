@@ -324,7 +324,7 @@ const handleSubmit = async (e: React.FormEvent) => {
               <SelectTrigger className={errors.placeId ? "border-red-500" : ""}>
                 <SelectValue placeholder="여행지를 선택해주세요" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="select-content bg-white border border-slate-200 shadow-lg z-50">
                 {placeOptions.map((place) => (
                   <SelectItem key={place.id} value={place.id.toString()}>
                     {place.name}

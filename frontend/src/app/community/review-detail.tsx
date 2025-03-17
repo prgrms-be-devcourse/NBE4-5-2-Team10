@@ -26,6 +26,7 @@ import { getReviewById, deleteReview, ReviewDetail as ReviewDetailType } from ".
 import { getCommentsByReviewId, createComment, updateComment, deleteComment, Comment } from "./services/commentService"
 import { getCurrentUserInfo, isLoggedIn } from "./services/authService"
 import { getPlaceById } from "./services/placeService"
+import { getProfileImageUrl, handleProfileImageError } from "./utils/profileImageUtil";
 
 export default function ReviewDetail({ id }: { id: string }) {
   const router = useRouter()
@@ -292,7 +293,11 @@ export default function ReviewDetail({ id }: { id: string }) {
           <div className="flex justify-between items-center text-sm text-gray-500 mt-2">
             <div className="flex items-center">
               <Avatar className="h-6 w-6 mr-2">
-                <AvatarImage src={`/placeholder.svg?height=40&width=40`} alt={review.memberName} />
+                <AvatarImage
+                    src={getProfileImageUrl(review.profileImage)}
+                    alt={review.memberName}
+                    onError={handleProfileImageError}
+                />
                 <AvatarFallback>{review.memberName.substring(0, 2)}</AvatarFallback>
               </Avatar>
               <span className="font-medium">{review.memberName}</span>
@@ -352,7 +357,11 @@ export default function ReviewDetail({ id }: { id: string }) {
                 <div className="flex justify-between items-start mb-2">
                   <div className="flex items-center">
                     <Avatar className="h-8 w-8 mr-2">
-                      <AvatarImage src={`/placeholder.svg?height=40&width=40`} alt={comment.memberName} />
+                      <AvatarImage
+                          src={getProfileImageUrl(comment.profileImage)}
+                          alt={comment.memberName}
+                          onError={handleProfileImageError}
+                      />
                       <AvatarFallback>{comment.memberName.substring(0, 2)}</AvatarFallback>
                     </Avatar>
                     <div>

@@ -55,7 +55,7 @@ public class CommentService {
 
         // 댓글 목록을 DTO 목록으로 변환하여 반환
         return comments.stream()
-                .map(comment -> new CommentResponseDto(comment, comment.getMember().getNickname()))
+                .map(comment -> new CommentResponseDto(comment, comment.getMember().getNickname(), comment.getMember().getProfileImage()))
                 .collect(Collectors.toList());
     }
 
@@ -65,7 +65,7 @@ public class CommentService {
 
         // 댓글 목록을 DTO 목록으로 변환하여 반환
         return comments.stream()
-                .map(comment -> new CommentResponseDto(comment, comment.getMember().getNickname()))
+                .map(comment -> new CommentResponseDto(comment, comment.getMember().getNickname(), comment.getMember().getProfileImage()))
                 .collect(Collectors.toList());
     }
 

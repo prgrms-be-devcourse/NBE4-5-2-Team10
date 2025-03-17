@@ -90,7 +90,7 @@ public class ReviewService {
         int commentCount = commentRepository.findByReviewReviewIdOrderByCreatedAtAsc(reviewId).size();
 
         // 응답 DTO 생성
-        ReviewResponseDto responseDto = new ReviewResponseDto(review, review.getMember().getNickname(), commentCount);
+        ReviewResponseDto responseDto = new ReviewResponseDto(review, review.getMember().getNickname(), commentCount, review.getMember().getProfileImage());
         responseDto.setViewCount(viewCount.getCount());
 
         return responseDto;
