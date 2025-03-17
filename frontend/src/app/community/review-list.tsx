@@ -13,6 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { getReviews, Review } from "./services/reviewService"
 import { getAllPlaces, getAllCities, getPlacesAsOptions } from "./services/placeService"
 import { isLoggedIn } from "./services/authService"
+import { getProfileImageUrl, handleProfileImageError } from "./utils/profileImageUtil";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 
 
@@ -353,7 +355,17 @@ export default function ReviewList() {
                       <span>{review.commentCount}</span>
                     </div>
                   </div>
-                  <div className="text-sm text-gray-600">{review.memberName}</div>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Avatar className="h-5 w-5 mr-2">
+                      <AvatarImage
+                          src={getProfileImageUrl(review.profileImage)}
+                          alt={review.memberName}
+                          onError={handleProfileImageError}
+                      />
+                      <AvatarFallback>{review.memberName.substring(0, 2)}</AvatarFallback>
+                    </Avatar>
+                    <span>{review.memberName}</span>
+                  </div>
                 </CardFooter>
               </Card>
             ))}

@@ -8,6 +8,7 @@ export interface Review {
     rating: number;
     memberId: number;
     memberName: string;
+    profileImage?: string;
     placeId: number;
     viewCount: number;
     createdAt: string;

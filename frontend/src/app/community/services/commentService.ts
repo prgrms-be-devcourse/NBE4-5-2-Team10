@@ -7,6 +7,7 @@ export interface Comment {
     reviewId: number;
     memberId: number;
     memberName: string;
+    profileImage?: string;
     createdAt: string;
     updatedAt: string;
 }
