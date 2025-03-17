@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:8080/recruits"; // 로컬 백엔드 URL
+const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/recruits`; // 로컬 백엔드 URL
 
 export async function getRecruits() {
   const response = await fetch(API_BASE_URL);
@@ -7,7 +7,9 @@ export async function getRecruits() {
 }
 
 export async function getRecruitById(recruitId: string) {
-  const response = await fetch(`http://localhost:8080/recruits/${recruitId}`);
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/recruits/${recruitId}`
+  );
 
   if (!response.ok) {
     throw new Error("❌ 모집 상세 정보를 불러오지 못했습니다.");
@@ -30,7 +32,7 @@ export async function searchAndFilterRecruits(params: Record<string, any>) {
   const queryString = new URLSearchParams(filteredParams).toString();
 
   const res = await fetch(
-    `http://localhost:8080/recruits/search3?${queryString}`,
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/recruits/search3?${queryString}`,
     {
       method: "GET",
       headers: {
@@ -61,7 +63,7 @@ export async function searchAndFilterRecruits(params: Record<string, any>) {
 //   const queryString = new URLSearchParams(filteredParams).toString();
 
 //   const res = await fetch(
-//     `http://localhost:8080/recruits/search3?${queryString}`,
+//     `${process.env.NEXT_PUBLIC_API_BASE_URL}/recruits/search3?${queryString}`,
 //     {
 //       method: "GET",
 //       headers: {

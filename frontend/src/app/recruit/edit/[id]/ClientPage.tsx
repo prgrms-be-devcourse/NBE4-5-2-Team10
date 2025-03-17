@@ -19,8 +19,8 @@ import {
 } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-const API_BASE_URL = "http://localhost:8080/recruits";
-const PLACE_API_URL = "http://localhost:8080/place";
+const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/recruits`;
+const PLACE_API_URL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/place`;
 
 // 여행 스타일 (한글 ↔ 영문 변환)
 const travelStyleMap = {
@@ -576,8 +576,8 @@ export default function EditRecruitPage() {
 // } from "@/components/ui/select";
 // import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-// const API_BASE_URL = "http://localhost:8080/recruits";
-// const PLACE_API_URL = "http://localhost:8080/place";
+// const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/recruits`;
+// const PLACE_API_URL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/place`;
 
 // // 여행 스타일 (한글 ↔ 영문 변환)
 // const travelStyleMap = {
@@ -793,7 +793,7 @@ export default function EditRecruitPage() {
 // import Header from "@/components/Header";
 // import Footer from "@/components/Footer";
 
-// const API_BASE_URL = "http://localhost:8080/recruits";
+// const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/recruits`;
 
 // // ✅ 여행 스타일 (한글 ↔ 영문 변환)
 // const travelStyleMap = {
