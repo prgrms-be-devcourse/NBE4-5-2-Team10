@@ -1,4 +1,4 @@
-# NBE4-5-1-Team07
+# NBE4-5-2-Team10
 프로그래머스 백엔드 데브코스 4기 5회차 10팀 TenTen의 2차 팀 프로젝트입니다.
 
 <br/>
@@ -23,10 +23,8 @@
 
 ## 2. 프로젝트 소개
 - 여행 일정 기반 동행 매칭 시스템
-  - 사용자가 여행 일정(날짜, 장소, 관심사)을 등록, 비슷한 일정을 가진 여행자를 자동 추천
+  - 사용자가 여행 일정(날짜, 장소, 관심사)을 등록, 비슷한 일정을 가진 여행자와 동행 가능
   - 사용자는 원하는 일정만 동행 신청 가능
-- 신뢰도 기반 동행 매칭 시스템
-    - 리뷰 & 평점 시스템을 도입하여, 신뢰자 높은 동행자 매칭 가능
 - 일정 변경 & 조율 가능
     - 동행이 확정된 후에 일정 조율을 통해 일정을 수정 가능
     - 변경 된 일정을 쉽게 공유
@@ -39,11 +37,11 @@
 ## 3. 작업 및 역할 분담
    |     |                                                                                         |                                                                                                  |
    |-----|-----------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|
-   | 김경래 | <img src="https://avatars.githubusercontent.com/u/15260002?v=4" alt="김경래" width="100"> | <ul><li>프로젝트 관리 및 문서화</li><li>팀 리딩 및 커뮤니케이션</li><li>여행 일정 관리</li></ul> |
-   | 김채은 | <img src="https://avatars.githubusercontent.com/u/160405935?v=4" alt="김채은" width="100">  | <ul><li>동행 시스템</li><li>동행 게시판</li><li>동행 모집</li><li>동행 신청</li></ul>|
-   | 박현모 | <img src="https://avatars.githubusercontent.com/u/39055629?v=4" alt="박현모" width="100"> | <ul><li>여행 후기 게시판</li><li>후기 게시판 댓글</li><li>여행지 정보</li></ul>|
-   | 신윤호 | <img src="https://avatars.githubusercontent.com/u/115200471?v=4" alt="신윤호" width="100">  | <ul><li>회원가입/로그인</li><li>토큰/세션/시큐리티</li><li>회원 정보 수정 삭제</li></ul>|
-   | 정회찬 | <img src="https://avatars.githubusercontent.com/u/154239980?v=4" alt="정회찬" width="100">  | <ul><li>관리자 페이지</li><li>관리자 공지&이벤트 관리</li><li>회원 블랙 리스트</li></ul> |
+   | 김경래 | <img src="https://avatars.githubusercontent.com/u/15260002?v=4" alt="김경래" width="100"> | <ul><li>프로젝트 관리 및 문서화</li><li>팀 리딩 및 커뮤니케이션</li><li>여행지 관리</li><li>여행 일정 관리</li></ul> |
+   | 김채은 | <img src="https://avatars.githubusercontent.com/u/160405935?v=4" alt="김채은" width="100">  | <ul><li>동행 게시판</li><li>동행 검색 및 정렬</li><li>동행 모집</li><li>동행 신청</li></ul>|
+   | 박현모 | <img src="https://avatars.githubusercontent.com/u/39055629?v=4" alt="박현모" width="100"> | <ul><li>여행 후기 게시판</li><li>후기 게시판 댓글 관리</li><li>평점/조회수 기능</li></ul>|
+   | 신윤호 | <img src="https://avatars.githubusercontent.com/u/115200471?v=4" alt="신윤호" width="100">  | <ul><li>회원관리</li><li>JWT/시큐리티</li><li>OAuth2.0</li><li>AWS 배포</li></ul>|
+   | 정회찬 | <img src="https://avatars.githubusercontent.com/u/154239980?v=4" alt="정회찬" width="100">  | <ul><li>관리자 페이지</li><li>관리자 공지&이벤트 관리</li><li>이벤트 관리</li></ul> |
 
 <br/>
 <br/>
@@ -53,24 +51,33 @@
 ### 언어
 - JAVA 17
 - TypeScript
-
 ### 프레임워크 및 라이브러리
- - Spring 3.4.2
- - Spring Security
- - React 19.0.0
- - Next.js 15.2.0
- - MySQL
-
+- Spring 3.4.2
+- Spring Security
+- React 19.0.0
+- Next.js 15.2.0
+### 데이터베이스
+- MySQL
+- H2
+- Redis
 ### IED 및 개발 도구
 - IntelliJ IDEA
 - Visual Studio Code
-
+- AWS EC2
+- AWS RDS
+- VERCEL
 ### 버전 관리 및 협업 도구
 - Git
 - GitHub
 - Slack
 - Notion
 - FigJam
+
+## ERD
+![여행동행리뉴얼](https://github.com/user-attachments/assets/ae2605d0-339b-4461-b22d-ccefa664c3c2)
+
+## System Architeture
+<img width="912" alt="시스템아키텍쳐" src="https://github.com/user-attachments/assets/8dcd3d40-1efa-4443-a990-07a506e7db0e" />
 
 ## 브랜치 전략
 **GitHub Flow** 전략 사용
