@@ -41,7 +41,7 @@ public class BookmarkService {
         return new BookmarkResponseDto(bookmarkRepository.save(new Bookmark(member, recruit)));
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public boolean isBookmarked (Long recruitId, String token){
         Member member = getLoggedInMember(token);
         Recruit recruit = recruitRepository.findById(recruitId).orElseThrow(() -> new ServiceException("404-3", "해당 모집글이 존재하지 않습니다."));
@@ -58,7 +58,7 @@ public class BookmarkService {
         bookmarkRepository.delete(bookmark);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<BookmarkResponseDto> getBookmarksByMember (String token){
         Member member = getLoggedInMember(token);
         return bookmarkRepository.findByMember(member)
@@ -67,7 +67,7 @@ public class BookmarkService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Integer countBookmarksByRecruit (Long recruitId){
         Recruit recruit = recruitRepository.findById(recruitId).orElseThrow(() -> new ServiceException("404-3", "해당 모집글이 존재하지 않습니다."));
         return bookmarkRepository.countByRecruit(recruit);
