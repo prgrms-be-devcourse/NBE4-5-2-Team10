@@ -1,0 +1,39 @@
+package com.tripfriend.domain.recruit.bookmark.service;
+
+import com.tripfriend.domain.member.member.entity.Member;
+import com.tripfriend.domain.member.member.service.AuthService;
+import com.tripfriend.domain.recruit.bookmark.dto.BookmarkResponseDto;
+import com.tripfriend.domain.recruit.bookmark.entity.Bookmark;
+import com.tripfriend.domain.recruit.bookmark.repository.BookmarkRepository;
+import com.tripfriend.domain.recruit.recruit.entity.Recruit;
+import com.tripfriend.domain.recruit.recruit.repository.RecruitRepository;
+import com.tripfriend.global.exception.ServiceException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+public class BookmarkService {
+    private final BookmarkRepository bookmarkRepository;
+    private final RecruitRepository recruitRepository;
+    private final AuthService authService;
+
+    public Member getLoggedInMember(String token) {
+        // 로그인 여부 확인 및 회원 정보 가져오기
+        Member member = authService.getLoggedInMember(token);
+
+        if (member == null) {
+            throw new ServiceException("401-1", "로그인이 필요합니다.");
+        }
+
+        return member;
+    }
+
+    public BookmarkResponseDto createBookmark (Long recruitId, String token){
+        Member member = getLoggedInMember(token);
+        Recruit recruit = recruitRepository.findById(recruitId).orElseThrow(() -> new ServiceException("404-3", "해당 모집글이 존재하지 않습니다."));
+
+        return new BookmarkResponseDto(bookmarkRepository.save(new Bookmark(member, recruit)));
+    }
+
+}
