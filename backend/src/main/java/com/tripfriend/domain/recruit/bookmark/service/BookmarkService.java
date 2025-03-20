@@ -12,6 +12,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class BookmarkService {
@@ -53,5 +56,20 @@ public class BookmarkService {
 
         Bookmark bookmark = bookmarkRepository.findByMemberAndRecruit(member, recruit).orElseThrow(() -> new ServiceException("404-3", "해당 북마크가 존재하지 않습니다."));
         bookmarkRepository.delete(bookmark);
+    }
+
+    @Transactional
+    public List<BookmarkResponseDto> getBookmarksByMember (String token){
+        Member member = getLoggedInMember(token);
+        return bookmarkRepository.findByMember(member)
+                .stream()
+                .map(BookmarkResponseDto::new)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public Integer countBookmarksByRecruit (Long recruitId){
+        Recruit recruit = recruitRepository.findById(recruitId).orElseThrow(() -> new ServiceException("404-3", "해당 모집글이 존재하지 않습니다."));
+        return bookmarkRepository.countByRecruit(recruit);
     }
 }
