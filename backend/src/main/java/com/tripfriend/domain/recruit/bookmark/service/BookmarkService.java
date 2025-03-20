@@ -10,6 +10,7 @@ import com.tripfriend.domain.recruit.recruit.repository.RecruitRepository;
 import com.tripfriend.global.exception.ServiceException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +30,7 @@ public class BookmarkService {
         return member;
     }
 
+    @Transactional
     public BookmarkResponseDto createBookmark (Long recruitId, String token){
         Member member = getLoggedInMember(token);
         Recruit recruit = recruitRepository.findById(recruitId).orElseThrow(() -> new ServiceException("404-3", "해당 모집글이 존재하지 않습니다."));
@@ -36,4 +38,20 @@ public class BookmarkService {
         return new BookmarkResponseDto(bookmarkRepository.save(new Bookmark(member, recruit)));
     }
 
+    @Transactional
+    public boolean isBookmarked (Long recruitId, String token){
+        Member member = getLoggedInMember(token);
+        Recruit recruit = recruitRepository.findById(recruitId).orElseThrow(() -> new ServiceException("404-3", "해당 모집글이 존재하지 않습니다."));
+
+        return bookmarkRepository.findByMemberAndRecruit(member, recruit).isPresent();
+    }
+
+    @Transactional
+    public void deleteBookmark (Long recruitId, String token){
+        Member member = getLoggedInMember(token);
+        Recruit recruit = recruitRepository.findById(recruitId).orElseThrow(() -> new ServiceException("404-3", "해당 모집글이 존재하지 않습니다."));
+
+        Bookmark bookmark = bookmarkRepository.findByMemberAndRecruit(member, recruit).orElseThrow(() -> new ServiceException("404-3", "해당 북마크가 존재하지 않습니다."));
+        bookmarkRepository.delete(bookmark);
+    }
 }

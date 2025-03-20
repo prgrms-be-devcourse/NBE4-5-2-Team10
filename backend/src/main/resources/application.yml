@@ -32,6 +32,7 @@
 #        highlight_sql: true
 #        use_sql_comments: true
 #        default_batch_fetch_size: 100
+#
 #  mail:
 #    host: smtp.gmail.com
 #    port: 587
@@ -48,16 +49,74 @@
 #          timeout: 5000
 #          writetimeout: 5000
 #      auth-code-expiration-millis: 300000
+#
 #logging:
 #  level:
 #    org.hibernate.SQL: DEBUG
 #    org.hibernate.orm.jdbc.bind: TRACE
 #    org.hibernate.orm.jdbc.extract: TRACE
 #    org.springframework.transaction.interceptor: TRACE
+#
 #custom:
 #  jwt:
 #    secret-key: ${CUSTOM_JWT_SECRET_KEY}
 #    access-token-expiration: ${CUSTOM_JWT_ACCESS_TOKEN_EXPIRATION}
 #    refresh-token-expiration: ${CUSTOM_JWT_REFRESH_TOKEN_EXPIRATION}
+#
 #file:
 #  upload-dir: src/main/resources/static/images
+#
+server:
+  port: 8080
+spring:
+  profiles:
+    active: dev
+  config:
+    import: application-secret.yml
+  datasource:
+    url: jdbc:h2:./db_dev;MODE=MySQL
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+    hikari:
+      auto-commit: false
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        highlight_sql: true
+        use_sql_comments: true
+        default_batch_fetch_size: 100
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+      auth-code-expiration-millis: 300000
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
+    org.hibernate.orm.jdbc.extract: TRACE
+    org.springframework.transaction.interceptor: TRACE
+custom:
+  jwt:
+    secret-key: ${CUSTOM_JWT_SECRET_KEY}
+    access-token-expiration: ${CUSTOM_JWT_ACCESS_TOKEN_EXPIRATION}
+    refresh-token-expiration: ${CUSTOM_JWT_REFRESH_TOKEN_EXPIRATION}
+file:
+  upload-dir: src/main/resources/static/images
