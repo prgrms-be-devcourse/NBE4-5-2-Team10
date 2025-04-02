@@ -10,7 +10,7 @@ import java.util.List;
 
 @Repository
 public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
-    Optional<Bookmark> findByMemberAndRecruit(Member member, Recruit recruit);
+    Optional<Bookmark> findByMemberIdAndRecruitId(Long memberId, Long recruitId);
     List<Bookmark> findByMember(Member member);
     Integer countByRecruit(Recruit recruit);
 }

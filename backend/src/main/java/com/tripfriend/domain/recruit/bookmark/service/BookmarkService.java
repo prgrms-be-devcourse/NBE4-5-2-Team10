@@ -46,7 +46,7 @@ public class BookmarkService {
         Member member = getLoggedInMember(token);
         Recruit recruit = recruitRepository.findById(recruitId).orElseThrow(() -> new ServiceException("404-3", "해당 모집글이 존재하지 않습니다."));
 
-        return bookmarkRepository.findByMemberAndRecruit(member, recruit).isPresent();
+        return bookmarkRepository.findByMemberIdAndRecruitId(member.getId(), recruitId).isPresent();
     }
 
     @Transactional
